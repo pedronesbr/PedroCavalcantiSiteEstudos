@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudos ENEM</title>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>
+      // Configura o worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+    </script>
+
     <style>
         /* ===== Estilos Gerais ===== */
         body {
@@ -170,6 +178,30 @@
         .state-2 { color: #ff580a; }
         .state-3 { color: #32cd32; }
         .state-4 { color: #1e90ff; }
+
+        /* ===== Novo: Estilos do visualizador de PDF ===== */
+        #pdfViewerContainer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 80%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #closePdfBtn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 8px 12px;
+        }
     </style>
 </head>
 <body>
@@ -179,6 +211,12 @@
         <div style="width: 250px;"></div>
     </div>
     <div id="app"></div>
+
+    <!-- Contêiner do visualizador PDF.js -->
+    <div id="pdfViewerContainer">
+        <button id="closePdfBtn">Fechar</button>
+        <canvas id="pdfCanvas"></canvas>
+    </div>
 
     <!-- Carrega o banco de dados externo -->
     <script src="data.js"></script>
@@ -197,8 +235,14 @@
         const header = document.getElementById('header');
         const headerTitle = document.getElementById('headerTitle');
 
-        // Agora usamos uma janela nomeada "pdfViewer" para reaproveitar a mesma aba
-        let pdfWindow = null;
+        // PDF.js elementos
+        const pdfContainer = document.getElementById('pdfViewerContainer');
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const closeBtn = document.getElementById('closePdfBtn');
+        const ctx = pdfCanvas.getContext('2d');
+
+        // Fecha o visualizador
+        closeBtn.onclick = () => { pdfContainer.style.display = 'none'; };
 
         backBtn.onclick = () => {
             if (currentSub) showSubjects(currentDisc);
@@ -358,16 +402,16 @@
             });
         }
 
-        function openPdf(page) {
-            const url = `sample.pdf#page=${page}`;
-            // Se não houver janela ou ela estiver fechada, abre uma nova com o nome "pdfViewer"
-            if (!pdfWindow || pdfWindow.closed) {
-                pdfWindow = window.open(url, 'pdfViewer');
-            } else {
-                // Caso contrário, atualiza a página do PDF já aberto
-                pdfWindow.location.href = url;
-                pdfWindow.focus();
-            }
+        async function openPdf(page) {
+            pdfContainer.style.display = 'flex';
+            const url = 'sample.pdf';
+            const loadingTask = pdfjsLib.getDocument(url);
+            const pdf = await loadingTask.promise;
+            const pdfPage = await pdf.getPage(page);
+            const viewport = pdfPage.getViewport({ scale: 1.5 });
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            await pdfPage.render({ canvasContext: ctx, viewport }).promise;
         }
 
         // Inicia a aplicação
