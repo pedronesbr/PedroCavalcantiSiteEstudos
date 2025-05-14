@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -170,6 +171,14 @@
         .state-2 { color: #ff580a; }
         .state-3 { color: #32cd32; }
         .state-4 { color: #1e90ff; }
+        /* ===== Viewer de PDF ===== */
+        #pdfViewer {
+            width: 100%;
+            height: 80vh;
+            border: none;
+            display: none; /* fica oculto até que o usuário clique numa questão */
+            background: #000;
+        }
     </style>
 </head>
 <body>
@@ -179,6 +188,8 @@
         <div style="width: 250px;"></div>
     </div>
     <div id="app"></div>
+    <!-- Viewer de PDF reutilizável -->
+    <iframe id="pdfViewer" src=""></iframe>
 
     <!-- Carrega o banco de dados externo -->
     <script src="data.js"></script>
@@ -196,16 +207,19 @@
         const backBtn = document.getElementById('backBtn');
         const header = document.getElementById('header');
         const headerTitle = document.getElementById('headerTitle');
-
-        // Agora usamos uma janela nomeada "pdfViewer" para reaproveitar a mesma aba
-        let pdfWindow = null;
+        const pdfViewer = document.getElementById('pdfViewer');
 
         backBtn.onclick = () => {
             if (currentSub) showSubjects(currentDisc);
             else showMenu();
         };
 
-        function clear() { app.innerHTML = ''; }
+        function clear() {
+            app.innerHTML = '';
+            // Esconde o PDF quando voltamos para outro menu
+            pdfViewer.style.display = 'none';
+            pdfViewer.src = '';
+        }
         function updateHeader(show, title) {
             header.style.display = show ? 'flex' : 'none';
             backBtn.style.visibility = title ? 'visible' : 'hidden';
@@ -259,6 +273,7 @@
             updateHeader(true, disc);
             clear();
 
+            // Estatísticas de disciplina
             const statDiv = document.createElement('div');
             statDiv.className = 'stat';
             app.appendChild(statDiv);
@@ -285,10 +300,9 @@
             }
             updateDiscStats();
 
-            Object.keys(questoesData[disc]).sort().forEach(sub => {
-                const btn = document.createElement('button');
-                btn.textContent = `Assunto ${sub}`;
-                btn.onclick = () => showQuestions(disc, sub);
+            const subs = Object.keys(questoesData[disc]).sort();
+            subs.forEach(sub => {
+                const btn = document.createElement('button'); btn.textContent = `Assunto ${sub}`; btn.onclick = () => showQuestions(disc, sub);
                 app.appendChild(btn);
             });
         }
@@ -298,9 +312,7 @@
             updateHeader(true, `${disc} - Assunto ${sub}`);
             clear();
 
-            const statDiv = document.createElement('div');
-            statDiv.className = 'stat';
-            app.appendChild(statDiv);
+            const statDiv = document.createElement('div'); statDiv.className = 'stat'; app.appendChild(statDiv);
 
             function updateStats() {
                 const qs = questoesData[disc][sub] || [];
@@ -322,55 +334,29 @@
             updateStats();
 
             (questoesData[disc][sub] || []).forEach((q, idx) => {
-                const row = document.createElement('div');
-                row.className = 'question-row';
-
-                const qBtn = document.createElement('button');
-                qBtn.textContent = q.label;
-                qBtn.style.flex = '1';
-                qBtn.onclick = () => openPdf(q.page);
-                row.appendChild(qBtn);
-
-                const gBtn = document.createElement('button');
-                gBtn.textContent = 'Gabarito';
-                gBtn.className = 'small-btn';
-                gBtn.onclick = () => openPdf(q.gabaritoPage);
-                row.appendChild(gBtn);
-
+                const row = document.createElement('div'); row.className = 'question-row';
+                const qBtn = document.createElement('button'); qBtn.textContent = q.label; qBtn.style.flex = '1'; qBtn.onclick = () => openPdf(q.page); row.appendChild(qBtn);
+                const gBtn = document.createElement('button'); gBtn.textContent = 'Gabarito'; gBtn.className = 'small-btn'; gBtn.onclick = () => openPdf(q.gabaritoPage); row.appendChild(gBtn);
                 const key = `${disc}_${sub}_${idx}`;
-                const box = document.createElement('span');
-                box.className = 'state-box';
+                const box = document.createElement('span'); box.className = 'state-box';
                 let st = parseInt(localStorage.getItem(key), 10) || 0;
-                function renderBox() {
-                    box.textContent = st===1 ? '✓' : st===2 ? '✗' : '';
-                    box.style.color = st===1 ? 'green' : st===2 ? 'red' : '#f0f0f0';
-                }
+                function renderBox() { box.textContent = st===1 ? '✓' : st===2 ? '✗' : ''; box.style.color = st===1 ? 'green' : st===2 ? 'red' : '#f0f0f0'; }
                 renderBox();
-                box.onclick = () => {
-                    st = (st + 1) % 3;
-                    localStorage.setItem(key, st);
-                    renderBox();
-                    updateStats();
-                };
+                box.onclick = () => { st = (st+1)%3; localStorage.setItem(key, st); renderBox(); updateStats(); };
                 row.appendChild(box);
-
                 app.appendChild(row);
             });
         }
 
+        // Alteração principal: reutiliza iframe em vez de abrir nova aba
         function openPdf(page) {
-            const url = `sample.pdf#page=${page}`;
-            // Se não houver janela ou ela estiver fechada, abre uma nova com o nome "pdfViewer"
-            if (!pdfWindow || pdfWindow.closed) {
-                pdfWindow = window.open(url, 'pdfViewer');
-            } else {
-                // Caso contrário, atualiza a página do PDF já aberto
-                pdfWindow.location.href = url;
-                pdfWindow.focus();
-            }
+            pdfViewer.style.display = 'block';
+            pdfViewer.src = `sample.pdf#page=${page}`;
+            // Rolagem suave até o viewer, caso esteja fora de vista
+            pdfViewer.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Inicia a aplicação
+        // Inicia
         showMenu();
     </script>
 </body>
