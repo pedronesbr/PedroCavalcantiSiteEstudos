@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Conjunto de metadados essenciais -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudos ENEM</title>
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>
+      // Configura o worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+    </script>
+
+    <style>
+        /* ===== Estilos Gerais ===== */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        /* ===== Botões genéricos ===== */
+        button {
+            background: #1e1e1e;
+            color: #f0f0f0;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 240px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .small-btn {
+            padding: 8px 12px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 0 8px;
+        }
+        /* Container principal do app */
+        #app {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* Cabeçalho fixo */
+        #header {
+            width: 100%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1e1e1e;
+            box-sizing: border-box;
+        }
+        #backBtn { visibility: hidden; }
+        #headerTitle {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f0f0f0;
+        }
+        .question-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .state-box {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #f0f0f0;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .stat {
+            margin-bottom: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .stat.blue { color: #1e90ff; }
+        .stat.green { color: #32cd32; }
+        .stat.orange { color: #ff4500; }
+        .stat.red { color: #ff0000; }
+        .intro-block {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 45px;
+            max-width: 1000px;
+        }
+        .intro-img {
+            width: 240px;
+            height: auto;
+            margin-right: 24px;
+            border-radius: 8px;
+        }
+        .intro-text p {
+            margin: 12px 0;
+            font-style: italic;
+            font-size: 15px;
+            color: #cccccc;
+            line-height: 1.6;
+        }
+        /* ===== Ajuste para alinhar estrelas ===== */
+        .metacog-lines {
+            display: block;
+            flex-direction: column;
+            width: 100%;
+            max-width: 970px;
+            margin-bottom: 32px;
+        }
+        .disc-line {
+            display: grid;
+            grid-template-columns: 220px auto;
+            column-gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .stars-container {
+            display: flex;
+            gap: 0px;
+        }
+        .disc-btn {
+            width: 200px;
+            height: 33px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 0;
+            box-sizing: border-box;
+            margin-right: 0;
+        }
+        .disc-btn.biologia   { background: #4E9302; }
+        .disc-btn.quimica    { background: #1CC9E7; }
+        .disc-btn.fisica     { background: #CA09EE; }
+        .disc-btn.matematica { background: #F9D01A; }
+        /* ===== Estilos para exibir número dentro da estrela ===== */
+        .star {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 0;
+        }
+        .star::before {
+            content: '★';
+            font-size: 35px;
+            display: block;
+            text-align: center;
+            pointer-events: none;
+        }
+        .star .star-index {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.4em;
+            color: #ffffff;
+            pointer-events: none;
+        }
+        .state-0 { color: black; }
+        .state-1 { color: #ff0000; }
+        .state-2 { color: #ff580a; }
+        .state-3 { color: #32cd32; }
+        .state-4 { color: #1e90ff; }
+
+        /* ===== Novo: Estilos do visualizador de PDF ===== */
+        #pdfViewerContainer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 80%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #closePdfBtn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- input oculto para importar JSON -->
+    <input type="file" id="importFile" accept=".json" style="display:none">
+
+    <div id="header">
+        <button id="backBtn">Voltar</button>
+        <span id="headerTitle"></span>
+        <div style="width: 250px;"></div>
+    </div>
+    <div id="app"></div>
+
+    <!-- Contêiner do visualizador PDF.js -->
+    <div id="pdfViewerContainer">
+        <button id="closePdfBtn">Fechar</button>
+        <canvas id="pdfCanvas"></canvas>
+    </div>
+
+    <!-- Carrega o banco de dados externo -->
+    <script src="data.js"></script>
+    <script>
+        const questoesData = window.bancoQuestoes || {};
+        const discClasses = {
+            'Biologia':'biologia',
+            'Química':'quimica',
+            'Física':'fisica',
+            'Matemática':'matematica'
+        };
+
+        // Elementos de import/export
+        const importFile = document.getElementById('importFile');
+
+        function exportData() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if ( key.startsWith('star_') || /^\w+_\d+_\d+$/.test(key) ) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'estudos-enem-dados.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        importFile.addEventListener('change', evt => {
+            const file = evt.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const obj = JSON.parse(e.target.result);
+                    Object.entries(obj).forEach(([k, v]) => {
+                        localStorage.setItem(k, v);
+                    });
+                    alert('Dados importados com sucesso!');
+                    location.reload();
+                } catch {
+                    alert('Formato inválido. Não foi possível importar.');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        let currentDisc = null, currentSub = null;
+        const app = document.getElementById('app');
+        const backBtn = document.getElementById('backBtn');
+        const header = document.getElementById('header');
+        const headerTitle = document.getElementById('headerTitle');
+
+        // PDF.js elementos
+        const pdfContainer = document.getElementById('pdfViewerContainer');
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const closeBtn = document.getElementById('closePdfBtn');
+        const ctx = pdfCanvas.getContext('2d');
+
+        // Fecha o visualizador
+        closeBtn.onclick = () => { pdfContainer.style.display = 'none'; };
+
+        backBtn.onclick = () => {
+            if (currentSub) showSubjects(currentDisc);
+            else showMenu();
+        };
+
+        function clear() { app.innerHTML = ''; }
+        function updateHeader(show, title) {
+            header.style.display = show ? 'flex' : 'none';
+            backBtn.style.visibility = title ? 'visible' : 'hidden';
+            headerTitle.textContent = title || '';
+        }
+        function updateStar(el, st) { el.className = 'star state-' + st; }
+
+        function showMenu() {
+            currentDisc = null; currentSub = null;
+            updateHeader(false, '');
+            clear();
+
+            // Intro
+            const intro = document.createElement('div'); intro.className = 'intro-block';
+            const img = document.createElement('img'); img.src = 'arcano_newtonius.png'; img.alt = 'Arcano Newtonius'; img.className = 'intro-img';
+            intro.appendChild(img);
+            const txt = document.createElement('div'); txt.className = 'intro-text';
+            txt.innerHTML = `
+                <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br>
+                <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br>
+                Guardião dos segredos do universo, mestre dos elementos e das equações, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br>
+                <p>Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo da montanha: a vaga dos teus sonhos!</p>
+            `;
+            intro.appendChild(txt);
+            app.appendChild(intro);
+
+            // Linhas de disciplinas com estrelas
+            const lines = document.createElement('div'); lines.className = 'metacog-lines';
+            Object.keys(questoesData).forEach(disc => {
+                const line = document.createElement('div'); line.className = 'disc-line';
+                const btn = document.createElement('button'); btn.className = 'disc-btn ' + discClasses[disc]; btn.textContent = disc; btn.onclick = () => showSubjects(disc);
+                line.appendChild(btn);
+                const starsContainer = document.createElement('div'); starsContainer.className = 'stars-container';
+                const subs = Object.keys(questoesData[disc]).sort();
+                subs.forEach(sub => {
+                    const star = document.createElement('span'); star.className = 'star';
+                    const idxSpan = document.createElement('span'); idxSpan.className = 'star-index'; idxSpan.textContent = sub;
+                    star.appendChild(idxSpan);
+                    const key = `star_${disc}_${sub}`;
+                    let st = parseInt(localStorage.getItem(key), 10) || 0;
+                    updateStar(star, st);
+                    star.onclick = () => { st = (st + 1) % 5; localStorage.setItem(key, st); updateStar(star, st); };
+                    starsContainer.appendChild(star);
+                });
+                line.appendChild(starsContainer);
+                lines.appendChild(line);
+            });
+            app.appendChild(lines);
+
+            // ===== Botões de export/import =====
+            const exportBtn = document.createElement('button');
+            exportBtn.textContent = 'Exportar backup';
+            exportBtn.onclick = exportData;
+            app.appendChild(exportBtn);
+
+            const importBtn = document.createElement('button');
+            importBtn.textContent = 'Importar backup';
+            importBtn.onclick = () => importFile.click();
+            app.appendChild(importBtn);
+            // =========================================
+        }
+
+        function showSubjects(disc) {
+            currentDisc = disc; currentSub = null;
+            updateHeader(true, disc);
+            clear();
+
+            const statDiv = document.createElement('div');
+            statDiv.className = 'stat';
+            app.appendChild(statDiv);
+
+            function updateDiscStats() {
+                const subs = Object.keys(questoesData[disc]);
+                let total = 0, correct = 0, answered = 0;
+                subs.forEach(sub => {
+                    const qs = questoesData[disc][sub] || [];
+                    total += qs.length;
+                    qs.forEach((_, i) => {
+                        const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
+                        if (st === 1) correct++;
+                        if (st === 1 || st === 2) answered++;
+                    });
+                });
+                const pct = answered ? (correct/answered * 100) : 0;
+                statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
+                statDiv.className = 'stat ' +
+                    (pct >= 90 ? 'blue' :
+                     pct >= 80 ? 'green' :
+                     pct >= 50 ? 'orange' :
+                                'red');
+            }
+            updateDiscStats();
+
+            Object.keys(questoesData[disc]).sort().forEach(sub => {
+                const btn = document.createElement('button');
+                btn.textContent = `Assunto ${sub}`;
+                btn.onclick = () => showQuestions(disc, sub);
+                app.appendChild(btn);
+            });
+        }
+
+        function showQuestions(disc, sub) {
+            currentDisc = disc; currentSub = sub;
+            updateHeader(true, `${disc} - Assunto ${sub}`);
+            clear();
+
+            const statDiv = document.createElement('div');
+            statDiv.className = 'stat';
+            app.appendChild(statDiv);
+
+            function updateStats() {
+                const qs = questoesData[disc][sub] || [];
+                const total = qs.length;
+                let correct = 0, answered = 0;
+                qs.forEach((_, i) => {
+                    const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
+                    if (st === 1) correct++;
+                    if (st === 1 || st === 2) answered++;
+                });
+                const pct = answered ? (correct/answered * 100) : 0;
+                statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
+                statDiv.className = 'stat ' +
+                    (pct >= 90 ? 'blue' :
+                     pct >= 80 ? 'green' :
+                     pct >= 50 ? 'orange' :
+                                'red');
+            }
+            updateStats();
+
+            (questoesData[disc][sub] || []).forEach((q, idx) => {
+                const row = document.createElement('div');
+                row.className = 'question-row';
+
+                const qBtn = document.createElement('button');
+                qBtn.textContent = q.label;
+                qBtn.style.flex = '1';
+                qBtn.onclick = () => openPdf(q.QPDFName, q.page);
+                row.appendChild(qBtn);
+
+                const gBtn = document.createElement('button');
+                gBtn.textContent = 'Gabarito';
+                gBtn.className = 'small-btn';
+                gBtn.onclick = () => openPdf(q.GPDFName, q.gabaritoPage);
+                row.appendChild(gBtn);
+
+                const key = `${disc}_${sub}_${idx}`;
+                const box = document.createElement('span');
+                box.className = 'state-box';
+                let st = parseInt(localStorage.getItem(key), 10) || 0;
+                function renderBox() {
+                    box.textContent = st===1 ? '✓' : st===2 ? '✗' : '';
+                    box.style.color = st===1 ? 'green' : st===2 ? 'red' : '#f0f0f0';
+                }
+                renderBox();
+                box.onclick = () => {
+                    st = (st + 1) % 3;
+                    localStorage.setItem(key, st);
+                    renderBox();
+                    updateStats();
+                };
+                row.appendChild(box);
+
+                app.appendChild(row);
+            });
+        }
+
+        async function openPdf(pdfName, page) {
+            pdfContainer.style.display = 'flex';
+            const url = pdfName;
+            const loadingTask = pdfjsLib.getDocument(url);
+            const pdf = await loadingTask.promise;
+            const pdfPage = await pdf.getPage(page);
+            const viewport = pdfPage.getViewport({ scale: 1.5 });
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+        }
+
+        // Inicia a aplicação
+        showMenu();
+    </script>
+</body>
+</html>
