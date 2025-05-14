@@ -205,6 +205,9 @@
     </style>
 </head>
 <body>
+    <!-- input oculto para importar JSON -->
+    <input type="file" id="importFile" accept=".json" style="display:none">
+
     <div id="header">
         <button id="backBtn">Voltar</button>
         <span id="headerTitle"></span>
@@ -228,6 +231,45 @@
             'Física':'fisica',
             'Matemática':'matematica'
         };
+
+        // Elementos de import/export
+        const importFile = document.getElementById('importFile');
+
+        function exportData() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if ( key.startsWith('star_') || /^\w+_\d+_\d+$/.test(key) ) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'estudos-enem-dados.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        importFile.addEventListener('change', evt => {
+            const file = evt.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const obj = JSON.parse(e.target.result);
+                    Object.entries(obj).forEach(([k, v]) => {
+                        localStorage.setItem(k, v);
+                    });
+                    alert('Dados importados com sucesso!');
+                    location.reload();
+                } catch {
+                    alert('Formato inválido. Não foi possível importar.');
+                }
+            };
+            reader.readAsText(file);
+        });
 
         let currentDisc = null, currentSub = null;
         const app = document.getElementById('app');
@@ -261,6 +303,7 @@
             currentDisc = null; currentSub = null;
             updateHeader(false, '');
             clear();
+
             // Intro
             const intro = document.createElement('div'); intro.className = 'intro-block';
             const img = document.createElement('img'); img.src = 'arcano_newtonius.png'; img.alt = 'Arcano Newtonius'; img.className = 'intro-img';
@@ -274,6 +317,7 @@
             `;
             intro.appendChild(txt);
             app.appendChild(intro);
+
             // Linhas de disciplinas com estrelas
             const lines = document.createElement('div'); lines.className = 'metacog-lines';
             Object.keys(questoesData).forEach(disc => {
@@ -296,6 +340,18 @@
                 lines.appendChild(line);
             });
             app.appendChild(lines);
+
+            // ===== Botões de export/import =====
+            const exportBtn = document.createElement('button');
+            exportBtn.textContent = 'Exportar backup';
+            exportBtn.onclick = exportData;
+            app.appendChild(exportBtn);
+
+            const importBtn = document.createElement('button');
+            importBtn.textContent = 'Importar backup';
+            importBtn.onclick = () => importFile.click();
+            app.appendChild(importBtn);
+            // =========================================
         }
 
         function showSubjects(disc) {
@@ -403,16 +459,16 @@
         }
 
         async function openPdf(pdfName, page) {
-    pdfContainer.style.display = 'flex';
-    const url = pdfName;                  // nome do PDF vindo do data.js
-    const loadingTask = pdfjsLib.getDocument(url);
-    const pdf = await loadingTask.promise;
-    const pdfPage = await pdf.getPage(page);
-    const viewport = pdfPage.getViewport({ scale: 1.5 });
-    pdfCanvas.width = viewport.width;
-    pdfCanvas.height = viewport.height;
-    await pdfPage.render({ canvasContext: ctx, viewport }).promise;
-       }
+            pdfContainer.style.display = 'flex';
+            const url = pdfName;
+            const loadingTask = pdfjsLib.getDocument(url);
+            const pdf = await loadingTask.promise;
+            const pdfPage = await pdf.getPage(page);
+            const viewport = pdfPage.getViewport({ scale: 1.5 });
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+        }
 
         // Inicia a aplicação
         showMenu();
