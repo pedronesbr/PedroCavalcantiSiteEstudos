@@ -372,13 +372,13 @@
                 const qBtn = document.createElement('button');
                 qBtn.textContent = q.label;
                 qBtn.style.flex = '1';
-                qBtn.onclick = () => openPdf(q.page);
+                qBtn.onclick = () => openPdf(q.QPDFName, q.page);
                 row.appendChild(qBtn);
 
                 const gBtn = document.createElement('button');
                 gBtn.textContent = 'Gabarito';
                 gBtn.className = 'small-btn';
-                gBtn.onclick = () => openPdf(q.gabaritoPage);
+                gBtn.onclick = () => openPdf(q.GPDFName, q.gabaritoPage);
                 row.appendChild(gBtn);
 
                 const key = `${disc}_${sub}_${idx}`;
@@ -402,17 +402,17 @@
             });
         }
 
-        async function openPdf(page) {
-            pdfContainer.style.display = 'flex';
-            const url = 'sample.pdf';
-            const loadingTask = pdfjsLib.getDocument(url);
-            const pdf = await loadingTask.promise;
-            const pdfPage = await pdf.getPage(page);
-            const viewport = pdfPage.getViewport({ scale: 1.5 });
-            pdfCanvas.width = viewport.width;
-            pdfCanvas.height = viewport.height;
-            await pdfPage.render({ canvasContext: ctx, viewport }).promise;
-        }
+        async function openPdf(pdfName, page) {
+    pdfContainer.style.display = 'flex';
+    const url = pdfName;                  // nome do PDF vindo do data.js
+    const loadingTask = pdfjsLib.getDocument(url);
+    const pdf = await loadingTask.promise;
+    const pdfPage = await pdf.getPage(page);
+    const viewport = pdfPage.getViewport({ scale: 1.5 });
+    pdfCanvas.width = viewport.width;
+    pdfCanvas.height = viewport.height;
+    await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+       }
 
         // Inicia a aplicação
         showMenu();
