@@ -1,184 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estudos ENEM</title>
+    <!-- Metadados essenciais -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudos ENEM</title>
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- PDF.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
-  </script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script>
+      // Configura o worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+    </script>
 
-  <style>
-/* ─────────── TEMA GERAL ─────────── */
-body, #app{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#121212;
-  color:#ffffff;
+    <!-- ================= CSS ORIGINAL ================= -->
+    <style>
+        /* ===== Estilos Gerais ===== */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        /* ===== Botões genéricos ===== */
+        button {
+            background: #1e1e1e;
+            color: #f0f0f0;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 240px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .small-btn {
+            padding: 8px 12px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 0 8px;
+        }
+        /* Container principal do app */
+        #app {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* Cabeçalho fixo */
+        #header {
+            width: 100%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1e1e1e;
+            box-sizing: border-box;
+        }
+        #backBtn { visibility: hidden; }
+        #headerTitle {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f0f0f0;
+        }
+        .question-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .state-box {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #f0f0f0;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .stat {
+            margin-bottom: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .stat.blue { color: #1e90ff; }
+        .stat.green { color: #32cd32; }
+        .stat.orange { color: #ff4500; }
+        .stat.red { color: #ff0000; }
+        .intro-block {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 45px;
+            max-width: 1000px;
+        }
+        .intro-img {
+            width: 240px;
+            height: auto;
+            margin-right: 24px;
+            border-radius: 8px;
+        }
+        .intro-text p {
+            margin: 12px 0;
+            font-style: italic;
+            font-size: 15px;
+            color: #cccccc;
+            line-height: 1.6;
+        }
+        /* ===== Ajuste para alinhar estrelas ===== */
+        .metacog-lines {
+            display: block;
+            flex-direction: column;
+            width: 100%;
+            max-width: 970px;
+            margin-bottom: 32px;
+        }
+        .disc-line {
+            display: grid;
+            grid-template-columns: 220px auto;
+            column-gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .stars-container {
+            display: flex;
+            gap: 0px;
+        }
+        .disc-btn {
+            width: 200px;
+            height: 33px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 0;
+            box-sizing: border-box;
+            margin-right: 0;
+        }
+        .disc-btn.biologia   { background: #4E9302; }
+        .disc-btn.quimica    { background: #1CC9E7; }
+        .disc-btn.fisica     { background: #CA09EE; }
+        .disc-btn.matematica { background: #F9D01A; }
+        /* ===== Estilos para exibir número dentro da estrela ===== */
+        .star {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 0;
+        }
+        .star::before {
+            content: '★';
+            font-size: 35px;
+            display: block;
+            text-align: center;
+            pointer-events: none;
+        }
+        .star .star-index {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.4em;
+            color: #ffffff;
+            pointer-events: none;
+        }
+        .state-0 { color: black; }
+        .state-1 { color: #ff0000; }
+        .state-2 { color: #ff580a; }
+        .state-3 { color: #32cd32; }
+        .state-4 { color: #1e90ff; }
 
-  /* margens laterais simétricas */
-  padding-left:16px;
-  padding-right:16px;
-  box-sizing:border-box;
-}
+        /* ===== Visualizador de PDF ===== */
+        #pdfViewerContainer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 80%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #closePdfBtn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border: 2px solid #ffffff33;
+            border-radius: 50%;
+            background: rgba(30,30,30,0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: background .25s, transform .25s;
+            z-index: 2000;
+        }
+        #closePdfBtn:hover {
+            background: rgba(30,30,30,0.9);
+            transform: scale(1.1);
+        }
+    </style>
 
-/* Container principal */
-#app{
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  box-sizing:border-box;
-}
-
-/* Botões genéricos */
-button{
-  background:#1e1e1e;
-  color:#f0f0f0;
-  border:none;
-  padding:12px 20px;
-  margin:8px;
-  border-radius:4px;
-  cursor:pointer;
-  font-size:16px;
-  display:block;
-  width:240px;
-  text-align:center;
-  box-sizing:border-box;
-}
-.small-btn{ padding:8px 12px; font-size:14px; display:inline-block; margin:0 8px; }
-
-/* Cabeçalho */
-#header{
-  width:100%;
-  padding:8px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:#1e1e1e;
-  box-sizing:border-box;
-}
-#backBtn{ visibility:hidden; }
-#headerTitle{
-  flex:1; text-align:center; font-size:18px; font-weight:bold; color:#f0f0f0;
-}
-
-/* Intro (imagem + texto) */
-.intro-block{
-  display:flex;
-  align-items:flex-start;
-  margin-bottom:45px;
-  max-width:1000px;
-  margin-left:auto;
-  margin-right:auto;
-}
-.intro-img{
-  width:240px; height:auto; margin-right:24px; border-radius:8px;
-}
-.intro-text p{
-  margin:12px 0; font-style:italic; font-size:15px; color:#cccccc; line-height:1.6;
-}
-
-/* ─────────── DISCIPLINAS & ESTRELAS ─────────── */
-/* bloco centralizado */
-.metacog-lines{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  max-width:970px;
-  margin-left:auto;
-  margin-right:auto;
-}
-
-/* ===== LINHA DE DISCIPLINA – DESKTOP ===== */
-.disc-line{
-  display:flex;          /* era grid */
-  align-items:center;
-  gap:8px;               /* espaço entre botão e estrelas */
-}
-.disc-btn{
-  flex:0 0 220px;        /* largura fixa do botão */
-  height:33px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:4px;
-  color:#000;
-  font-weight:bold;
-  font-size:18px;
-  padding:0;
-  box-sizing:border-box;
-}
-.disc-btn.biologia   { background:#4E9302; }
-.disc-btn.quimica    { background:#1CC9E7; }
-.disc-btn.fisica     { background:#CA09EE; }
-.disc-btn.matematica { background:#F9D01A; }
-
-.stars-container{ display:flex; gap:0; }
-.star{ font-size:35px; color:#444; }
-.star::before{ content:'★'; }
-
-/* ─────────── RESPONSIVIDADE ≤ 600 px ─────────── */
-@media (max-width:600px){
-  .intro-block{
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-  }
-  .intro-img{
-    width:60%; max-width:200px; margin:0 0 16px 0;
-  }
-
-  /* ===== LINHA DE DISCIPLINA – MOBILE ===== */
-  .disc-line{
-    flex-direction:column;   /* empilha */
-    align-items:flex-start;  /* alinha à esquerda */
-    width:100%;
-  }
-  .disc-btn{
-    width:100%;
-    max-width:240px;
-    margin-bottom:8px;
-  }
-  .stars-container{
-    justify-content:flex-start;  /* estrelas começam juntas */
-  }
-}
-  </style>
+    <!-- ============= NOVO: CSS responsivo da home ============= -->
+    <link rel="stylesheet" href="home-style-update.css">
 </head>
 <body>
     <!-- input oculto para importar JSON -->
     <input type="file" id="importFile" accept=".json" style="display:none">
 
-    <!-- Cabeçalho fixo -->
     <div id="header">
         <button id="backBtn">Voltar</button>
         <span id="headerTitle"></span>
-        <div style="width:250px;"></div>
+        <div style="width: 250px;"></div>
     </div>
-
-    <!-- Aplicação -->
     <div id="app"></div>
 
-    <!-- PDF viewer -->
+    <!-- Contêiner do visualizador PDF.js -->
     <div id="pdfViewerContainer">
         <button id="closePdfBtn" aria-label="Fechar PDF">
-          <i class="fas fa-times"></i>
+            <i class="fas fa-times"></i>
         </button>
         <canvas id="pdfCanvas"></canvas>
     </div>
 
-    <!-- Banco externo de questões -->
+    <!-- Banco de dados externo -->
     <script src="data.js"></script>
     <script>
+        // … TODO: todo o seu código JS original permanece inalterado …
 /* ========== SEU JAVASCRIPT ORIGINAL (inalterado) ========== */
 const questoesData = window.bancoQuestoes || {};
 const discClasses = {
