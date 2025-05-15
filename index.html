@@ -459,34 +459,41 @@
             });
         }
 
-        async function openPdf(pdfName, pages) {
-  // garante que pages seja sempre array
+async function openPdf(pdfName, pages) {
   const pageNums = Array.isArray(pages) ? pages : [pages];
-
-  // mostra o container e limpa canvases anteriores
   pdfContainer.style.display = 'flex';
   pdfContainer.querySelectorAll('canvas').forEach(c => c.remove());
 
-  // carrega o documento
   const loadingTask = pdfjsLib.getDocument(pdfName);
   const pdf = await loadingTask.promise;
 
-  // para cada página solicitada, cria um canvas e renderiza
   for (let num of pageNums) {
     const pdfPage = await pdf.getPage(num);
-    const viewport = pdfPage.getViewport({ scale: 1.5 });
 
+    // 1) escala base desejada (por ex. 1.5 → 150%)
+    const baseScale = 1.5;
+    // 2) fator de pixel do dispositivo (para telas Retina)
+    const outputScale = window.devicePixelRatio || 1;
+    // 3) calcola viewport já multiplicando os dois
+    const viewport = pdfPage.getViewport({ scale: baseScale * outputScale });
+
+    // 4) ajusta dimensões do canvas para a resolução interna
     const canvas = document.createElement('canvas');
-    canvas.width  = viewport.width;
-    canvas.height = viewport.height;
-    canvas.style.margin = '16px 0';           // espaçamento entre páginas
+    canvas.width  = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    // 5) mas exibe em CSS menor, para não “esticar” no layout
+    canvas.style.width  = `${Math.floor(viewport.width  / outputScale)}px`;
+    canvas.style.height = `${Math.floor(viewport.height / outputScale)}px`;
+    canvas.style.margin = '16px 0';
     pdfContainer.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
+    // 6) escala o contexto para compensar o devicePixelRatio
+    ctx.scale(outputScale, outputScale);
+
     await pdfPage.render({ canvasContext: ctx, viewport }).promise;
   }
 }
-
         // Inicia a aplicação
         showMenu();
     </script>
