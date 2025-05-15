@@ -1,258 +1,158 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Metadados essenciais -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudos ENEM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estudos ENEM</title>
 
-    <!-- Font Awesome (estrelas, ícones) -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- PDF.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
-    <script>
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
-    </script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+  </script>
 
-    <style>
-/* ═════════════════════ TEMA GERAL ═════════════════════ */
+  <style>
+/* ─────────── TEMA GERAL ─────────── */
 body, #app{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#121212;
-    color:#ffffff;
-    /* Novo: margens laterais simétricas + cálculo uniforme */
-    padding-left:16px;
-    padding-right:16px;
-    box-sizing:border-box;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#121212;
+  color:#ffffff;
+
+  /* margens laterais simétricas */
+  padding-left:16px;
+  padding-right:16px;
+  box-sizing:border-box;
 }
 
-/* Container principal do app  ─ (mantido, só box-sizing novo) */
+/* Container principal */
 #app{
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    box-sizing:border-box;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  box-sizing:border-box;
 }
 
-/* ===== Botões genéricos ===== */
+/* Botões genéricos */
 button{
-    background:#1e1e1e;
-    color:#f0f0f0;
-    border:none;
-    padding:12px 20px;
-    margin:8px;
-    border-radius:4px;
-    cursor:pointer;
-    font-size:16px;
-    display:block;
-    width:240px;
-    text-align:center;
-    box-sizing:border-box;
+  background:#1e1e1e;
+  color:#f0f0f0;
+  border:none;
+  padding:12px 20px;
+  margin:8px;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:16px;
+  display:block;
+  width:240px;
+  text-align:center;
+  box-sizing:border-box;
 }
-.small-btn{
-    padding:8px 12px;
-    font-size:14px;
-    display:inline-block;
-    margin:0 8px;
-}
+.small-btn{ padding:8px 12px; font-size:14px; display:inline-block; margin:0 8px; }
 
-/* Cabeçalho fixo */
+/* Cabeçalho */
 #header{
-    width:100%;
-    padding:8px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:#1e1e1e;
-    box-sizing:border-box;
+  width:100%;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#1e1e1e;
+  box-sizing:border-box;
 }
 #backBtn{ visibility:hidden; }
 #headerTitle{
-    flex:1;
-    text-align:center;
-    font-size:18px;
-    font-weight:bold;
-    color:#f0f0f0;
+  flex:1; text-align:center; font-size:18px; font-weight:bold; color:#f0f0f0;
 }
 
 /* Intro (imagem + texto) */
 .intro-block{
-    display:flex;
-    align-items:flex-start;
-    margin-bottom:45px;
-    max-width:1000px;
-    margin-left:auto;
-    margin-right:auto;          /* centralizado */
+  display:flex;
+  align-items:flex-start;
+  margin-bottom:45px;
+  max-width:1000px;
+  margin-left:auto;
+  margin-right:auto;
 }
 .intro-img{
-    width:240px;
-    height:auto;
-    margin-right:24px;
-    border-radius:8px;
+  width:240px; height:auto; margin-right:24px; border-radius:8px;
 }
 .intro-text p{
-    margin:12px 0;
-    font-style:italic;
-    font-size:15px;
-    color:#cccccc;
-    line-height:1.6;
+  margin:12px 0; font-style:italic; font-size:15px; color:#cccccc; line-height:1.6;
 }
 
-/* ═════════════ DISCIPLINAS & ESTRELAS ═════════════ */
-/* Novo: bloco centraliza e só ocupa o necessário */
+/* ─────────── DISCIPLINAS & ESTRELAS ─────────── */
+/* bloco centralizado */
 .metacog-lines{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    max-width:970px;
-    margin-left:auto;
-    margin-right:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  max-width:970px;
+  margin-left:auto;
+  margin-right:auto;
 }
-.disc-line{
-    display:grid;
-    grid-template-columns:220px auto;
-    column-gap:8px;
-    align-items:center;
-    margin-bottom:8px;
-    width:100%;
-}
-.stars-container{ display:flex; gap:0; }
 
+/* ===== LINHA DE DISCIPLINA – DESKTOP ===== */
+.disc-line{
+  display:flex;          /* era grid */
+  align-items:center;
+  gap:8px;               /* espaço entre botão e estrelas */
+}
 .disc-btn{
-    width:200px;
-    height:33px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:4px;
-    color:#000;
-    font-weight:bold;
-    font-size:18px;
-    padding:0;
-    box-sizing:border-box;
-    margin-right:0;
+  flex:0 0 220px;        /* largura fixa do botão */
+  height:33px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:4px;
+  color:#000;
+  font-weight:bold;
+  font-size:18px;
+  padding:0;
+  box-sizing:border-box;
 }
 .disc-btn.biologia   { background:#4E9302; }
 .disc-btn.quimica    { background:#1CC9E7; }
 .disc-btn.fisica     { background:#CA09EE; }
 .disc-btn.matematica { background:#F9D01A; }
 
-/* Estrelas */
-.star{
-    position:relative;
-    display:inline-block;
-    cursor:pointer;
-    margin:0;
-    font-size:35px;
-}
-.star::before{ content:'★'; display:block; text-align:center; pointer-events:none; }
-.star .star-index{
-    position:absolute;
-    top:55%; left:50%;
-    transform:translate(-50%,-50%);
-    font-size:.4em;
-    color:#ffffff;
-    pointer-events:none;
-}
-.state-0{ color:black; }
-.state-1{ color:#ff0000; }
-.state-2{ color:#ff580a; }
-.state-3{ color:#32cd32; }
-.state-4{ color:#1e90ff; }
+.stars-container{ display:flex; gap:0; }
+.star{ font-size:35px; color:#444; }
+.star::before{ content:'★'; }
 
-/* Caixa ✓ ✗ */
-.state-box{
-    width:24px; height:24px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border:2px solid #f0f0f0;
-    margin-left:8px;
-    cursor:pointer;
-    font-size:18px;
-}
-
-/* Estatísticas */
-.stat{
-    margin-bottom:16px;
-    font-weight:bold;
-    text-align:center;
-}
-.stat.blue  { color:#1e90ff; }
-.stat.green { color:#32cd32; }
-.stat.orange{ color:#ff4500; }
-.stat.red   { color:#ff0000; }
-
-/* ═════════════ PDF viewer ═════════════ */
-#pdfViewerContainer{
-    position:fixed;
-    top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.9);
-    display:none;
+/* ─────────── RESPONSIVIDADE ≤ 600 px ─────────── */
+@media (max-width:600px){
+  .intro-block{
     flex-direction:column;
     align-items:center;
-    justify-content:flex-start;
-    z-index:1000;
-    overflow-y:auto;
-}
-#pdfCanvas{
-    max-width:100%;
-    max-height:80%;
-    box-shadow:0 0 10px rgba(0,0,0,0.5);
-}
-#closePdfBtn{
-    position:fixed;
-    top:24px; right:24px;
-    width:44px; height:44px;
-    border:2px solid #ffffff33;
-    border-radius:50%;
-    background:rgba(30,30,30,0.75);
-    backdrop-filter:blur(6px);
-    display:flex; align-items:center; justify-content:center;
-    font-size:20px;
-    color:#fff; cursor:pointer;
-    transition:background .25s, transform .25s;
-    z-index:2000;
-}
-#closePdfBtn:hover{
-    background:rgba(30,30,30,0.9);
-    transform:scale(1.1);
-}
+    text-align:center;
+  }
+  .intro-img{
+    width:60%; max-width:200px; margin:0 0 16px 0;
+  }
 
-/* ═════════════ RESPONSIVIDADE (≤ 600 px) ═════════════ */
-@media (max-width:600px){
-    /* Intro vira coluna */
-    .intro-block{
-        flex-direction:column;
-        align-items:center;
-        text-align:center;
-    }
-    .intro-img{
-        width:60%;
-        max-width:200px;
-        margin:0 0 16px 0;
-    }
-
-    /* Disciplina empilhada */
-    .disc-line{
-        grid-template-columns:1fr;
-        justify-items:center;
-    }
-    .disc-btn{
-        width:100%;
-        max-width:240px;
-        margin-bottom:8px;
-    }
-    .stars-container{
-        justify-content:center;
-    }
+  /* ===== LINHA DE DISCIPLINA – MOBILE ===== */
+  .disc-line{
+    flex-direction:column;   /* empilha */
+    align-items:flex-start;  /* alinha à esquerda */
+    width:100%;
+  }
+  .disc-btn{
+    width:100%;
+    max-width:240px;
+    margin-bottom:8px;
+  }
+  .stars-container{
+    justify-content:flex-start;  /* estrelas começam juntas */
+  }
 }
-    </style>
+  </style>
 </head>
 <body>
     <!-- input oculto para importar JSON -->
