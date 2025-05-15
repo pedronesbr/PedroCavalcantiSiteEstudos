@@ -192,14 +192,14 @@
             z-index: 1000;
             overflow-y: auto; 
         }
-        .pageWrapper {
-  position: relative;        /* para posicionar o textLayer sobre o canvas */
-  margin: 16px 0;
+        #pageWrapper {
+            position: relative;        /* para posicionar o textLayer sobre o canvas */
+            margin: 16px 0;
 }
-.textLayer {
-  position: absolute;
-  top: 0; left: 0;
-  pointer-events: none;      /* deixa os cliques “passarem” para o canvas, mas o texto continua selecionável */
+        #textLayer {
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;      /* deixa os cliques “passarem” para o canvas, mas o texto continua selecionável */
 }
         #pdfCanvas {
             max-width: 100%;
