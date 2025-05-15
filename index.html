@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudos ENEM</title>
-
+<!-- Ícones Font Awesome – você pode usar outro kit se preferir -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
     <script>
@@ -197,12 +199,30 @@
             max-height: 80%;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        #closePdfBtn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            padding: 8px 12px;
-        }
+#closePdfBtn {
+    position: fixed;          /* continua visível mesmo rolando o PDF */
+    top: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border: 2px solid #ffffff33;
+    border-radius: 50%;
+    background: rgba(30,30,30,0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;          /* tamanho do ícone ou do “×” */
+    color: #fff;
+    cursor: pointer;
+    transition: background .25s, transform .25s;
+    z-index: 2000;            /* acima do canvas */
+}
+
+#closePdfBtn:hover {
+    background: rgba(30,30,30,0.9);
+    transform: scale(1.1) rotate(90deg);
+}
     </style>
 </head>
 <body>
@@ -218,7 +238,9 @@
 
     <!-- Contêiner do visualizador PDF.js -->
     <div id="pdfViewerContainer">
-        <button id="closePdfBtn">Fechar</button>
+        <button id="closePdfBtn" aria-label="Fechar PDF">
+  <i class="fas fa-times"></i>   <!-- usa o ícone  “X” -->
+</button>
         <canvas id="pdfCanvas"></canvas>
     </div>
 
