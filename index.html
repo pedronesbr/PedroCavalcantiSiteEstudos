@@ -77,7 +77,6 @@
             align-items: center;
             margin-bottom: 8px;
             width: 100%;
-            max-width: 600px;
         }
         .state-box {
             width: 24px;
@@ -103,7 +102,7 @@
             display: flex;
             align-items: flex-start;
             margin-bottom: 45px;
-            max-width: 1000px;
+            width: 100%;
         }
         .intro-img {
             width: 240px;
@@ -123,7 +122,6 @@
             display: block;
             flex-direction: column;
             width: 100%;
-            max-width: 970px;
             margin-bottom: 32px;
         }
         .disc-line {
@@ -132,6 +130,124 @@
             column-gap: 8px;
             align-items: center;
             margin-bottom: 8px;
+        }
+        .stars-container {
+            display: flex;
+            gap: 0px;
+        }
+        .disc-btn {
+            width: 200px;
+            height: 33px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 0;
+            box-sizing: border-box;
+            margin-right: 0;
+        }
+        .disc-btn.biologia   { background: #4E9302; }
+        .disc-btn.quimica    { background: #1CC9E7; }
+        .disc-btn.fisica     { background: #CA09EE; }
+        .disc-btn.matematica { background: #F9D01A; }
+        /* ===== Estilos para exibir número dentro da estrela ===== */
+        .star {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 0;
+        }
+        .star::before {
+            content: '★';
+            font-size: 35px;
+            display: block;
+            text-align: center;
+            pointer-events: none;
+        }
+        .star .star-index {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.4em;
+            color: #ffffff;
+            pointer-events: none;
+        }
+        .state-0 { color: black; }
+        .state-1 { color: #ff0000; }
+        .state-2 { color: #ff580a; }
+        .state-3 { color: #32cd32; }
+        .state-4 { color: #1e90ff; }
+
+        /* ===== Visualizador de PDF ===== */
+        #pdfViewerContainer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        #pdfCanvas {
+            width: 100%;
+            max-height: 80%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #closePdfBtn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border: 2px solid #ffffff33;
+            border-radius: 50%;
+            background: rgba(30,30,30,0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: background .25s, transform .25s;
+            z-index: 2000;
+        }
+        #closePdfBtn:hover {
+            background: rgba(30,30,30,0.9);
+            transform: scale(1.1);
+        }
+    </style>
+
+    <!-- ======= Ajustes mobile adicionais ======= -->
+    <style>
+      @media (max-width: 768px) {
+        /* Texto abaixo da imagem */
+        .intro-block {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .intro-text {
+          margin-top: 24px;
+        }
+
+        /* Disciplinas empilhadas com estrelas embaixo quebrando linha */
+        .disc-line {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .disc-btn {
+          width: 100%;
+          margin: 0;
         }
         .stars-container {
             display: flex;
