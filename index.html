@@ -1,35 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- =============================== METADADOS BÁSICOS =============================== -->
+    <!-- Metadados essenciais -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudos ENEM</title>
 
-    <!-- =============================== BIBLIOTECAS EXTERNAS ============================== -->
-    <!-- Font Awesome: ícones escaláveis  -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- PDF.js: renderização de arquivos PDF no <canvas> -->
+    <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
     <script>
-      // Configura o arquivo de *worker* responsável pelo parser do PDF.
-      // Mantido separado para não bloquear a UI.
+      // Configura o worker
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
     </script>
 
-    <!-- =============================== ESTILOS GERAIS =============================== -->
+    <!-- ================= CSS original ================= -->
     <style>
-        /* Grid, tipografia e cores globais  */
+        /* ===== Estilos Gerais ===== */
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #121212; /* dark‑mode */
+            background-color: #121212;
             color: #ffffff;
         }
-
-        /* ======================= COMPONENTE: BOTÃO GENÉRICO ======================= */
+        /* ===== Botões genéricos ===== */
         button {
             background: #1e1e1e;
             color: #f0f0f0;
@@ -39,28 +37,25 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            width: 240px;          /* largura padrão */
-            text-align: center;
             display: block;
+            width: 240px;
+            text-align: center;
             box-sizing: border-box;
         }
-        /* Versão compacta — por ex. estrelas/metacog */
         .small-btn {
             padding: 8px 12px;
             font-size: 14px;
             display: inline-block;
             margin: 0 8px;
         }
-
-        /* ======================= LAYOUT: ESTRUTURA PRINCIPAL ======================= */
+        /* Container principal do app */
         #app {
             padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
-        /* Cabeçalho fixo com botão de retorno e título dinâmico  */
+        /* Cabeçalho fixo */
         #header {
             width: 100%;
             padding: 8px;
@@ -70,7 +65,7 @@
             background: #1e1e1e;
             box-sizing: border-box;
         }
-        #backBtn { visibility: hidden; } /* exibido sob demanda via JS */
+        #backBtn { visibility: hidden; }
         #headerTitle {
             flex: 1;
             text-align: center;
@@ -78,8 +73,6 @@
             font-weight: bold;
             color: #f0f0f0;
         }
-
-        /* ======================= QUESTÕES (LISTAGEM) ======================= */
         .question-row {
             display: flex;
             align-items: center;
@@ -98,19 +91,15 @@
             cursor: pointer;
             font-size: 18px;
         }
-
-        /* ======================= ESTATÍSTICAS ======================= */
         .stat {
             margin-bottom: 16px;
             font-weight: bold;
             text-align: center;
         }
-        .stat.blue   { color: #1e90ff; }  /* respondido e revisado */
-        .stat.green  { color: #32cd32; }  /* certo */
-        .stat.orange { color: #ff4500; }  /* errado */
-        .stat.red    { color: #ff0000; }  /* não visto */
-
-        /* ======================= BLOCO INTRODUTÓRIO (FOTO + TEXTO) ======================= */
+        .stat.blue { color: #1e90ff; }
+        .stat.green { color: #32cd32; }
+        .stat.orange { color: #ff4500; }
+        .stat.red { color: #ff0000; }
         .intro-block {
             display: flex;
             align-items: flex-start;
@@ -118,7 +107,7 @@
             max-width: 1000px;
         }
         .intro-img {
-            width: 280px;  /* mantém proporção 4:3 */
+            width: 280px;
             height: auto;
             margin-right: 24px;
             border-radius: 8px;
@@ -130,9 +119,7 @@
             color: #cccccc;
             line-height: 1.6;
         }
-
-        /* ======================= ÁREA METACOG (DISCIPLINAS + ESTRELAS) ======================= */
-        /* Contém várias linhas — cada disciplina com X estrelas */
+        /* ===== Ajuste para alinhar estrelas ===== */
         .metacog-lines {
             display: block;
             flex-direction: column;
@@ -142,16 +129,15 @@
         }
         .disc-line {
             display: grid;
-            grid-template-columns: 220px auto; /* botão da disciplina | estrelas  */
+            grid-template-columns: 220px auto;
             column-gap: 8px;
             align-items: center;
             margin-bottom: 8px;
         }
         .stars-container {
             display: flex;
-            gap: 0px; /* remove espaço extra entre estrelas */
+            gap: 0px;
         }
-        /* Botão colorido de cada disciplina */
         .disc-btn {
             width: 200px;
             height: 33px;
@@ -166,28 +152,24 @@
             box-sizing: border-box;
             margin-right: 0;
         }
-        /* Paleta específica por disciplina  */
         .disc-btn.biologia   { background: #4E9302; }
         .disc-btn.quimica    { background: #1CC9E7; }
         .disc-btn.fisica     { background: #CA09EE; }
         .disc-btn.matematica { background: #F9D01A; }
-
-        /* ======================= ESTRELAS DE AVALIAÇÃO ======================= */
+        /* ===== Estilos para exibir número dentro da estrela ===== */
         .star {
             position: relative;
             display: inline-block;
             cursor: pointer;
             margin: 0;
         }
-        /* Desenha a estrela com pseudo‑elemento  */
         .star::before {
             content: '★';
             font-size: 35px;
             display: block;
             text-align: center;
-            pointer-events: none; /* evita conflito com clique */
+            pointer-events: none;
         }
-        /* Número dentro da estrela  */
         .star .star-index {
             position: absolute;
             top: 55%;
@@ -197,32 +179,30 @@
             color: #ffffff;
             pointer-events: none;
         }
-        /* Cores de acordo com o nível de domínio */
-        .state-0 { color: black;     } /* vazia */
-        .state-1 { color: #ff0000;   } /* iniciante */
-        .state-2 { color: #ff580a;   } /* médio   */
-        .state-3 { color: #32cd32;   } /* bom     */
-        .state-4 { color: #1e90ff;   } /* mestre  */
+        .state-0 { color: black; }
+        .state-1 { color: #ff0000; }
+        .state-2 { color: #ff580a; }
+        .state-3 { color: #32cd32; }
+        .state-4 { color: #1e90ff; }
 
-        /* ======================= VISUALIZADOR PDF (MODAL) ======================= */
+        /* ===== Visualizador de PDF ===== */
         #pdfViewerContainer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
-            display: none;          /* visível apenas quando abrirPDF() */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             z-index: 1000;
-            overflow-y: auto;       /* permite rolagem de páginas longas */
+            overflow-y: auto;
         }
         #pdfCanvas {
             max-width: 100%;
             max-height: 80%;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        /* Botão flutuante para fechar modal */
         #closePdfBtn {
             position: fixed;
             top: 24px;
@@ -246,41 +226,37 @@
             background: rgba(30,30,30,0.9);
             transform: scale(1.1);
         }
-
-        /* ======================= MEDIA QUERY: MOBILE ======================= */
-        @media (max-width: 768px) {
-          .intro-block {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-          .intro-text {
-            margin-top: 24px;
-          }
-        }
     </style>
 
-    <!-- =============================== ESTILO EXTRA (ARQUIVO EXTERNO) =============================== -->
-    <!-- Dica: "home-style-update.css" carrega modificações incrementais sem poluir este arquivo. -->
+    <!-- ============= Mobile: na home texto abaixo da imagem ============= -->
+    <style>
+      @media (max-width: 768px) {
+        .intro-block {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .intro-text {
+          margin-top: 24px;
+        }
+      }
+    </style>
+
+    <!-- ============= CSS responsivo extra (disciplinas/estrelas) ============= -->
     <link rel="stylesheet" href="home-style-update.css">
 </head>
 <body>
-    <!-- =============================== IMPORTAÇÃO (JSON) =============================== -->
-    <!-- Input invisível para importar o progresso do usuário -->
+    <!-- input oculto para importar JSON -->
     <input type="file" id="importFile" accept=".json" style="display:none">
 
-    <!-- =============================== HEADER FIXO =============================== -->
     <div id="header">
         <button id="backBtn">Voltar</button>
         <span id="headerTitle"></span>
-        <!-- Bloco vazio para equilíbrio de flexbox -->
         <div style="width: 250px;"></div>
     </div>
-
-    <!-- =============================== APLICAÇÃO (conteúdo dinâmico) =============================== -->
     <div id="app"></div>
 
-    <!-- =============================== VISUALIZADOR DE PDF =============================== -->
+    <!-- Contêiner do visualizador PDF.js -->
     <div id="pdfViewerContainer">
         <button id="closePdfBtn" aria-label="Fechar PDF">
             <i class="fas fa-times"></i>
@@ -288,184 +264,90 @@
         <canvas id="pdfCanvas"></canvas>
     </div>
 
-    <!-- =============================== SCRIPTS =============================== -->
-    <!-- Fonte de dados estático/dinâmico (Banco de Dados)-->
+    <!-- Banco de dados externo -->
     <script src="data.js"></script>
-
     <script>
-        
-/* =============================================================
- *  JAVASCRIPT
- *  Aplicação:  Sistema de Estudos ENEM – Arcano Newtonius
- *  Autor original: você ;)
- *  Objetivo: Gerenciar questões por disciplina/assunto, registrar
- *            desempenho e abrir PDFs de enunciados e gabaritos.
- *
- *  Esta versão contém COMENTÁRIOS EXPLICATIVOS em português para
- *  facilitar a leitura, manutenção e evolução do código. Nenhuma
- *  regra de negócio foi alterada.
- *  ===========================================================*/
 
-/* ------------------------------------------------------------------
- * 1.  CONSTANTES E CONFIGURAÇÃO INICIAL
- * ----------------------------------------------------------------*/
-
-// Objeto com todas as questões (é injetado via <script> antes deste).
-// Formato esperado:
-// {
-//   'Biologia': {
-//       '01': [{ label, QPDFName, page, GPDFName, gabaritoPage }, ...],
-//       '02': [...]
-//   },
-//   'Química': { ... },
-//   ...
-// }
+/* ========== JAVASCRIPT ========== */
 const questoesData = window.bancoQuestoes || {};
-
-// Mapear nome da disciplina → classe CSS (cores/estilo de botão)
 const discClasses = {
-  'Biologia':  'biologia',
-  'Química':   'quimica',
-  'Física':    'fisica',
-  'Matemática': 'matematica'
+  'Biologia':'biologia',
+  'Química':'quimica',
+  'Física':'fisica',
+  'Matemática':'matematica'
 };
-
-/* ------------------------------------------------------------------
- * 2.  EXPORTAÇÃO / IMPORTAÇÃO DE DADOS (BACKUP)
- * ----------------------------------------------------------------*/
-
 const importFile = document.getElementById('importFile');
 
-/**
- * Exporta para um arquivo JSON todos os registros gravados no
- * localStorage que sejam:
- *   • star_<disciplina>_<assunto>        → nível de estrela (0‑4)
- *   • <disc>_<sub>_<idx>                 → status questão (0,1,2)
- */
-function exportData () {
-  const data = {};
-
-  // Percorrer todas as chaves do localStorage e filtrar as relevantes
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith('star_') || /^\w+_\d+_\d+$/.test(key)) {
-      data[key] = localStorage.getItem(key);
+function exportData(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key.startsWith('star_')||/^\w+_\d+_\d+$/.test(key)){
+      data[key]=localStorage.getItem(key);
     }
   }
-
-  // Gerar arquivo (Blob) e disparar download automático
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: 'application/json'
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'estudos-enem-dados.json';
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='estudos-enem-dados.json';
   a.click();
   URL.revokeObjectURL(url);
 }
-
-/**
- * Importa backup em formato JSON gerado pela função exportData().
- * Carrega chave por chave no localStorage e recarrega a página.
- */
-importFile.addEventListener('change', evt => {
-  const file = evt.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const obj = JSON.parse(e.target.result);
-      Object.entries(obj).forEach(([k, v]) => localStorage.setItem(k, v));
+importFile.addEventListener('change',evt=>{
+  const file=evt.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const obj=JSON.parse(e.target.result);
+      Object.entries(obj).forEach(([k,v])=>{localStorage.setItem(k,v);});
       alert('Dados importados com sucesso!');
       location.reload();
-    } catch {
+    }catch{
       alert('Formato inválido. Não foi possível importar.');
     }
   };
   reader.readAsText(file);
 });
 
-/* ------------------------------------------------------------------
- * 3.  ELEMENTOS GLOBAIS E REFERÊNCIAS DO DOM
- * ----------------------------------------------------------------*/
+let currentDisc=null,currentSub=null;
+const app=document.getElementById('app');
+const backBtn=document.getElementById('backBtn');
+const header=document.getElementById('header');
+const headerTitle=document.getElementById('headerTitle');
 
-let currentDisc = null,  // disciplina atualmente aberta
-    currentSub  = null;  // assunto atualmente aberto
+/* PDF.js */
+const pdfContainer=document.getElementById('pdfViewerContainer');
+const pdfCanvas=document.getElementById('pdfCanvas');
+const closeBtn=document.getElementById('closePdfBtn');
+const ctx=pdfCanvas.getContext('2d');
+closeBtn.onclick=()=>{pdfContainer.style.display='none';};
 
-// Contêiner principal onde as telas são renderizadas dinamicamente
-const app          = document.getElementById('app');
-const backBtn      = document.getElementById('backBtn');
-const header       = document.getElementById('header');
-const headerTitle  = document.getElementById('headerTitle');
-
-/* ---- PDF.js (visualização de arquivos) --------------------------*/
-const pdfContainer = document.getElementById('pdfViewerContainer');
-const pdfCanvas    = document.getElementById('pdfCanvas'); // canvas „base" (não usado após refactor)
-const closeBtn     = document.getElementById('closePdfBtn');
-const ctx          = pdfCanvas.getContext('2d');
-
-// Fechar visualizador de PDF
-closeBtn.onclick = () => { pdfContainer.style.display = 'none'; };
-
-// Navegação de retorno (voltar para lista anterior)
-backBtn.onclick = () => {
-  if (currentSub) showSubjects(currentDisc);
-  else            showMenu();
+backBtn.onclick=()=>{
+  if(currentSub)showSubjects(currentDisc);
+  else showMenu();
 };
 
-/* ------------------------------------------------------------------
- * 4.  FUNÇÕES UTILITÁRIAS GERAIS
- * ----------------------------------------------------------------*/
-
-/** Limpa tela ativa. */
-function clear () {
-  app.innerHTML = '';
+function clear(){app.innerHTML='';}
+function updateHeader(show,title){
+  header.style.display=show?'flex':'none';
+  backBtn.style.visibility=title?'visible':'hidden';
+  headerTitle.textContent=title||'';
 }
+function updateStar(el,st){el.className='star state-'+st;}
 
-/**
- * Atualiza cabeçalho superior.
- * @param {boolean} show − exibe ou oculta header
- * @param {string}  title − texto exibido ao centro
- */
-function updateHeader (show, title) {
-  header.style.display   = show ? 'flex' : 'none';
-  backBtn.style.visibility = title ? 'visible' : 'hidden';
-  headerTitle.textContent  = title || '';
-}
-
-/**
- * Define classe CSS da estrela conforme estado (0 a 4)
- */
-function updateStar (el, st) {
-  el.className = 'star state-' + st;
-}
-
-/* ------------------------------------------------------------------
- * 5.  TELA PRINCIPAL (MENU) – escolha da disciplina
- * ----------------------------------------------------------------*/
-
-function showMenu () {
-  // Resetar contexto
-  currentDisc = null;
-  currentSub  = null;
-  updateHeader(false, '');
+function showMenu(){
+  currentDisc=null; currentSub=null;
+  updateHeader(false,'');
   clear();
 
-  /* ---------- Bloco de introdução com personagem --------------*/
-  const intro = document.createElement('div');
-  intro.className = 'intro-block';
-
-  const img = document.createElement('img');
-  img.src   = 'arcano_newtonius.png';
-  img.alt   = 'Arcano Newtonius';
-  img.className = 'intro-img';
+  /* Intro */
+  const intro=document.createElement('div'); intro.className='intro-block';
+  const img=document.createElement('img'); img.src='arcano_newtonius.png'; img.alt='Arcano Newtonius'; img.className='intro-img';
   intro.appendChild(img);
-
-  const txt = document.createElement('div');
-  txt.className = 'intro-text';
-  txt.innerHTML = `
+  const txt=document.createElement('div'); txt.className='intro-text';
+  txt.innerHTML=`
     <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br>
     <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br>
     Guardião dos segredos do universo, mestre dos elementos e das equações, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br>
@@ -474,180 +356,126 @@ function showMenu () {
   intro.appendChild(txt);
   app.appendChild(intro);
 
-  /* ---------- Linhas com disciplinas e estrelas --------------*/
-  const lines = document.createElement('div');
-  lines.className = 'metacog-lines';
-
-  Object.keys(questoesData).forEach(disc => {
-    const line = document.createElement('div');
-    line.className = 'disc-line';
-
-    // Botão da disciplina
-    const btn = document.createElement('button');
-    btn.className = 'disc-btn ' + discClasses[disc];
-    btn.textContent = disc;
-    btn.onclick = () => showSubjects(disc);
+  /* Linhas de disciplinas */
+  const lines=document.createElement('div'); lines.className='metacog-lines';
+  Object.keys(questoesData).forEach(disc=>{
+    const line=document.createElement('div'); line.className='disc-line';
+    const btn=document.createElement('button'); btn.className='disc-btn '+discClasses[disc]; btn.textContent=disc; btn.onclick=()=>showSubjects(disc);
     line.appendChild(btn);
-
-    // Contêiner com estrelas (um por assunto)
-    const starsContainer = document.createElement('div');
-    starsContainer.className = 'stars-container';
-
-    const subs = Object.keys(questoesData[disc]).sort();
-    subs.forEach(sub => {
-      const star = document.createElement('span');
-      star.className = 'star';
-
-      // Pequeno índice dentro da estrela (número do assunto)
-      const idxSpan = document.createElement('span');
-      idxSpan.className = 'star-index';
-      idxSpan.textContent = sub;
+    const starsContainer=document.createElement('div'); starsContainer.className='stars-container';
+    const subs=Object.keys(questoesData[disc]).sort();
+    subs.forEach(sub=>{
+      const star=document.createElement('span'); star.className='star';
+      const idxSpan=document.createElement('span'); idxSpan.className='star-index'; idxSpan.textContent=sub;
       star.appendChild(idxSpan);
-
-      const key = `star_${disc}_${sub}`;
-      let st = parseInt(localStorage.getItem(key), 10) || 0;
-      updateStar(star, st);
-
-      // Alternar estado da estrela (0 → 4)
-      star.onclick = () => {
-        st = (st + 1) % 5;
-        localStorage.setItem(key, st);
-        updateStar(star, st);
-      };
+      const key=`star_${disc}_${sub}`;
+      let st=parseInt(localStorage.getItem(key),10)||0;
+      updateStar(star,st);
+      star.onclick=()=>{st=(st+1)%5; localStorage.setItem(key,st); updateStar(star,st);};
       starsContainer.appendChild(star);
     });
-
     line.appendChild(starsContainer);
     lines.appendChild(line);
   });
   app.appendChild(lines);
 
-  /* ---------- Botões Exportar / Importar ---------------------*/
-  const exportBtn = document.createElement('button');
-  exportBtn.textContent = 'Exportar backup';
-  exportBtn.onclick = exportData;
+  /* Export / Import */
+  const exportBtn=document.createElement('button');
+  exportBtn.textContent='Exportar backup';
+  exportBtn.onclick=exportData;
   app.appendChild(exportBtn);
 
-  const importBtn = document.createElement('button');
-  importBtn.textContent = 'Importar backup';
-  importBtn.onclick = () => importFile.click();
+  const importBtn=document.createElement('button');
+  importBtn.textContent='Importar backup';
+  importBtn.onclick=()=>importFile.click();
   app.appendChild(importBtn);
 }
 
-/* ------------------------------------------------------------------
- * 6.  LISTA DE ASSUNTOS DE UMA DISCIPLINA
- * ----------------------------------------------------------------*/
-
-function showSubjects (disc) {
-  currentDisc = disc;
-  currentSub  = null;
-  updateHeader(true, disc);
+function showSubjects(disc){
+  currentDisc=disc; currentSub=null;
+  updateHeader(true,disc);
   clear();
 
-  // Elemento que exibe estatísticas de desempenho na disciplina
-  const statDiv = document.createElement('div');
-  statDiv.className = 'stat';
+  const statDiv=document.createElement('div'); statDiv.className='stat';
   app.appendChild(statDiv);
 
-  /** Atualiza estatísticas (acertos / respondidas / total) */
-  function updateDiscStats () {
-    const subs = Object.keys(questoesData[disc]);
-    let total = 0, correct = 0, answered = 0;
-
-    subs.forEach(sub => {
-      const qs = questoesData[disc][sub] || [];
-      total += qs.length;
-      qs.forEach((_, i) => {
-        const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
-        if (st === 1) correct++;
-        if (st === 1 || st === 2) answered++;
+  function updateDiscStats(){
+    const subs=Object.keys(questoesData[disc]);
+    let total=0, correct=0, answered=0;
+    subs.forEach(sub=>{
+      const qs=questoesData[disc][sub]||[];
+      total+=qs.length;
+      qs.forEach((_,i)=>{
+        const st=parseInt(localStorage.getItem(`${disc}_${sub}_${i}`),10);
+        if(st===1)correct++;
+        if(st===1||st===2)answered++;
       });
     });
-
-    const pct = answered ? (correct / answered * 100) : 0;
-    statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
-    statDiv.className = 'stat ' +
-      (pct >= 90 ? 'blue' : pct >= 80 ? 'green' : pct >= 50 ? 'orange' : 'red');
+    const pct=answered?(correct/answered*100):0;
+    statDiv.textContent=`Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
+    statDiv.className='stat '+
+      (pct>=90?'blue': pct>=80?'green': pct>=50?'orange':'red');
   }
   updateDiscStats();
 
-  // Gerar um botão para cada assunto
-  Object.keys(questoesData[disc]).sort().forEach(sub => {
-    const btn = document.createElement('button');
-    btn.textContent = `Assunto ${sub}`;
-    btn.onclick = () => showQuestions(disc, sub);
+  Object.keys(questoesData[disc]).sort().forEach(sub=>{
+    const btn=document.createElement('button');
+    btn.textContent=`Assunto ${sub}`;
+    btn.onclick=()=>showQuestions(disc,sub);
     app.appendChild(btn);
   });
 }
 
-/* ------------------------------------------------------------------
- * 7.  LISTA DE QUESTÕES DE UM ASSUNTO
- * ----------------------------------------------------------------*/
-
-function showQuestions (disc, sub) {
-  currentDisc = disc;
-  currentSub  = sub;
-  updateHeader(true, `${disc} - Assunto ${sub}`);
+function showQuestions(disc,sub){
+  currentDisc=disc; currentSub=sub;
+  updateHeader(true,`${disc} - Assunto ${sub}`);
   clear();
 
-  const statDiv = document.createElement('div');
-  statDiv.className = 'stat';
+  const statDiv=document.createElement('div'); statDiv.className='stat';
   app.appendChild(statDiv);
 
-  /** Atualiza estatísticas do assunto atual */
-  function updateStats () {
-    const qs = questoesData[disc][sub] || [];
-    const total = qs.length;
-    let correct = 0, answered = 0;
-
-    qs.forEach((_, i) => {
-      const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
-      if (st === 1) correct++;
-      if (st === 1 || st === 2) answered++;
+  function updateStats(){
+    const qs=questoesData[disc][sub]||[];
+    const total=qs.length;
+    let correct=0,answered=0;
+    qs.forEach((_,i)=>{
+      const st=parseInt(localStorage.getItem(`${disc}_${sub}_${i}`),10);
+      if(st===1)correct++;
+      if(st===1||st===2)answered++;
     });
-
-    const pct = answered ? (correct / answered * 100) : 0;
-    statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
-    statDiv.className = 'stat ' +
-      (pct >= 90 ? 'blue' : pct >= 80 ? 'green' : pct >= 50 ? 'orange' : 'red');
+    const pct=answered?(correct/answered*100):0;
+    statDiv.textContent=`Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
+    statDiv.className='stat '+
+      (pct>=90?'blue': pct>=80?'green': pct>=50?'orange':'red');
   }
   updateStats();
 
-  // Renderizar cada questão
-  (questoesData[disc][sub] || []).forEach((q, idx) => {
-    const row = document.createElement('div');
-    row.className = 'question-row';
+  (questoesData[disc][sub]||[]).forEach((q,idx)=>{
+    const row=document.createElement('div'); row.className='question-row';
 
-    /* Botão para abrir enunciado (PDF) */
-    const qBtn = document.createElement('button');
-    qBtn.textContent = q.label;
-    qBtn.style.flex = '1';
-    qBtn.onclick = () => openPdf(q.QPDFName, q.page);
+    const qBtn=document.createElement('button');
+    qBtn.textContent=q.label;
+    qBtn.style.flex='1';
+    qBtn.onclick=()=>openPdf(q.QPDFName,q.page);
     row.appendChild(qBtn);
 
-    /* Botão para abrir gabarito (PDF) */
-    const gBtn = document.createElement('button');
-    gBtn.textContent = 'Gabarito';
-    gBtn.className = 'small-btn';
-    gBtn.onclick = () => openPdf(q.GPDFName, q.gabaritoPage);
+    const gBtn=document.createElement('button');
+    gBtn.textContent='Gabarito';
+    gBtn.className='small-btn';
+    gBtn.onclick=()=>openPdf(q.GPDFName,q.gabaritoPage);
     row.appendChild(gBtn);
 
-    /* Caixa de estado (✓, ✗, vazio) */
-    const key = `${disc}_${sub}_${idx}`;
-    const box = document.createElement('span');
-    box.className = 'state-box';
-    let st = parseInt(localStorage.getItem(key), 10) || 0; // 0=sem resposta, 1=acertou, 2=errou
-
-    function renderBox () {
-      box.textContent = st === 1 ? '✓' : st === 2 ? '✗' : '';
-      box.style.color = st === 1 ? 'green' : st === 2 ? 'red' : '#f0f0f0';
+    const key=`${disc}_${sub}_${idx}`;
+    const box=document.createElement('span'); box.className='state-box';
+    let st=parseInt(localStorage.getItem(key),10)||0;
+    function renderBox(){
+      box.textContent=st===1?'✓': st===2?'✗':'';
+      box.style.color=st===1?'green': st===2?'red':'#f0f0f0';
     }
     renderBox();
-
-    // Alternar status da questão (0 → 1 → 2 → 0)
-    box.onclick = () => {
-      st = (st + 1) % 3;
-      localStorage.setItem(key, st);
+    box.onclick=()=>{
+      st=(st+1)%3;
+      localStorage.setItem(key,st);
       renderBox();
       updateStats();
     };
@@ -657,52 +485,37 @@ function showQuestions (disc, sub) {
   });
 }
 
-/* ------------------------------------------------------------------
- * 8.  VISUALIZAÇÃO DE PDF (usando PDF.js)
- * ----------------------------------------------------------------*/
+/* PDF loader + render  (igual ao seu) */
+async function openPdf(pdfName,pages,quality=2,zoom=1.75){
+  const pageNums=Array.isArray(pages)?pages:[pages];
+  pdfContainer.style.display='flex';
+  pdfContainer.querySelectorAll('canvas').forEach(c=>c.remove());
+  const pdf=await pdfjsLib.getDocument(pdfName).promise;
+  const dpr=window.devicePixelRatio||1;
+  const renderScale=quality*dpr*zoom;
 
-/**
- * Abre e renderiza um ou vários números de página de um PDF.
- * @param {string} pdfName   – caminho para o arquivo PDF
- * @param {number|number[]} pages – nº(s) da(s) página(s) a carregar
- * @param {number} [quality=2] – fator de qualidade (1=baixa, 2=padrão, 3=alta)
- * @param {number} [zoom=1.75] – zoom CSS aplicado ao canvas gerado
- */
-async function openPdf (pdfName, pages, quality = 2, zoom = 1.75) {
-  const pageNums = Array.isArray(pages) ? pages : [pages];
+  for(const num of pageNums){
+    const page=await pdf.getPage(num);
+    const viewport=page.getViewport({scale:renderScale});
 
-  pdfContainer.style.display = 'flex';
-  pdfContainer.querySelectorAll('canvas').forEach(c => c.remove()); // limpar renderizações antigas
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
+    canvas.width=viewport.width;
+    canvas.height=viewport.height;
 
-  const pdf = await pdfjsLib.getDocument(pdfName).promise;
-  const dpr = window.devicePixelRatio || 1;
-  const renderScale = quality * dpr * zoom;
-
-  for (const num of pageNums) {
-    const page = await pdf.getPage(num);
-    const viewport = page.getViewport({ scale: renderScale });
-
-    // Criar canvas dedicado a esta página
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width  = viewport.width;
-    canvas.height = viewport.height;
-
-    // Tamanho CSS (divide pelo quality*dpr p/ ficar nítido em telas retina)
-    const cssDivisor = quality * dpr;
-    canvas.style.width  = viewport.width  / cssDivisor + 'px';
-    canvas.style.height = viewport.height / cssDivisor + 'px';
-    canvas.style.maxWidth = '100%';
-    canvas.style.margin   = '16px 0';
+    const cssDivisor=quality*dpr;
+    canvas.style.width =viewport.width /cssDivisor+'px';
+    canvas.style.height=viewport.height/cssDivisor+'px';
+    canvas.style.maxWidth='100%';
+    canvas.style.margin='16px 0';
     pdfContainer.appendChild(canvas);
 
-    // Renderizar conteúdo da página no canvas
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    await page.render({canvasContext:ctx,viewport}).promise;
   }
 }
 
-/* ------------------------------------------------------------------
- * 9.  INICIALIZAÇÃO DA APLICAÇÃO
- * ----------------------------------------------------------------*/
-
-showMenu(); // ponto de entrada padrão
+/* Start app */
+showMenu();
+    </script>
+</body>
+</html>
