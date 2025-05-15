@@ -341,7 +341,14 @@
     Física:     ['Mecânica', 'Óptica', /* … */],
     Matemática: ['Funções', 'Probabilidade', /* … */],
   };
-
+    
+/* ---------- Função para obter nome amigável ---------- */
+function getFriendlyName(disc, sub) {
+  const list = SUBJECT_NAMES[disc] || [];
+  const idx  = parseInt(sub, 10) - 1;   // "01" → 0
+  return list[idx] ?? `Assunto ${sub}`;
+  
+}
     /* ---------- Build banco ---------- */
     function buildBancoQuestoes(listaFlat) {
       const banco = {};
@@ -565,7 +572,7 @@
         .sort()
         .forEach((sub) => {
           const btn = document.createElement("button");
-          btn.textContent = `Assunto ${sub}`;
+          btn.textContent = getFriendlyName(disc, sub);
           btn.onclick = () => showQuestions(disc, sub);
           app.appendChild(btn);
         });
@@ -575,7 +582,7 @@
     function showQuestions(disc, sub) {
       currentDisc = disc;
       currentSub = sub;
-      updateHeader(true, `${disc} - Assunto ${sub}`);
+      updateHeader(true, `${disc} - ${getFriendlyName(disc, sub)}`);
       clear();
 
       const statDiv = document.createElement("div");
