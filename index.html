@@ -190,7 +190,17 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            overflow-y: auto; 
         }
+        .pageWrapper {
+  position: relative;        /* para posicionar o textLayer sobre o canvas */
+  margin: 16px 0;
+}
+.textLayer {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;      /* deixa os cliques “passarem” para o canvas, mas o texto continua selecionável */
+}
         #pdfCanvas {
             max-width: 100%;
             max-height: 80%;
@@ -458,31 +468,53 @@
             });
         }
 
-    async function openPdf(pdfName, pages) {
-  // garante que pages seja sempre array
-      const pageNums = Array.isArray(pages) ? pages : [pages];
+async function openPdf(pdfName, pageNums) {
+  const nums = Array.isArray(pageNums) ? pageNums : [pageNums];
+  pdfContainer.style.display = 'flex';
+  pdfContainer.querySelectorAll('.pageWrapper').forEach(w => w.remove());
 
-  // mostra o container e limpa canvases anteriores
-      pdfContainer.style.display = 'flex';
-      pdfContainer.querySelectorAll('canvas').forEach(c => c.remove());
+  const loadingTask = pdfjsLib.getDocument(pdfName);
+  const pdf = await loadingTask.promise;
 
-  // carrega o documento
-      const loadingTask = pdfjsLib.getDocument(pdfName);
-      const pdf = await loadingTask.promise;
+  const dpr = window.devicePixelRatio || 1;
+  const baseScale = 1.5;
 
-  // para cada página solicitada, cria um canvas e renderiza
-      for (let num of pageNums) {
-        const pdfPage = await pdf.getPage(num);
-        const viewport = pdfPage.getViewport({ scale: 1.5 });
+  for (let num of nums) {
+    const pdfPage = await pdf.getPage(num);
+    const viewport = pdfPage.getViewport({ scale: baseScale * dpr });
 
-        const canvas = document.createElement('canvas');
-        canvas.width  = viewport.width;
-        canvas.height = viewport.height;
-        canvas.style.margin = '16px 0';           // espaçamento entre páginas
-        pdfContainer.appendChild(canvas);
+    // wrapper relativo
+    const wrapper = document.createElement('div');
+    wrapper.className = 'pageWrapper';
+    pdfContainer.appendChild(wrapper);
 
-        const ctx = canvas.getContext('2d');
-        await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+    // 1) canvas rasterizado
+    const canvas = document.createElement('canvas');
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+    // mantém o tamanho visual ajustado ao DPR
+    canvas.style.width  = `${viewport.width / dpr}px`;
+    canvas.style.height = `${viewport.height / dpr}px`;
+    wrapper.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+
+    // 2) text layer vetorial
+    const textLayerDiv = document.createElement('div');
+    textLayerDiv.className = 'textLayer';
+    textLayerDiv.style.width  = canvas.style.width;
+    textLayerDiv.style.height = canvas.style.height;
+    wrapper.appendChild(textLayerDiv);
+
+    const textContent = await pdfPage.getTextContent();
+    pdfjsLib.renderTextLayer({
+      textContent,
+      container: textLayerDiv,
+      viewport,
+      textDivs: []
+    });
   }
 }
 
