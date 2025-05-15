@@ -459,42 +459,42 @@
             });
         }
 
-async function openPdf(pdfName, pages) {
+async function openPdf(pdfName, pages, quality = 2) {               // 🔵 quality = fator de nitidez
   const pageNums = Array.isArray(pages) ? pages : [pages];
+
   pdfContainer.style.display = 'flex';
   pdfContainer.querySelectorAll('canvas').forEach(c => c.remove());
 
   const loadingTask = pdfjsLib.getDocument(pdfName);
-  const pdf      = await loadingTask.promise;
+  const pdf = await loadingTask.promise;
 
-  for (let num of pageNums) {
+  for (const num of pageNums) {
     const pdfPage = await pdf.getPage(num);
 
-    // 1) escala “normal” que você quer ver (por ex. 1.5)
-    const baseScale = 1.5;
-    // 2) pega viewport com essa escala
-    const viewport = pdfPage.getViewport({ scale: baseScale });
-    // 3) quantos pixels reais por CSS-pixel
-    const outputScale = window.devicePixelRatio || 1;
+    // 🔵 1. combine “quality” com o devicePixelRatio da tela
+    const deviceRatio = window.devicePixelRatio || 1;
+    const scale = quality * deviceRatio;
 
-    // 4) canvas em alta-resolução
+    const viewport = pdfPage.getViewport({ scale });
+
     const canvas = document.createElement('canvas');
-    canvas.width  = Math.floor(viewport.width  * outputScale);
-    canvas.height = Math.floor(viewport.height * outputScale);
-    // 5) mas exibido no tamanho “normal” em CSS
-    canvas.style.width  = Math.floor(viewport.width)  + 'px';
-    canvas.style.height = Math.floor(viewport.height) + 'px';
+    const ctx     = canvas.getContext('2d');
+
+    // 🔵 2. tamanho REAL do bitmap
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+
+    // 🔵 3. tamanho VISUAL (CSS) — divide pelo scale
+    canvas.style.width  = viewport.width  / scale + 'px';
+    canvas.style.height = viewport.height / scale + 'px';
     canvas.style.margin = '16px 0';
+
     pdfContainer.appendChild(canvas);
 
-    // 6) prepara o contexto com a escala de devicePixelRatio
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(outputScale, 0, 0, outputScale, 0, 0);
-
-    // 7) renderiza usando o viewport original (baseScale)
     await pdfPage.render({ canvasContext: ctx, viewport }).promise;
   }
 }
+
 
         // Inicia a aplicação
         showMenu();
