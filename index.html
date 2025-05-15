@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -30,22 +31,21 @@
       background: #1e1e1e;
       color: #f0f0f0;
       border: none;
-      padding: 12px 16px;
+      padding: 12px 20px;
       margin: 8px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
       display: block;
-      width: 220px;
+      width: 240px;
       text-align: center;
       box-sizing: border-box;
     }
     .small-btn {
-      padding: 12px 12px;
+      padding: 8px 12px;
       font-size: 14px;
       display: inline-block;
       margin: 0 8px;
-      width: 100px;
     }
     /* Botões de assunto ocupam toda a largura */
     .subject-btn {
@@ -110,7 +110,7 @@
       border-radius: 4px;
       margin-left: 8px;
       margin-top: 4px;
-      width: 300px;
+      width: 240px;
       box-sizing: border-box;
       font-size: 14px;
     }
@@ -326,7 +326,7 @@
   function getFriendlyName(disc, sub) {
     const list = SUBJECT_NAMES[disc] || [];
     const idx  = parseInt(sub, 10) - 1;   // "01" → 0
-    return list[idx] ?? Assunto ${sub};
+    return list[idx] ?? `Assunto ${sub}`;
   }
 
   /* ---------- Build banco ---------- */
@@ -450,7 +450,7 @@
 
     const txt = document.createElement("div");
     txt.className = "intro-text";
-    txt.innerHTML = 
+    txt.innerHTML = `
       <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br />
       <p>
         Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da
@@ -460,7 +460,7 @@
       <p>
         Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo da
         montanha: a vaga dos teus sonhos!
-      </p>;
+      </p>`;
     intro.appendChild(txt);
     app.appendChild(intro);
 
@@ -488,7 +488,7 @@
         idx.textContent = sub;
         star.appendChild(idx);
 
-        const key = star_${disc}_${sub};
+        const key = `star_${disc}_${sub}`;
         let st = parseInt(localStorage.getItem(key), 10) || 0;
         updateStar(star, st);
 
@@ -536,13 +536,13 @@
         const qs = questoesData[disc][sub] || [];
         total += qs.length;
         qs.forEach((_, i) => {
-          const st = parseInt(localStorage.getItem(${disc}_${sub}_${i}), 10);
+          const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
           if (st === 1) correct++;
           if (st === 1 || st === 2) answered++;
         });
       });
       const pct = answered ? (correct / answered) * 100 : 0;
-      statDiv.textContent = Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%);
+      statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
       statDiv.className =
         answered === 0
           ? "stat neutral"
@@ -565,7 +565,7 @@
   function showQuestions(disc, sub) {
     currentDisc = disc;
     currentSub = sub;
-    updateHeader(true, ${disc} - ${getFriendlyName(disc, sub)});
+    updateHeader(true, `${disc} - ${getFriendlyName(disc, sub)}`);
     clear();
 
     const statDiv = document.createElement("div");
@@ -578,12 +578,12 @@
       let correct = 0,
         answered = 0;
       qs.forEach((_, i) => {
-        const st = parseInt(localStorage.getItem(${disc}_${sub}_${i}), 10);
+        const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
         if (st === 1) correct++;
         if (st === 1 || st === 2) answered++;
       });
       const pct = answered ? (correct / answered) * 100 : 0;
-      statDiv.textContent = Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%);
+      statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
       statDiv.className =
         answered === 0
           ? "stat neutral"
@@ -610,7 +610,7 @@
       row.appendChild(gBtn);
 
       // caixa acerto/erro
-      const key = ${disc}_${sub}_${idx};
+      const key = `${disc}_${sub}_${idx}`;
       const box = document.createElement("span");
       box.className = "state-box";
       let st = parseInt(localStorage.getItem(key), 10) || 0;
@@ -628,7 +628,7 @@
       row.appendChild(box);
 
       // ------ Comentário ------
-      const commentKey = comment_${disc}_${sub}_${idx};
+      const commentKey = `comment_${disc}_${sub}_${idx}`;
       const commentInput = document.createElement("input");
       commentInput.type = "text";
       commentInput.placeholder = "Comentário (opcional)";
