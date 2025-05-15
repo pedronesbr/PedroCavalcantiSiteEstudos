@@ -458,17 +458,33 @@
             });
         }
 
-        async function openPdf(pdfName, page) {
-            pdfContainer.style.display = 'flex';
-            const url = pdfName;
-            const loadingTask = pdfjsLib.getDocument(url);
-            const pdf = await loadingTask.promise;
-            const pdfPage = await pdf.getPage(page);
-            const viewport = pdfPage.getViewport({ scale: 1.5 });
-            pdfCanvas.width = viewport.width;
-            pdfCanvas.height = viewport.height;
-            await pdfPage.render({ canvasContext: ctx, viewport }).promise;
-        }
+    async function openPdf(pdfName, pages) {
+  // garante que pages seja sempre array
+      const pageNums = Array.isArray(pages) ? pages : [pages];
+
+  // mostra o container e limpa canvases anteriores
+      pdfContainer.style.display = 'flex';
+      pdfContainer.querySelectorAll('canvas').forEach(c => c.remove());
+
+  // carrega o documento
+      const loadingTask = pdfjsLib.getDocument(pdfName);
+      const pdf = await loadingTask.promise;
+
+  // para cada página solicitada, cria um canvas e renderiza
+      for (let num of pageNums) {
+        const pdfPage = await pdf.getPage(num);
+        const viewport = pdfPage.getViewport({ scale: 1.5 });
+
+        const canvas = document.createElement('canvas');
+        canvas.width  = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.margin = '16px 0';           // espaçamento entre páginas
+        pdfContainer.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+  }
+}
 
         // Inicia a aplicação
         showMenu();
