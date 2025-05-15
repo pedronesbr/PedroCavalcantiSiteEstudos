@@ -463,7 +463,7 @@
  * quality  → pixels extras para nitidez     (1 = sem extra, 2 = muito bom)
  * zoom     → quanto você quer “engordar”    (1 = largura original, 1.3 = +30 %)
  */
-async function openPdf(pdfName, pages, quality = 2, zoom = 1.5) {
+async function openPdf(pdfName, pages, quality = 2, zoom = 1.75) {
   const pageNums = Array.isArray(pages) ? pages : [pages];
 
   pdfContainer.style.display = 'flex';
