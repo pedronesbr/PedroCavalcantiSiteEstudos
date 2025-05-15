@@ -42,9 +42,9 @@
       box-sizing: border-box;
     }
     .small-btn {
-      padding: 8px 12px;
-      font-size: 14px;
-      width: 100px;
+      padding: 12px 12px;
+      font-size: 16px;
+      width: 90px;
     }
     /* Botões de assunto ocupam toda a largura */
     .subject-btn {
@@ -95,7 +95,7 @@
       align-items: center;
       justify-content: center;
       border: 2px solid #f0f0f0;
-      margin-left: 8px;
+      margin-left: 6px;
       cursor: pointer;
       font-size: 18px;
     }
@@ -103,13 +103,13 @@
     /* ===== Caixa de comentário ===== */
     .comment-input {
       background: #1e1e1e;
-      color: #f0f0f0;
+      color: #888;
       border: 1px solid #444;
-      padding: 6px 8px;
+      padding: 8px 8px;
       border-radius: 4px;
-      margin-left: 8px;
-      margin-top: 4px;
-      width: 240px;
+      margin-left: 15px;
+      margin-top: 0px;
+      width: 400px;
       box-sizing: border-box;
       font-size: 14px;
     }
@@ -181,10 +181,10 @@
       box-sizing: border-box;
       margin-right: 0;
     }
-    .disc-btn.biologia   { background: #4e9302; }
-    .disc-btn.quimica    { background: #1cc9e7; }
-    .disc-btn.fisica     { background: #ca09ee; }
-    .disc-btn.matematica { background: #f9d01a; }
+    .disc-btn.biologia   { background: #7ED956; }
+    .disc-btn.quimica    { background: #0CC1E0; }
+    .disc-btn.fisica     { background: #8C52FF; }
+    .disc-btn.matematica { background: #FFDE59; }
 
     /* ===== Estrela com índice ===== */
     .star {
@@ -195,7 +195,7 @@
     }
     .star::before {
       content: "★";
-      font-size: 35px;
+      font-size: 40px;
       display: block;
       text-align: center;
       pointer-events: none;
@@ -210,7 +210,7 @@
       pointer-events: none;
     }
 
-    /* Ordem de cores corrigida: preto → vermelho → laranja → verde → azul */
+    /* Ordem de cores: preto → vermelho → laranja → verde → azul */
     .state-0 { color: black;    }
     .state-1 { color: #ff0000;  }   /* vermelho */
     .state-2 { color: #ff580a;  }   /* laranja  */
@@ -315,10 +315,10 @@
 
   /* ---------- Nomes amigáveis ---------- */
   const SUBJECT_NAMES = {
-    Biologia:   ['Botânica', 'Citologia', 'Genética', /* … até 26 */],
-    Química:    ['Físico-química', 'Orgânica', /* … */],
-    Física:     ['Mecânica', 'Óptica', /* … */],
-    Matemática: ['Funções', 'Probabilidade', /* … */],
+    Biologia:   ['1. Ecologia Básica', '2. Ecologia Avançada', '3. Evolução', '4.  Impacto Ambiental', '5. Moléculas Orgânicas', '6. Transporte de Moléculas (Difusão e Osmose)', '7. Citologia', '8. Energia Celular', '9. Origem da Vida', '10. Bactérias (Procariontes), Algas e Fungos', '11 Filogenia e Indrução à Botânica', '12. Morfologia e Reprodução de Plantas', '13. Transporte de Seiva e de Sementes', '14. Invertebrados', '15. Parasitoses e Doenças Endêmicas', '16. Vertebrados e Conquista Terrestre', '17. Sistema Digestório, Endócrino e Excretor', '18. Sistema Reprodutor e Reprodução Humana', '19. Sistema Cardiorrespiratório e Sangue', '20. Sistema Nervoso e Musculoesquelético', '21. Estrutura do DNA e Dogma Central', '22. Genética', '23. Hereditariedade', '24. Genética Avançada', '25. Vírus e Imunidade', '26. Neoplasia e Farmacologia'],
+    Química:    ['1. Modelos Atômicos', '2. Camadas Eletrônicas', '3. Tabela Periódica', '4. Ligações Químicas', '5. Forças Intermoleculares', '6. Sistemas e Misturas', '7. Fórmulas Químicas', '8. Reações Químicas', '9. Ácidos e Bases', '10. Reações com Ácidos', '11. Sais e Óxidos', '12. Estequiometria', '13. Termoquímica', '14. Equilíbrio Químico', '15. Reação de Oxirredução', '16. Pilha', '17. Química Orgânica', '18. Cadeias Orgânicas', '19. Isomeria', '20. Reações Orgânicas', '21. Ciclos da Matéria', '22. Derivados do Petróleo', '23. Descarte de Materiais', '24. Reações Nucleares'],
+    Física:     ['1. Eletricidade', '2. Potencial Elétrico', '3. Eletrodinâmica Básica', '4. Eletrodinâmica Avançada', '5. Eletromagnetismo', '6. Óptica Básica', '7. Fenômenos Ópticos', '8. Óptica Avançada', '9. Ondulatória', '10. Ondulatória Avançada e Acústica', '11. Termologia', '12. Dilatação e Escalas de Temperatura', '13. Energia, Potência e Termodinâmica', '14. Estudo dos Gases', '15. Cinemática', '16. Momento Linear (Quantidade de Movimento)', '17. Dinâmica', '18. Gravitação', '19. Molas e Estática', '20. Hidrostática'],
+    Matemática: ['1. Matemática Básica', '2. Potenciação', '3. Porcentagem e Conversões', '4. Razão e Matemática Financeira', '5. Sistemas e Vazão', '6. Equação do 1º Grau', '7. Estatística Básica', '8. Progressões Matemáticas', '9. Equações do 2º Grau', '10. Outras Equações (Equação da Circunferência)', '11. Logaritmo', '12. Trigonometria (Ciclo Trigonométrico)', '13. Diagramas (Venn) e Mapas', '14. Análise de Gráficos', '15. Paralelogramos', '16. Triângulos', '17. Cículos e Projeção','18. Prismas e Pirâmides', '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'],
   };
 
   /* ---------- Função para obter nome amigável ---------- */
@@ -453,12 +453,13 @@
       <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br />
       <p>
         Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da
-        Matemática! Guardião dos segredos do universo, mestre dos elementos e das equações, e
+        Matemática! 
+        <br />
+        Guardião dos segredos do universo, e
         teu guia nesta jornada rumo à aprovação em Medicina no ENEM.
       </p><br />
       <p>
-        Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo da
-        montanha: a vaga dos teus sonhos!
+        Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo!
       </p>`;
     intro.appendChild(txt);
     app.appendChild(intro);
@@ -505,12 +506,12 @@
 
     // Backup
     const exportBtn = document.createElement("button");
-    exportBtn.textContent = "Exportar backup";
+    exportBtn.textContent = "Exportar";
     exportBtn.onclick = exportData;
     app.appendChild(exportBtn);
 
     const importBtn = document.createElement("button");
-    importBtn.textContent = "Importar backup";
+    importBtn.textContent = "Importar";
     importBtn.onclick = () => importFile.click();
     app.appendChild(importBtn);
   }
@@ -545,7 +546,7 @@
       statDiv.className =
         answered === 0
           ? "stat neutral"
-          : "stat " + (pct >= 90 ? "blue" : pct >= 80 ? "green" : pct >= 50 ? "orange" : "red");
+          : "stat " + (pct >= 90 ? "blue" : pct >= 80 ? "green" : pct >= 60 ? "orange" : "red");
     }
     updateDiscStats();
 
