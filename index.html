@@ -185,7 +185,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
-            display: flex;
+            display: center;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -474,7 +474,7 @@ async function openPdf(pdfName, pages) {
   // para cada página solicitada, cria um canvas e renderiza
   for (let num of pageNums) {
     const pdfPage = await pdf.getPage(num);
-    const viewport = pdfPage.getViewport({ scale: 2.5 });
+    const viewport = pdfPage.getViewport({ scale: 1.7 });
 
     const canvas = document.createElement('canvas');
     canvas.width  = viewport.width;
