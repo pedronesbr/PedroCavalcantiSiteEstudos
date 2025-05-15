@@ -17,7 +17,7 @@
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
     </script>
 
-    <!-- ================= CSS base ================= -->
+    <!-- ================= CSS original ================= -->
     <style>
         /* ===== Estilos Gerais ===== */
         body {
@@ -77,6 +77,7 @@
             align-items: center;
             margin-bottom: 8px;
             width: 100%;
+            max-width: 600px;
         }
         .state-box {
             width: 24px;
@@ -98,26 +99,17 @@
         .stat.green { color: #32cd32; }
         .stat.orange { color: #ff4500; }
         .stat.red { color: #ff0000; }
-        /* ===== Intro: mago + texto ===== */
         .intro-block {
             display: flex;
-            justify-content: center;   /* centraliza horizontalmente */
             align-items: flex-start;
             margin-bottom: 45px;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0 16px;
+            max-width: 1000px;
         }
         .intro-img {
             width: 240px;
             height: auto;
             margin-right: 24px;
             border-radius: 8px;
-            flex-shrink: 0;
-        }
-        .intro-text {
-            flex: 1;
-            min-width: 0;
         }
         .intro-text p {
             margin: 12px 0;
@@ -126,30 +118,24 @@
             color: #cccccc;
             line-height: 1.6;
         }
-        /* ===== Disciplinas + estrelas ===== */
+        /* ===== Ajuste para alinhar estrelas ===== */
         .metacog-lines {
-            display: flex;            /* agora flex para centralizar filhos */
+            display: block;
             flex-direction: column;
-            align-items: center;      /* centraliza linhas */
             width: 100%;
+            max-width: 970px;
             margin-bottom: 32px;
-            box-sizing: border-box;
-            padding: 0 16px;
         }
         .disc-line {
             display: grid;
             grid-template-columns: 220px auto;
             column-gap: 8px;
             align-items: center;
-            justify-content: center;  /* centraliza grade */
             margin-bottom: 8px;
-            width: auto;              /* encolhe ao conteúdo */
         }
         .stars-container {
             display: flex;
-            flex-wrap: wrap;          /* quebra se precisar */
-            justify-content: center;  /* centraliza linhas */
-            gap: 4px;
+            gap: 0px;
         }
         .disc-btn {
             width: 200px;
@@ -212,7 +198,7 @@
             overflow-y: auto;
         }
         #pdfCanvas {
-            width: 100%;
+            max-width: 100%;
             max-height: 80%;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
@@ -241,42 +227,21 @@
         }
     </style>
 
-    <!-- ======= Ajustes mobile adicionais ======= -->
+    <!-- ============= Ajuste mobile: texto abaixo da imagem ============= -->
     <style>
       @media (max-width: 768px) {
-        /* Texto abaixo da imagem */
         .intro-block {
           flex-direction: column;
           align-items: center;
           text-align: center;
         }
-        .intro-img {
-          margin: 0 0 24px 0;      /* margem somente embaixo no mobile */
-        }
         .intro-text {
-          margin-top: 0;
-        }
-
-        /* Disciplinas empilhadas com estrelas abaixo */
-        .disc-line {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-        }
-        .disc-btn {
-          width: 100%;
-          margin: 0;
-        }
-        .stars-container {
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 4px;
+          margin-top: 24px;
         }
       }
     </style>
 
-    <!-- ============= CSS responsivo extra (pode manter) ============= -->
+    <!-- ============= CSS responsivo extra (disciplinas/estrelas) ============= -->
     <link rel="stylesheet" href="home-style-update.css">
 </head>
 <body>
