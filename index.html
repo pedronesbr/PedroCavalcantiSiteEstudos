@@ -474,12 +474,11 @@ async function openPdf(pdfName, pages) {
   // para cada página solicitada, cria um canvas e renderiza
   for (let num of pageNums) {
     const pdfPage = await pdf.getPage(num);
-    const viewport = pdfPage.getViewport({ scale: 1.5 });
+    const viewport = pdfPage.getViewport({ scale: 2.5 });
 
     const canvas = document.createElement('canvas');
     canvas.width  = viewport.width;
     canvas.height = viewport.height;
-    canvas.style.margin = '16px 0';           // espaçamento entre páginas
     pdfContainer.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
