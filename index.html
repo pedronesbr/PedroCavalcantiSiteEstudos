@@ -459,41 +459,46 @@
             });
         }
 
-async function openPdf(pdfName, pages, quality = 2) {               // 🔵 quality = fator de nitidez
+/**
+ * quality  → pixels extras para nitidez     (1 = sem extra, 2 = muito bom)
+ * zoom     → quanto você quer “engordar”    (1 = largura original, 1.3 = +30 %)
+ */
+async function openPdf(pdfName, pages, quality = 2, zoom = 1.25) {
   const pageNums = Array.isArray(pages) ? pages : [pages];
 
   pdfContainer.style.display = 'flex';
   pdfContainer.querySelectorAll('canvas').forEach(c => c.remove());
 
-  const loadingTask = pdfjsLib.getDocument(pdfName);
-  const pdf = await loadingTask.promise;
+  const pdf = await pdfjsLib.getDocument(pdfName).promise;
+  const dpr = window.devicePixelRatio || 1;           // densidade da tela
+  const renderScale = quality * dpr * zoom;           // pixels internos
 
   for (const num of pageNums) {
-    const pdfPage = await pdf.getPage(num);
-
-    // 🔵 1. combine “quality” com o devicePixelRatio da tela
-    const deviceRatio = window.devicePixelRatio || 1;
-    const scale = quality * deviceRatio;
-
-    const viewport = pdfPage.getViewport({ scale });
+    const page     = await pdf.getPage(num);
+    const viewport = page.getViewport({ scale: renderScale });
 
     const canvas = document.createElement('canvas');
-    const ctx     = canvas.getContext('2d');
+    const ctx    = canvas.getContext('2d');
 
-    // 🔵 2. tamanho REAL do bitmap
+    // bitmap (pixels reais)
     canvas.width  = viewport.width;
     canvas.height = viewport.height;
 
-    // 🔵 3. tamanho VISUAL (CSS) — divide pelo scale
-    canvas.style.width  = viewport.width  / scale + 'px';
-    canvas.style.height = viewport.height / scale + 'px';
-    canvas.style.margin = '16px 0';
+    // tamanho visível: “zoom” vezes mais largo
+    const cssDivisor = quality * dpr;                 // só qualidade, sem zoom
+    canvas.style.width  = viewport.width  / cssDivisor + 'px';
+    canvas.style.height = viewport.height / cssDivisor + 'px';
 
+    // garante que nunca ultrapasse a largura da janela (opcional)
+    canvas.style.maxWidth = '100%';
+
+    canvas.style.margin = '16px 0';
     pdfContainer.appendChild(canvas);
 
-    await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+    await page.render({ canvasContext: ctx, viewport }).promise;
   }
 }
+
 
 
         // Inicia a aplicação
