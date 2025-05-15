@@ -6,7 +6,7 @@
       // cada assunto é uma string com 2 dígitos (para manter a ordem e o padding)
       '01': [
         // array de objetos-questão, cada um com label, page e gabaritoPage
-        {label: 'SAS-2021-1-Q-109', QPDFName: 'SAS_2021_1_Nat.pdf', page: [7], GPDFName: 'SAS_2021_1_Nat_Gabarito.pdf', gabaritoPage: [19][20]},
+        {label: 'SAS-2021-1-Q-109', QPDFName: 'SAS_2021_1_Nat.pdf', page: [7], GPDFName: 'SAS_2021_1_Nat_Gabarito.pdf', gabaritoPage: [19, 20]},
         { label: 'SAS-202N-O-Q-X', page: 1,  gabaritoPage: 1  },
         { label: 'SAS-202N-O-Q-X', page: 1,  gabaritoPage: 1  },
         { label: 'SAS-202N-O-Q-X', page: 1,  gabaritoPage: 1  },
