@@ -201,7 +201,7 @@
     }
     .star .star-index {
       position: absolute;
-      top: 58%;
+      top: 54.5%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 0.5em;
@@ -259,6 +259,44 @@
       background: rgba(30, 30, 30, 0.9);
       transform: scale(1.1);
     }
+/* */
+    .subject-btn {
+  position: relative;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+/*faixa colorida da disciplina*/
+.subject-btn .subject-stripe {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 100%;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+/* badge de índice de incidência */
+.subject-badge-rect {
+  position: absolute;
+  top: 50%;
+  right: 20px;                /* 12px (faixa) + 4px de folga */
+  transform: translateY(-50%);/* centra vertical */
+  
+  display: flex;
+  align-items: center;        /* centra texto vertical */
+  justify-content: center;
+  
+  padding: 0 6px;             /* menos padding vertical */
+  height: 20px;               /* ajustar à altura desejada */
+  font-size: 14px;            /* reduz o tamanho da fonte */
+  line-height: normal;
+  
+  border-radius: 4px;
+  background: #3a3a3a;  /* cinza escuro suave */
+  color:    #cccccc;    /* cinza claro suave */
+  border:   1px solid #555; /* leve contorno para destacar */
+  z-index: 1;
+}
 
     /* ===== Mobile ajustes ===== */
     @media (max-width: 768px) {
@@ -514,51 +552,88 @@
     importBtn.onclick = () => importFile.click();
     app.appendChild(importBtn);
   }
-
+  const INCIDENCE_RANKINGS = {
+    Biologia: { "01": '17º', "02": '10º', "03": '6º', "04": '1º', "05": '25º', "06": '19º', "07": '21º', "08": '2º', "09": '26º', "10": '20º', "11": '23º', "12": '3º', "13": '13º', "14": '22º', "15": '18º', "16": '5º', "17": '7º', "18": '24º', "19": '16º', "20": '12º', "21": '9º', "22": '15º', "23": '4º', "24": '14º', "25": '8º', "26": '11º' },
+    Química: { "01": '23º', "02": '15º', "03": '17º', "04": '18º', "05": '7º', "06": '1º', "07": '24º', "08": '4º', "09": '5º', "10": '19º', "11": '13º', "12": '2º', "13": '22º', "14": '21º', "15": '8º', "16": '6º', "17": '12º', "18": '3º', "19": '20º', "20": '10º', "21": '14º', "22": '16º', "23": '11º', "24": '9º' },
+    Física: { "01": '13º', "02": '10º', "03": '1º', "04": '18º', "05": '7º', "06": '4º', "07": '15º', "08": '19º', "09": '8º', "10": '5º', "11": '2º', "12": '20º', "13": '6º', "14": '14º', "15": '3º', "16": '11º', "17": '9º', "18": '16º', "19": '12º', "20": '17º' },
+    Matemática: { "01": '7º', "02": '17º', "03": '1º', "04": '6º', "05": '3º', "06": '20º', "07": '2º', "08": '15º', "09": '12º', "10": '22º', "11": '16º', "12": '14º', "13": '19º', "14": '5º', "15": '18º', "16": '9º', "17": '4º', "18": '13º', "19": '10º', "20": '11º', "21": '8º', "22": '21º' }
+  };
   /* ---------------- ASSUNTOS ---------------- */
-  function showSubjects(disc) {
-    currentDisc = disc;
-    currentSub = null;
-    updateHeader(true, disc);
-    clear();
+function showSubjects(disc) {
+  currentDisc = disc;
+  currentSub = null;
+  updateHeader(true, disc);
+  clear();
 
-    const statDiv = document.createElement("div");
-    statDiv.className = "stat";
-    app.appendChild(statDiv);
+  // Estatísticas gerais da disciplina
+  const statDiv = document.createElement("div");
+  statDiv.className = "stat";
+  app.appendChild(statDiv);
 
-    function updateDiscStats() {
-      const subs = Object.keys(questoesData[disc]);
-      let total = 0,
-        correct = 0,
-        answered = 0;
-      subs.forEach((sub) => {
-        const qs = questoesData[disc][sub] || [];
-        total += qs.length;
-        qs.forEach((_, i) => {
-          const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
-          if (st === 1) correct++;
-          if (st === 1 || st === 2) answered++;
-        });
-      });
-      const pct = answered ? (correct / answered) * 100 : 0;
-      statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
-      statDiv.className =
-        answered === 0
-          ? "stat neutral"
-          : "stat " + (pct >= 90 ? "blue" : pct >= 80 ? "green" : pct >= 60 ? "orange" : "red");
-    }
-    updateDiscStats();
+  const subsList = Object.keys(questoesData[disc]);
+  let total = 0, correct = 0, answered = 0;
+  subsList.forEach((sub) => {
+    const qs = questoesData[disc][sub] || [];
+    total += qs.length;
+    qs.forEach((_, i) => {
+      const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
+      if (st === 1) correct++;
+      if (st === 1 || st === 2) answered++;
+    });
+  });
+  const pct = answered ? (correct / answered) * 100 : 0;
 
-    Object.keys(questoesData[disc])
-      .sort()
-      .forEach((sub) => {
-        const btn = document.createElement("button");
-        btn.className = "subject-btn";
-        btn.textContent = getFriendlyName(disc, sub);
-        btn.onclick = () => showQuestions(disc, sub);
-        app.appendChild(btn);
-      });
+  function updateDiscStats() {
+    const pctDisplay = answered ? (correct / answered) * 100 : 0;
+    statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pctDisplay.toFixed(1)}%)`;
+    statDiv.className =
+      answered === 0
+        ? "stat neutral"
+        : "stat " + (pctDisplay >= 90 ? "blue" : pctDisplay >= 80 ? "green" : pctDisplay >= 60 ? "orange" : "red");
   }
+  updateDiscStats();
+
+  // Cria botões de assunto com badge de incidência e faixa de rendimento
+  subsList.sort().forEach((sub) => {
+    // Estatísticas do assunto
+    const qs = questoesData[disc][sub] || [];
+    let correctSub = 0, answeredSub = 0;
+    qs.forEach((_, i) => {
+      const st = parseInt(localStorage.getItem(`${disc}_${sub}_${i}`), 10);
+      if (st === 1) correctSub++;
+      if (st === 1 || st === 2) answeredSub++;
+    });
+    const pctSub = answeredSub ? (correctSub / answeredSub) * 100 : 0;
+
+    // Cor da faixa baseada no rendimento do assunto
+    let tipColorSub;
+    if (answeredSub === 0)             tipColorSub = "#cccccc";
+    else if (pctSub >= 90)             tipColorSub = "#1e90ff";
+    else if (pctSub >= 80)             tipColorSub = "#32cd32";
+    else if (pctSub >= 60)             tipColorSub = "#ff580a";
+    else                                tipColorSub = "#ff0000";
+
+    const btn = document.createElement("button");
+    btn.className = "subject-btn";
+    btn.textContent = getFriendlyName(disc, sub);
+
+    // Badge retangular de ranking de incidência
+    const rank = INCIDENCE_RANKINGS[disc]?.[sub] || "";
+    const badge = document.createElement("span");
+    badge.className = "subject-badge-rect";
+    badge.textContent = rank;
+    btn.appendChild(badge);
+
+    // Faixa colorida de rendimento
+    const stripe = document.createElement("span");
+    stripe.className = "subject-stripe";
+    stripe.style.backgroundColor = tipColorSub;
+    btn.appendChild(stripe);
+
+    btn.onclick = () => showQuestions(disc, sub);
+    app.appendChild(btn);
+  });
+}
 
   /* ---------------- QUESTÕES ---------------- */
   function showQuestions(disc, sub) {
