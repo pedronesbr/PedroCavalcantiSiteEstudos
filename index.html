@@ -100,7 +100,7 @@ button:hover { filter: brightness(1.2); }
 }
 
 .question-btn{
-  width:220px;     /* ou um valor fixo: 320px, por exemplo */
+  width:240px;   
   max-width:none; /* remove eventuais limites             */
 }
 
@@ -344,7 +344,7 @@ button:hover { filter: brightness(1.2); }
 }
 
 /* =====================================================================================
-   RESPONSIVIDADE (Mobile)
+   MOBILE
    =====================================================================================*/
 @media (max-width: 768px) {
   .intro-block {
@@ -357,15 +357,41 @@ button:hover { filter: brightness(1.2); }
     flex: 1 1 100%;        /* ocupa 100 % da largura em telas menores */
     margin: 8px 0 0 0;
   }
-  .small-btn {               /* botão compacto (ex.: “Gabarito”) */
-  padding: 12px 12px;
-  width: 80px;
- }
+/* ===================================================================
+   MOBILE – Alinha três primeiros itens e força comentário para baixo
+   ===================================================================*/
 
-.question-btn{
-  width:180px;     /* ou um valor fixo: 320px, por exemplo */
-  max-width:none; /* remove eventuais limites             */
- }
+  /* ---------- Linha da questão ----------- */
+  .question-row{
+    flex-wrap: wrap;          /* volta a permitir quebra */
+    align-items: stretch;
+  }
+
+  /* Botão principal da questão (pode encolher) */
+  .question-btn{
+    flex: 1 1 auto;
+    min-width: 0;             /* autoriza encolher abaixo do texto */
+  }
+
+  /* Botão "Gabarito" — largura fixa compacta */
+  .small-btn{
+    flex: 0 0 85px;           /* ajuste conforme preferir */
+    width: 85px;
+  }
+
+  /* Caixa ✓ / ✗ — idem */
+  .state-box{
+    flex: 0 0 28px;
+    margin-left: 6px;
+    align-self: center; 
+  }
+
+  /* ---------- Campo de comentário -------- */
+  .comment-input{
+    flex: 1 1 100%;           /* ocupa 100 % da nova linha */
+    width: 100%;              /* garante cobertura total   */
+    margin: 8px 0 0 0;        /* mantém distanciamento */
+  }
 }
   </style>
 
