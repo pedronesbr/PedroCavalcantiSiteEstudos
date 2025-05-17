@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estudos ENEM</title>
+  <title>Newtonius</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -158,7 +158,7 @@
     }
     .disc-line {
       display: grid;
-      grid-template-columns: 220px auto;
+      grid-template-columns: 210px auto;
       column-gap: 8px;
       align-items: center;
       margin-bottom: 8px;
@@ -186,28 +186,28 @@
     .disc-btn.matematica { background: #FFDE59; }
 
     /* ===== Estrela com índice ===== */
-    .star {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-      margin: 0;
-    }
-    .star::before {
-      content: "★";
-      font-size: 34px;
-      display: block;
-      text-align: center;
-      pointer-events: none;
-    }
+.star {
+  position: relative;
+  display: inline-block;
+  width: 35px;
+  height: 44px;
+  cursor: pointer;
+  margin: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+
     .star .star-index {
       position: absolute;
-      top: 54.5%;
-      left: 50%;
+      top: 53.5%;
+      left: 60%;
       transform: translate(-50%, -50%);
       font-size: 0.5em;
       color: #ffffff;
       pointer-events: none;
     }
+    
 
     /* Ordem de cores: preto → vermelho → laranja → verde → azul */
     .state-0 { color: black;    }
@@ -464,10 +464,25 @@
     backBtn.style.visibility = title ? "visible" : "hidden";
     headerTitle.textContent = title || "";
   }
-  function updateStar(el, st) {
-    el.className = "star state-" + st;
-  }
+function updateStar(el, st) {
+  el.className = "star state-" + st;
 
+  // Define o nome da imagem de acordo com o estado
+  const starNames = ["black", "red", "orange", "green", "blue"];
+  const imgName = starNames[st] + ".png";
+
+  // Se já existir imagem, atualiza src. Se não, cria
+  let img = el.querySelector("img");
+  if (!img) {
+    img = document.createElement("img");
+    img.style.width = "45px";
+    img.style.height = "45px";
+    img.style.display = "block";
+    img.style.pointerEvents = "none";
+    el.insertBefore(img, el.firstChild);
+  }
+  img.src = `Stars/${imgName}`;
+}
   /* ---------------- MENU PRINCIPAL ---------------- */
   function showMenu() {
     currentDisc = null;
@@ -501,7 +516,7 @@
     intro.appendChild(txt);
     app.appendChild(intro);
 
-    // Disciplinas
+    // Disciplinas (Ordenação etc)
     const lines = document.createElement("div");
     lines.className = "metacog-lines";
     ['Biologia', 'Química', 'Física', 'Matemática'].forEach((disc) => {
@@ -607,7 +622,7 @@ function showSubjects(disc) {
 
     // Cor da faixa baseada no rendimento do assunto
     let tipColorSub;
-    if (answeredSub === 0)             tipColorSub = "#cccccc";
+    if (answeredSub === 0)             tipColorSub = "#1e1e1e";
     else if (pctSub >= 90)             tipColorSub = "#1e90ff";
     else if (pctSub >= 80)             tipColorSub = "#32cd32";
     else if (pctSub >= 60)             tipColorSub = "#ff580a";
@@ -721,7 +736,7 @@ function showSubjects(disc) {
     pdfContainer.style.display = "flex";
     pdfContainer.querySelectorAll("canvas").forEach((c) => c.remove());
 
-    const pdf = await pdfjsLib.getDocument(pdfName).promise;
+    const pdf = await pdfjsLib.getDocument(`PDFs/${pdfName}`).promise;
     const dpr = window.devicePixelRatio || 1;
     const renderScale = quality * dpr * zoom;
 
