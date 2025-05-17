@@ -91,11 +91,17 @@ button {
   text-align: center;
   transition: filter .2s;
 }
+
 button:hover { filter: brightness(1.2); }
 
 .small-btn {               /* botão compacto (ex.: “Gabarito”) */
   padding: 12px 12px;
   width: 90px;
+}
+
+.question-btn{
+  width:220px;     /* ou um valor fixo: 320px, por exemplo */
+  max-width:none; /* remove eventuais limites             */
 }
 
 .subject-btn {             /* botões de assunto */
@@ -351,6 +357,15 @@ button:hover { filter: brightness(1.2); }
     flex: 1 1 100%;        /* ocupa 100 % da largura em telas menores */
     margin: 8px 0 0 0;
   }
+  .small-btn {               /* botão compacto (ex.: “Gabarito”) */
+  padding: 12px 12px;
+  width: 80px;
+ }
+
+.question-btn{
+  width:180px;     /* ou um valor fixo: 320px, por exemplo */
+  max-width:none; /* remove eventuais limites             */
+ }
 }
   </style>
 
@@ -682,7 +697,7 @@ function showQuestions(disc, sub) {
 
     /* Botão da questão (abre PDF) */
     row.appendChild(Object.assign(
-      document.createElement("button"), { textContent:q.label,
+      document.createElement("button"), { textContent:q.label,  className: "question-btn",
       onclick: () => openPdf(q.QPDFName, q.page) }));
 
     /* Botão gabarito */
