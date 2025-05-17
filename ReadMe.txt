@@ -1,4 +1,4 @@
-O aplicativo Estudos ENEM é uma plataforma gamificada completa, especialmente desenvolvida para estudantes que buscam aprovação em Medicina por meio do ENEM. Apresentado pelo carismático personagem Arcano Newtonius, o Mago das Ciências da Natureza e Matemática, o aplicativo combina recursos educacionais avançados com elementos interativos para potencializar a aprendizagem e manter os estudantes motivados.
+O Estudos ENEM é uma plataforma de questões gamificada, especialmente desenvolvida para estudantes que buscam aprovação em Medicina por meio do ENEM. Apresentado pelo carismático personagem Arcano Newtonius, o Mago das Ciências da Natureza e Matemática, o aplicativo combina recursos educacionais avançados com elementos interativos para potencializar a aprendizagem e manter os estudantes motivados.
 
 Entre suas principais funcionalidades destacam-se:
 
