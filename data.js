@@ -507,7 +507,7 @@ window.listaQuestoes = [
 {"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2017-REG-Q-103", "QPDFName": "ENEM_2017_REG_Nat.pdf", "page": [4], "GPDFName": "ENEM_2017_REG_Nat.pdf", "gabaritoPage": [15]},
 {"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2020-PPL-Q-112", "QPDFName": "ENEM_2020_PPL_Nat.pdf", "page": [6], "GPDFName": "ENEM_2020_PPL_Nat.pdf", "gabaritoPage": [13]},
 {"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2019-PPL-Q-124", "QPDFName": "ENEM_2019_PPL_Nat.pdf", "page": [13], "GPDFName": "ENEM_2019_PPL_Nat.pdf", "gabaritoPage": [16]},
-{"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2020-DIG-Q-114", "QPDFName": "ENEM_2020_DIG_Nat.pdf", "page": [24], "GPDFName": "ENEM_2020_DIG_Nat.pdf", "gabaritoPage": [47]},
+{"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2020-DIG-Q-114", "QPDFName": "ENEM_2020_DIG_Nat.pdf", "page": [24, 25], "GPDFName": "ENEM_2020_DIG_Nat.pdf", "gabaritoPage": [47]},
 {"Disciplina": "Física", "Assunto": "04", "label": "ENEM-2020-DIG-Q-126", "QPDFName": "ENEM_2020_DIG_Nat.pdf", "page": [37], "GPDFName": "ENEM_2020_DIG_Nat.pdf", "gabaritoPage": [47]},
 {"Disciplina": "Física", "Assunto": "05", "label": "ENEM-2023-REG-Q-101", "QPDFName": "ENEM_2023_REG_Nat.pdf", "page": [4], "GPDFName": "ENEM_2023_REG_Nat.pdf", "gabaritoPage": [15]},
 {"Disciplina": "Física", "Assunto": "05", "label": "ENEM-2022-REG-Q-118", "QPDFName": "ENEM_2022_REG_Nat.pdf", "page": [10], "GPDFName": "ENEM_2022_REG_Nat.pdf", "gabaritoPage": [16]},
