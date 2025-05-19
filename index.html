@@ -748,7 +748,6 @@ function showQuestions(disc, sub) {
     const cKey = `comment_${disc}_${sub}_${idx}`;
     row.appendChild(Object.assign(
       document.createElement("input"), { type:"text", className:"comment-input",
-      placeholder:"Comentário (opcional)",
       value:localStorage.getItem(cKey)||"", oninput:e=>localStorage.setItem(cKey,e.target.value) }));
   });
 }
