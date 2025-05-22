@@ -592,15 +592,16 @@ function exportData() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k.startsWith("star_") || k.startsWith("comment_") || /^\w+_\d+_\d+$/.test(k))
-      data[k] = localStorage.getItem(k);
+    data[k] = localStorage.getItem(k);
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const a = Object.assign(document.createElement("a"), {
-    href: URL.createObjectURL(blob),
-    download: "estudos-enem-dados.json",
-  });
-  a.click(); URL.revokeObjectURL(a.href);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "estudos-enem-dados.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
 }
 
 /* ================================================================
@@ -922,13 +923,15 @@ closeBtn.onclick = () => (pdfContainer.style.display = "none");
    ============================================================== */
 /* Importa arquivo JSON de progresso */
 importFile.addEventListener("change", ({ target }) => {
-  const file = target.files[0]; if (!file) return;
+  const file = target.files[0];
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      Object.entries(JSON.parse(e.target.result))
-            .forEach(([k,v]) => localStorage.setItem(k, v));
-      alert("Dados importados com sucesso!"); location.reload();
+      const obj = JSON.parse(e.target.result);
+      Object.entries(obj).forEach(([k, v]) => localStorage.setItem(k, v));
+      alert("Dados importados com sucesso!");
+      location.reload();
     } catch {
       alert("Formato inválido, importação cancelada.");
     }
