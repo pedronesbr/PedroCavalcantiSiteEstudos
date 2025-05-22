@@ -195,8 +195,7 @@ height: 46px;
   align-items: flex-start;
 }
 #xp-hoje {
-  margin-top: 4px;       /* distância abaixo da imagem */
-  margin-left: 8px;  
+  margin: 4px auto 0 auto;
   font-size: 14px;
   font-weight: bold;
   color: var(--c-neutral);
@@ -646,12 +645,16 @@ function getTodaySolvedCount() {
   return count;
 }
 
-/** Retorna o total de questões respondidas (logs) em todos os dias */
 function getTotalXPCount() {
   let count = 0;
+  const regex = /^\w+_\d{2}_\d+$/; // Ex: "Biologia_03_5"
+
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key.startsWith("log_")) count++;
+    if (regex.test(key)) {
+      const value = +localStorage.getItem(key);
+      if (value === 1 || value === 2) count++;
+    }
   }
   return count;
 }
@@ -677,7 +680,7 @@ app.insertAdjacentHTML("beforeend", `
            alt="Arcano Newtonius"
            class="intro-img">
       <div id="xp-hoje">
-     🔮Hoje: +${getTodaySolvedCount()}XP |
+     🔮 Hoje: +${getTodaySolvedCount()}XP |
         Total: ${getTotalXPCount()}XP |
         ${Math.round( getTotalXPCount() / getTotalQuestionsCount() * 100 )}%
       </div>
