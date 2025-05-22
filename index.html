@@ -115,26 +115,54 @@ button:hover { filter: brightness(1.2); }
    LAYOUT PRINCIPAL
    =====================================================================================*/
 #app {
-  padding: 16px;
+  padding-top: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 #header {
-  background: var(--c-bg-panel);
-  padding: 8px;
-  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 10;     
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  background: var(--c-bg-panel);
+  padding: 0 16px;
+  gap: 4px 0;
 }
 
-#backBtn { visibility: hidden; } /* visível só quando necessário */
-#headerTitle {
-  flex: 1;
-  text-align: center;
-  font-size: 18px;
+
+.header-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;  /* centraliza o título */
+  align-items: center;
+    font-size: 16px;
+    height: 20px;
+    margin: 8px 0 8px 0;  /* topo | direita | baixo | esquerda */
   font-weight: bold;
+}
+
+.header-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;    /* centraliza o stats */
+  padding: 0px 0;
+}
+#headerStats {
+  display: block;  
+  padding: 0px 0;     
+  font-weight: bold;
+  line-height: 0.2;
+  font-size: 15px;          /* estatística inline, fonte menor */
+}
+#backBtn {
+position: absolute;
+left: 0px;
+top: 0px;
+width: 54px;
+height: 46px;
 }
 
 /* =====================================================================================
@@ -145,6 +173,8 @@ button:hover { filter: brightness(1.2); }
   align-items: flex-start;
   margin-bottom: 45px;
   max-width: 1000px;
+  padding-top: 8px;
+  padding-left: 8px;
 }
 .intro-img {
   width: 280px;
@@ -152,6 +182,7 @@ button:hover { filter: brightness(1.2); }
   margin-right: 24px;
 }
 .intro-text p {
+  padding-top: 8px;
   margin: 12px 0;
   font-style: italic;
   color: var(--c-text-muted);
@@ -411,11 +442,17 @@ button:hover { filter: brightness(1.2); }
        - Botão “Voltar”, título dinâmico e um div vazio usado só
          como espaçador para manter o título centralizado.
        ===================================================================== -->
-  <div id="header">
-    <button id="backBtn">Voltar</button>
-    <span id="headerTitle"></span>
-    <div style="width: 250px"></div> <!-- espaçador -->
+<div id="header">
+  <button id="backBtn">
+    <i class="fas fa-arrow-left"></i>
+  </button>
+  <div class="header-top">
+    <span id="headerTitle">Título Dinâmico</span>
   </div>
+  <div class="header-bottom">
+    <span id="headerStats" class="stat neutral">Estatísticas</span>
+  </div>
+</div>
 
   <!-- =====================================================================
        CONTEÚDO DINÂMICO
@@ -463,7 +500,7 @@ const SUBJECT_TOTALS = {
 /* Lista “amigável” dos assuntos: índice → nome completo.
    Mantém separada da lógica para facilitar troca/edição.            */
 const SUBJECT_NAMES = {
-    Biologia:   ['1. Ecologia Básica', '2. Ecologia Avançada', '3. Evolução', '4.  Impacto Ambiental', '5. Moléculas Orgânicas', '6. Transporte de Moléculas (Difusão e Osmose)', '7. Citologia', '8. Energia Celular', '9. Origem da Vida', '10. Bactérias (Procariontes), Algas e Fungos', '11 Filogenia e Indrução à Botânica', '12. Morfologia e Reprodução de Plantas', '13. Transporte de Seiva e de Sementes', '14. Invertebrados', '15. Parasitoses e Doenças Endêmicas', '16. Vertebrados e Conquista Terrestre', '17. Sistema Digestório, Endócrino e Excretor', '18. Sistema Reprodutor e Reprodução Humana', '19. Sistema Cardiorrespiratório e Sangue', '20. Sistema Nervoso e Musculoesquelético', '21. Estrutura do DNA e Dogma Central', '22. Genética', '23. Hereditariedade', '24. Genética Avançada', '25. Vírus e Imunidade', '26. Neoplasia e Farmacologia'],
+    Biologia:   ['1. Ecologia Básica', '2. Ecologia Avançada', '3. Evolução', '4.  Impacto Ambiental', '5. Moléculas Orgânicas', '6. Transporte de Moléculas (Difusão e Osmose)', '7. Citologia', '8. Energia Celular', '9. Origem da Vida', '10. Bactérias (Procariontes), Algas e Fungos', '11. Filogenia e Indrodução à Botânica', '12. Morfologia e Reprodução de Plantas', '13. Transporte de Seiva e de Sementes', '14. Invertebrados', '15. Parasitoses e Doenças Endêmicas', '16. Vertebrados e Conquista Terrestre', '17. Sistema Digestório, Endócrino e Excretor', '18. Sistema Reprodutor e Reprodução Humana', '19. Sistema Cardiorrespiratório e Sangue', '20. Sistema Nervoso e Musculoesquelético', '21. Estrutura do DNA e Dogma Central', '22. Genética', '23. Hereditariedade', '24. Genética Avançada', '25. Vírus e Imunidade', '26. Neoplasia e Farmacologia'],
     Química:    ['1. Modelos Atômicos', '2. Camadas Eletrônicas', '3. Tabela Periódica', '4. Ligações Químicas', '5. Forças Intermoleculares', '6. Sistemas e Misturas', '7. Fórmulas Químicas', '8. Reações Químicas', '9. Ácidos e Bases', '10. Reações com Ácidos', '11. Sais e Óxidos', '12. Estequiometria', '13. Termoquímica', '14. Equilíbrio Químico', '15. Reação de Oxirredução', '16. Pilha', '17. Química Orgânica', '18. Cadeias Orgânicas', '19. Isomeria', '20. Reações Orgânicas', '21. Ciclos da Matéria', '22. Derivados do Petróleo', '23. Descarte de Materiais', '24. Reações Nucleares'],
     Física:     ['1. Eletricidade', '2. Potencial Elétrico', '3. Eletrodinâmica Básica', '4. Eletrodinâmica Avançada', '5. Eletromagnetismo', '6. Óptica Básica', '7. Fenômenos Ópticos', '8. Óptica Avançada', '9. Ondulatória', '10. Ondulatória Avançada e Acústica', '11. Termologia', '12. Dilatação e Escalas de Temperatura', '13. Energia, Potência e Termodinâmica', '14. Estudo dos Gases', '15. Cinemática', '16. Momento Linear (Quantidade de Movimento)', '17. Dinâmica', '18. Gravitação', '19. Molas e Estática', '20. Hidrostática'],
     Matemática: ['1. Matemática Básica', '2. Potenciação', '3. Porcentagem e Conversões', '4. Razão e Matemática Financeira', '5. Sistemas e Vazão', '6. Equação do 1º Grau', '7. Estatística Básica', '8. Progressões Matemáticas', '9. Equações do 2º Grau', '10. Outras Equações (Equação da Circunferência)', '11. Logaritmo', '12. Trigonometria (Ciclo Trigonométrico)', '13. Diagramas (Venn) e Mapas', '14. Análise de Gráficos', '15. Paralelogramos', '16. Triângulos', '17. Cículos e Projeção','18. Prismas e Pirâmides', '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'],
@@ -563,7 +600,13 @@ const clear = () => (app.innerHTML = "");
 
 /** Atualiza cabeçalho e visibilidade do botão Voltar. */
 function updateHeader(show, title = "") {
+  const header    = document.getElementById("header");
+  const headerTop = header.querySelector(".header-top");
+  const stats     = document.getElementById("headerStats");
+
   header.style.display     = show ? "flex" : "none";
+  headerTop.style.display  = show ? "flex" : "none";
+  stats.style.display      = show ? "block" : "none";
   backBtn.style.visibility = title ? "visible" : "hidden";
   headerTitle.textContent  = title;
 }
@@ -644,29 +687,38 @@ function showMenu() {
 
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
-  currentDisc = disc; currentSub = null;
-  updateHeader(true, disc); clear();
+  currentDisc = disc;
+  currentSub  = null;
+  updateHeader(true, disc);
+  clear();
+  window.scrollTo(0, 0);
 
-  /* Estatísticas gerais */
-  const statDiv = app.appendChild(Object.assign(
-    document.createElement("div"), { className:"stat" }));
+  const statDiv = document.getElementById("headerStats");
 
-  const refreshDiscStats = () => {
-    let total=0, correct=0, answered=0;
+  function refreshDiscStats() {
+    let total = 0, correct = 0, answered = 0;
     for (const sub of Object.keys(questoesData[disc])) {
       const qs = questoesData[disc][sub];
       total += qs.length;
-      qs.forEach((_,i)=>{
+      qs.forEach((_, i) => {
         const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
         if (st === 1) correct++;
         if (st === 1 || st === 2) answered++;
       });
     }
-    const pct = answered ? (correct/answered*100) : 0;
+    const pct = answered ? (correct / answered * 100) : 0;
     statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
-    statDiv.className = answered === 0 ? "stat neutral"
-      : pct>=90? "stat blue" : pct>=80? "stat green" : pct>=60? "stat orange" : "stat red";
-  };
+    statDiv.className   = answered === 0
+                         ? "stat neutral"
+                         : pct >= 90
+                           ? "stat blue"
+                           : pct >= 80
+                             ? "stat green"
+                             : pct >= 60
+                               ? "stat orange"
+                               : "stat red";
+  }
+
   refreshDiscStats();
 
   /* Botões por assunto */
@@ -696,24 +748,35 @@ function showSubjects(disc) {
 
 /* ---------------- LISTA DE QUESTÕES ---------------- */
 function showQuestions(disc, sub) {
-  currentDisc = disc; currentSub = sub;
-  updateHeader(true, `${disc} - ${getFriendlyName(disc, sub)}`); clear();
+  currentDisc = disc;
+  currentSub  = sub;
+  updateHeader(true, `${disc} – ${getFriendlyName(disc, sub)}`);
+  clear();
+  window.scrollTo(0, 0);
 
-  /* Estatísticas do assunto */
-  const statDiv = app.appendChild(Object.assign(
-    document.createElement("div"), { className:"stat" }));
+  const statDiv = document.getElementById("headerStats");
 
-  const refreshStats = () => {
+  function refreshStats() {
     const qs = questoesData[disc][sub];
-    const [c,a] = qs.reduce(([c,a],_,i)=>{
-      const st = +localStorage.getItem(`${disc}_${sub}_${i}`)||0;
-      return [c + (st===1), a + (st===1||st===2)];
-    },[0,0]);
-    const pct = a ? c/a*100 : 0;
+    let c = 0, a = 0;
+    qs.forEach((_, i) => {
+      const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
+      if (st === 1) c++;
+      if (st === 1 || st === 2) a++;
+    });
+    const pct = a ? (c / a * 100) : 0;
     statDiv.textContent = `Acertos: ${c}/${a} [${qs.length}] (${pct.toFixed(1)}%)`;
-    statDiv.className = a===0? "stat neutral"
-      : pct>=90? "stat blue" : pct>=80? "stat green" : pct>=50? "stat orange" : "stat red";
-  };
+    statDiv.className   = a === 0
+                         ? "stat neutral"
+                         : pct >= 90
+                           ? "stat blue"
+                           : pct >= 80
+                             ? "stat green"
+                             : pct >= 50
+                               ? "stat orange"
+                               : "stat red";
+  }
+
   refreshStats();
 
   /* Renderiza cada questão */
