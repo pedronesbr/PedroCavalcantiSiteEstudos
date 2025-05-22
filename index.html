@@ -648,11 +648,16 @@ function getTodaySolvedCount() {
 
 function getTotalXPCount() {
   let count = 0;
-  // Cada vez que o usuário marca ✓ ou ✗, gravamos uma key log_YYYY-MM-DD_disc_sub_idx
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith("log_")) {
-      count++;
+  // Para cada disciplina...
+  for (const disc in questoesData) {
+    // ...para cada assunto...
+    for (const sub in questoesData[disc]) {
+      const qs = questoesData[disc][sub];
+      // ...para cada questão, conta se st===1 (✓) ou st===2 (✗)
+      qs.forEach((_, i) => {
+        const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
+        if (st === 1 || st === 2) count++;
+      });
     }
   }
   return count;
