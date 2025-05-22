@@ -648,13 +648,11 @@ function getTodaySolvedCount() {
 
 function getTotalXPCount() {
   let count = 0;
-  const regex = /^\w+_\d{2}_\d+$/; // Ex: "Biologia_03_5"
-
+  // Cada vez que o usuário marca ✓ ou ✗, gravamos uma key log_YYYY-MM-DD_disc_sub_idx
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (regex.test(key)) {
-      const value = +localStorage.getItem(key);
-      if (value === 1 || value === 2) count++;
+    if (key.startsWith("log_")) {
+      count++;
     }
   }
   return count;
