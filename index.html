@@ -174,7 +174,7 @@ height: 46px;
   margin-bottom: 45px;
   max-width: 1000px;
   padding-top: 8px;
-  padding-left: 8px;
+  padding-left: 0px;
 }
 .intro-img {
   width: 280px;
@@ -182,7 +182,7 @@ height: 46px;
   margin-right: 24px;
 }
 .intro-text p {
-  padding-top: 8px;
+  padding-top: 14px;
   margin: 12px 0;
   font-style: italic;
   color: var(--c-text-muted);
@@ -707,7 +707,7 @@ function showSubjects(disc) {
       });
     }
     const pct = answered ? (correct / answered * 100) : 0;
-    statDiv.textContent = `Acertos: ${correct}/${answered} [${total}] (${pct.toFixed(1)}%)`;
+    statDiv.textContent = `Desempenho: ${correct}/${answered} (${pct.toFixed(1)}%) | Total: ${total}`;
     statDiv.className   = answered === 0
                          ? "stat neutral"
                          : pct >= 90
@@ -765,7 +765,7 @@ function showQuestions(disc, sub) {
       if (st === 1 || st === 2) a++;
     });
     const pct = a ? (c / a * 100) : 0;
-    statDiv.textContent = `Acertos: ${c}/${a} [${qs.length}] (${pct.toFixed(1)}%)`;
+    statDiv.textContent = `Desempenho: ${c}/${a} (${pct.toFixed(1)}%) | Total: ${qs.length}`;
     statDiv.className   = a === 0
                          ? "stat neutral"
                          : pct >= 90
