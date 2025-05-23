@@ -57,20 +57,30 @@ button:active{transform:scale(.96);}
   color:var(--text);
   border-radius:var(--radius);
 
-  /* quebra automática de linha no próprio contêiner */
-  overflow-wrap:break-word;   /* moderno */
-  word-break:break-word;      /* fallback */
-  white-space:pre-wrap;       /* mantém \n digitadas */
+  /* fonte/tamanho fixos */
+  font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont,
+               "San Francisco", system-ui, sans-serif;
+  font-size:12px;          /* = ~12 pt */
+  line-height:1.3;
+
+  /* quebra automática de linha */
+  overflow-wrap:break-word;
+  word-break:break-word;
+  white-space:pre-wrap;
 }
 
-/* força a mesma quebra para QUALQUER elemento dentro do editor */
+/* aplica a MESMA fonte/tamanho a qualquer elemento dentro do editor
+   (spans gerados pelo browser, links, colagens do Word, etc.) */
 #editor *,
 #editor *::before,
 #editor *::after{
+  font-family:inherit !important;
+  font-size:inherit  !important;
   white-space:pre-wrap !important;
   overflow-wrap:break-word !important;
   word-break:break-word   !important;
 }
+
 #editor p{margin:2px 0;line-height:1.3;}
 .hidden-text{
   background:#404040;
