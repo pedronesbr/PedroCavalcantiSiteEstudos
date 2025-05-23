@@ -96,8 +96,12 @@ button:active{transform:scale(.96);}
   display:inline;                   /* permite quebra interna */
   padding:2px 2px;                  /* respiro interno */
   margin:2px 0;                     /* respiro entre tarjas diferentes */
-
-  /* faz a tarja “clonar” em cada linha quebrada */
+  
+      /* ↓ NOVO – faz o fundo parar no texto, criando o espacinho */
+  -webkit-background-clip:content-box; /* Safari / Chrome */
+          background-clip:content-box; /* Firefox / Edge   */
+  
+      /* faz a tarja “clonar” em cada linha quebrada */
   -webkit-box-decoration-break:clone;
   box-decoration-break:clone;
   
