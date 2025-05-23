@@ -26,8 +26,8 @@
     /* ---------- TOOLBAR ---------- */
     #toolbar{
       position:fixed;top:0;left:0;right:0;z-index:100;
-      display:flex;flex-wrap:wrap;gap:8px;align-items:center;
-      padding:10px 24px;
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+      padding:12px 12px;
       background:linear-gradient(180deg,var(--surface-light),transparent);
       backdrop-filter:blur(5px);
       border-bottom:1px solid var(--accent);
@@ -43,6 +43,7 @@
       display:flex;align-items:center;justify-content:center;
       transition:background .2s,transform .1s;
       user-select:none;
+      padding:16px 16px;
     }
     button:hover{background:var(--accent);} 
     button:active{transform:scale(.96);} 
@@ -51,8 +52,9 @@
     /* ---------- EDITOR ---------- */
     #editor{
       border:1px solid var(--accent);
+      margin-top: 22px;
       padding:12px;
-      min-height:260px;
+      min-height:300px;
       background:var(--surface);
       color:var(--text);
       border-radius:var(--radius);
