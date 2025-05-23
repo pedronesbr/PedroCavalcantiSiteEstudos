@@ -27,7 +27,7 @@
     #toolbar{
       position:fixed;top:0;left:0;right:0;z-index:100;
       display:flex;flex-wrap:wrap;gap:10px;align-items:center;
-      padding:12px 12px;
+      padding:2px 2px;
       background:linear-gradient(180deg,var(--surface-light),transparent);
       backdrop-filter:blur(5px);
       border-bottom:1px solid var(--accent);
@@ -52,8 +52,8 @@
     /* ---------- EDITOR ---------- */
     #editor{
       border:1px solid var(--accent);
-      margin-top: 22px;
-      padding:12px;
+      margin-top: 0px;
+      padding:0px;
       min-height:300px;
       background:var(--surface);
       color:var(--text);
@@ -155,7 +155,7 @@ backBtn.onclick = () => {
     const restoreSel = ()=>{if(!savedRange) return; const s=window.getSelection(); s.removeAllRanges(); s.addRange(savedRange);}  
 
     /* ---------- PALETA DE CORES ---------- */
-    const defaultColors=["#ffffff","#ff5555","#ffaa00","#ffee00","#55ff55","#00ddff","#5555ff","#ff55ff"];
+    const defaultColors=["#ffffff","#BF5BF3","#FF443B","#FF9F0C","#FFD60C","#0C84FE","#2DD158","#8E8D92"];
     const palette = document.getElementById('palette');
     defaultColors.forEach(c=>{
       const sw=document.createElement('div'); sw.className='swatch'; sw.style.background=c; sw.dataset.color=c;
