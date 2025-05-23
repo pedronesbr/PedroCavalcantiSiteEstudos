@@ -250,14 +250,19 @@ hideBtn.onclick = () => {
   const lines = text.split(/\n/);            /* detecta quebras de linha */
   const frag  = document.createDocumentFragment();
 
-  lines.forEach((line, i) => {
-    const span = document.createElement('span');
-    span.className  = 'hidden-text';
-    span.textContent = line || '\u200B';     /* mantém linhas vazias */
-    span.onclick    = () => span.classList.toggle('revealed');
-    frag.appendChild(span);
-    if (i < lines.length - 1) frag.appendChild(document.createElement('br'));
-  });
+lines.forEach((line, i) => {
+  const span = document.createElement('span');
+  span.className = 'hidden-text';
+  span.textContent = line || '\u200B';
+  span.onclick = () => span.classList.toggle('revealed');
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'inline-block';
+  wrapper.appendChild(span);
+  frag.appendChild(wrapper);
+
+  if (i < lines.length - 1) frag.appendChild(document.createElement('br'));
+});
 
   range.deleteContents();
   range.insertNode(frag);
