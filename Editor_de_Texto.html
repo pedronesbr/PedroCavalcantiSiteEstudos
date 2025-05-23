@@ -83,7 +83,11 @@
       cursor:move;
       border-radius:var(--radius);
     }
-
+#editor, #editor p{
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
 
     /* ---------- PALETA DE CORES ---------- */
     #palette{
@@ -104,6 +108,8 @@
 <body>
   <div id="toolbar">
     <button id="backBtn" title="Voltar"><i class="fas fa-arrow-left"></i></button>
+    <button id="undoBtn" title="Desfazer (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+<button id="redoBtn" title="Refazer (Ctrl+Y)"><i class="fas fa-redo"></i></button>
     <button id="boldBtn" title="Negrito (Ctrl+B)"><b>B</b></button>
     <button id="italicBtn" title="Itálico (Ctrl+I)"><i>I</i></button>
     <button id="underlineBtn" title="Sublinhado (Ctrl+U)"><u>U</u></button>
@@ -368,10 +374,40 @@ function convertTextLinksToImages() {
     parent.removeChild(node);
   });
 }
-
+undoBtn.onclick = () => exec('undo');
+redoBtn.onclick = () => exec('redo');
 editor.addEventListener("input", () => {
   setTimeout(convertTextLinksToImages, 100);
 });
+    editor.addEventListener('keydown', e => {
+  if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+    exec('undo');   e.preventDefault();
+  }
+  if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+    exec('redo');   e.preventDefault();
+  }
+});
+    #editor, #editor p {       /* adicione perto do seu CSS existente */
+  overflow-wrap: break-word;
+  word-break: break-word;  /* fallback para navegadores antigos */
+}#editor, #editor p {       /* adicione perto do seu CSS existente */
+  overflow-wrap: break-word;
+  word-break: break-word;  /* fallback para navegadores antigos */
+}
+    /* ---------- SALVAMENTO EM TEMPO-REAL ---------- */
+function saveNow() {
+  storage.setItem(storageKey, editor.innerHTML);
+}
+editor.addEventListener('input', () => {
+  // Salva imediatamente
+  saveNow();
+
+  // Aguarda 100 ms para converter links em imagens (sem travar a digitação)
+  setTimeout(convertTextLinksToImages, 100);
+});
+
+// como segurança extra, salve também ao sair (funciona fora do iframe)
+window.addEventListener('beforeunload', saveNow);
 
 
   </script>
