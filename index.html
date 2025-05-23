@@ -485,7 +485,12 @@ height: 46px;
     <!-- Canvas criado pelo PDF.js para renderizar páginas -->
     <canvas id="pdfCanvas"></canvas>
   </div>
-
+  <!-- =====================================================================
+     RESUMO (overlay com o editor de texto)
+     ===================================================================== -->
+<div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
+  <iframe id="summaryFrame" style="border:none;width:100%;height:100%;"></iframe>
+</div>
   <!-- =====================================================================
        BANCO DE DADOS
        - Arquivo gerado externamente contendo listaQuestoes[] (JSON)
@@ -546,6 +551,8 @@ const header       = document.getElementById("header");
 const headerTitle  = document.getElementById("headerTitle");
 const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
+const summaryContainer = document.getElementById("summaryContainer");
+const summaryFrame     = document.getElementById("summaryFrame");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -587,14 +594,16 @@ function buildBancoQuestoes(listaFlat) {
   return banco;
 }
 
-/** Faz backup do progresso (estrelas + status + comentários). */
-function exportData() {
+function doExport() {
   const data = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     data[k] = localStorage.getItem(k);
   }
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+    { type: "application/json" }
+  );
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "estudos-enem-dados.json";
@@ -604,6 +613,25 @@ function exportData() {
   URL.revokeObjectURL(a.href);
 }
 
+/** Faz backup do progresso (estrelas + status + comentários). */
+function exportData() {
+
+  /* 1 ▸ força o iframe a descarregar para salvar o resumo */
+  if (summaryContainer.style.display !== "none") {
+    summaryFrame.src = "about:blank";      // dispara o unload do editor
+  }
+
+  /* 2 ▸ já estamos de volta do reload? */
+  if (sessionStorage.getItem("__exportReady__") === "yes") {
+    sessionStorage.removeItem("__exportReady__");
+    doExport();                            // faz o download
+    return;
+  }
+
+  /* 3 ▸ primeira chamada: marca a flag, recarrega a página */
+  sessionStorage.setItem("__exportReady__","yes");
+  location.reload();                       // equivale ao F5
+}
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
    ============================================================== */
@@ -613,15 +641,26 @@ const clear = () => (app.innerHTML = "");
 
 /** Atualiza cabeçalho e visibilidade do botão Voltar. */
 function updateHeader(show, title = "") {
-  const header    = document.getElementById("header");
-  const headerTop = header.querySelector(".header-top");
-  const stats     = document.getElementById("headerStats");
+  header.style.display = show ? "flex" : "none";
+  header.querySelector(".header-top").style.display = show ? "flex" : "none";
+  document.getElementById("headerStats").style.display = show ? "block" : "none";
 
-  header.style.display     = show ? "flex" : "none";
-  headerTop.style.display  = show ? "flex" : "none";
-  stats.style.display      = show ? "block" : "none";
+  /* botão voltar */
   backBtn.style.visibility = title ? "visible" : "hidden";
-  headerTitle.textContent  = title;
+
+  /* título */
+  headerTitle.textContent = title;
+
+  if (currentSub && show) {        // estamos dentro de um assunto
+    headerTitle.style.cursor           = "pointer";
+    headerTitle.title                  = "Clique para abrir o resumo";
+    headerTitle.onclick                = openSummary;
+  } else {
+    headerTitle.style.cursor         = "default";
+    headerTitle.style.textDecoration = "none";
+    headerTitle.title                = "";
+    headerTitle.onclick              = null;
+  }
 }
 
 /** Sincroniza a imagem/cor de uma estrela quando seu estado muda. */
@@ -671,7 +710,9 @@ function getTotalQuestionsCount() {
     .flatMap(subs => Object.values(subs))
     .reduce((sum, arr) => sum + arr.length, 0);
 }
-
+if (sessionStorage.getItem("__exportReady__") === "yes") {
+  exportData();            // cai direto no ramo que baixa o arquivo
+}
 /* ---------------- MENU PRINCIPAL ---------------- */
 function showMenu() {
   currentDisc = currentSub = null;
@@ -918,26 +959,54 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
 }
 closeBtn.onclick = () => (pdfContainer.style.display = "none");
 
+
+function openSummary(){                      // usa a disciplina/assunto atuais
+  const d = encodeURIComponent(currentDisc);
+  const s = encodeURIComponent(currentSub);
+  summaryFrame.src = `Editor_de_Texto.html?disc=${d}&sub=${s}`;   // carrega o resumo certo
+  summaryContainer.style.display = "flex";
+}
+function closeSummary(){ summaryContainer.style.display = "none"; }
+window.closeSummary = closeSummary;           // para o iframe conseguir fechar
 /* ================================================================
    7. EVENTOS GLOBAIS
    ============================================================== */
-/* Importa arquivo JSON de progresso */
+/* 1 ───── Handler do botão “Importar” ───── */
 importFile.addEventListener("change", ({ target }) => {
   const file = target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const obj = JSON.parse(e.target.result);
-      Object.entries(obj).forEach(([k, v]) => localStorage.setItem(k, v));
-      alert("Dados importados com sucesso!");
-      location.reload();
-    } catch {
-      alert("Formato inválido, importação cancelada.");
-    }
+  reader.onload = (e) => {
+    // guarda o JSON bruto em sessionStorage
+    sessionStorage.setItem("__pendingImport__", e.target.result);
+
+    // libera espaço no localStorage para a próxima carga
+    localStorage.clear();
+
+    // recarrega a página; o passo 2 roda no boot
+    location.reload();
   };
   reader.readAsText(file);
 });
+
+/* 2 ───── Restauração automática logo no início do JS principal ───── */
+(() => {
+  const raw = sessionStorage.getItem("__pendingImport__");
+  if (!raw) return;                           // nada pendente
+
+  try {
+    const obj = JSON.parse(raw);              // texto → objeto
+    localStorage.clear();                     // garante que está limpo
+    Object.entries(obj).forEach(([k, v]) => localStorage.setItem(k, v));
+  } catch (err) {
+    console.error("Falha ao processar backup:", err);
+    alert("Importação cancelada (arquivo corrompido).");
+  } finally {
+    sessionStorage.removeItem("__pendingImport__"); // limpa a flag
+  }
+})();
+
 
 /* Botão Voltar → decide se volta à lista de assuntos ou ao menu */
 backBtn.onclick = () => currentSub ? showSubjects(currentDisc) : showMenu();
