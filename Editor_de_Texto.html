@@ -82,6 +82,7 @@ button:active{transform:scale(.96);}
 }
 
 #editor p{margin:2px 0;line-height:1.3;}
+/* tarja de texto -------------------------------------------------- */
 .hidden-text{
   background:#404040;
   color:transparent;
@@ -89,7 +90,10 @@ button:active{transform:scale(.96);}
   cursor:pointer;
   border-radius:var(--radius);
   padding:0 2px;
-  transition:background .2s;
+
+  /* ↓ espaço vertical minúsculo para separar linhas empilhadas */
+  display:inline-block;      /* permite margin vertical em elementos “inline” */
+  margin:2px 0;              /* 2 px em cima e embaixo: ajuste à vontade */
 }
 .hidden-text.revealed{background:var(--reveal-bg);color:inherit;}
 /* ---------- IMAGENS & TARJAS ---------- */
@@ -230,13 +234,60 @@ hideBtn.onclick = ()=>{
 };
 
 /* ---------- LIMPAR FORMATAÇÃO ---------- */
-clearBtn.onclick=()=>{
-  const sel=window.getSelection();if(!sel.rangeCount||sel.isCollapsed)return;
+clearBtn.onclick = () => {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return;
+
+  /* 1) remove negrito/itálico/sub/etc. padrão */
   exec('removeFormat');
-  const range=sel.getRangeAt(0);
-  const anc=range.commonAncestorContainer.nodeType===1?range.commonAncestorContainer:range.commonAncestorContainer.parentElement;
-  anc.querySelectorAll('.hidden-text').forEach(span=>{if(range.intersectsNode(span))span.replaceWith(document.createTextNode(span.textContent));});
+
+  const range   = sel.getRangeAt(0);
+  const walker  = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode(node){
+        return range.intersectsNode(node)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
+      }
+    }
+  );
+
+  /* 2) percorre todos os elementos dentro da seleção */
+  const els = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) els.push(n);
+
+  els.forEach(el => {
+    /* remove cores de fundo inline */
+    el.style.removeProperty('background-color');
+    el.style.removeProperty('background');
+
+    /* zera <mark> ou span sem outras classes/atributos */
+    if (el.tagName === 'MARK' ||
+        (el.tagName === 'SPAN' && !el.className && !el.attributes.length)) {
+      while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
+      el.remove();
+      return;
+    }
+
+    /* se style ficou vazio, apaga o atributo style de vez */
+    if (el.getAttribute && el.getAttribute('style') &&
+        !el.getAttribute('style').trim())
+      el.removeAttribute('style');
+  });
+
+  /* 3) se a seleção pegou texto oculto, revela */
+  const anc = range.commonAncestorContainer.nodeType === 1
+            ? range.commonAncestorContainer
+            : range.commonAncestorContainer.parentElement;
+
+  anc.querySelectorAll('.hidden-text').forEach(span => {
+    if (range.intersectsNode(span))
+      span.replaceWith(document.createTextNode(span.textContent));
+  });
 };
+
 
 /* ---------- INSERIR IMAGEM ---------- */
 insertImgBtn.onclick = ()=>{saveSel();fileInput.click();};
