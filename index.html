@@ -595,23 +595,41 @@ function buildBancoQuestoes(listaFlat) {
 }
 
 function doExport() {
-  const data = {};
+  /* 1 ▸ lê tudo do localStorage e joga num array  [key,value] */
+  const pares = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    data[k] = localStorage.getItem(k);
+    pares.push([k, localStorage.getItem(k)]);
   }
+
+  /* 2 ▸ ordena:  summary_ → star_ → comment_ → log_ → resto alfabético */
+  const ordemCustom = k =>
+        k.startsWith("summary_")  ? "0_"+k :
+        k.startsWith("star_")     ? "1_"+k :
+        k.startsWith("comment_")  ? "2_"+k :
+        k.startsWith("log_")      ? "3_"+k :
+                                    "4_"+k;
+
+  pares.sort((a, b) => ordemCustom(a[0]).localeCompare(ordemCustom(b[0])));
+
+  /* 3 ▸ reconstrói o objeto já ordenado */
+  const objOrdenado = Object.fromEntries(pares);
+
+  /* 4 ▸ salva com indentação bonitinha */
   const blob = new Blob(
-    [JSON.stringify(data, null, 2)],
+    [JSON.stringify(objOrdenado, null, 2)],        // <-- indent=2
     { type: "application/json" }
   );
+
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "estudos-enem-dados.json";
+  a.download = "backup_newtonius.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }
+
 
 /** Faz backup do progresso (estrelas + status + comentários). */
 function exportData() {
