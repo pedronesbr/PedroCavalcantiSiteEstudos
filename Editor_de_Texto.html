@@ -108,7 +108,6 @@ button:active{transform:scale(.96);}
   background:var(--reveal-bg);
   color:inherit;
 }
-.hidden-text.revealed{background:var(--reveal-bg);color:inherit;}
 /* ---------- IMAGENS & TARJAS ---------- */
 .image-container{position:relative;display:inline-block;user-select:none;}
 .image-container img{display:block;max-width:100%;height:auto;cursor:default;}
@@ -348,7 +347,6 @@ concluirBtn.onclick=endEditing;
   deleteTarjaMode = true;
   message.textContent = 'Clique na tarja que deseja apagar.';
 };
-desfazerBtn.onclick=()=>{if(!selectedImage)return;const arr=tarjasMap.get(selectedImage)||[];const last=arr.pop();if(last)last.remove();};
 function toggleTarjaBtns(on){
   insertBtn.style.display     = on ? 'none'         : 'inline-block';
   concluirBtn.style.display   = on ? 'inline-block' : 'none';
