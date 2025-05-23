@@ -219,35 +219,59 @@ colorBtn.onclick = ()=>{
 document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!==colorBtn)palette.classList.remove('show');});
 
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
-hideBtn.onclick = ()=>{
-  const sel=window.getSelection();
-  if(!sel.rangeCount||sel.isCollapsed)return;
-  const range=sel.getRangeAt(0);
+/* ---------- OCULTAR / REVELAR TEXTO ---------- */
+hideBtn.onclick = () => {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
 
-  const same=range.startContainer.parentElement.closest?.('.hidden-text');
-  if(same && same===range.endContainer.parentElement.closest?.('.hidden-text')){
-    while(same.firstChild)same.parentNode.insertBefore(same.firstChild,same);
-    same.remove();return;
+  /* --- 1. se já era tarja, remove ------------------------------------------------ */
+  const same = range.startContainer.parentElement.closest?.('.hidden-text');
+  if (same && same === range.endContainer.parentElement.closest?.('.hidden-text')){
+    while (same.firstChild) same.parentNode.insertBefore(same.firstChild, same);
+    same.remove();
+    return;
   }
 
-  const spans=[];
-  const walker=document.createTreeWalker(range.commonAncestorContainer,NodeFilter.SHOW_ELEMENT,{
-    acceptNode:n=>n.classList?.contains('hidden-text')&&range.intersectsNode(n)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT
+  /* --- 2. se a seleção cruza tarjas, remove todas -------------------------------- */
+  const spans = [];
+  const walker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: n => n.classList?.contains('hidden-text') && range.intersectsNode(n)
+      ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
   });
-  for(let n=walker.nextNode();n;n=walker.nextNode())spans.push(n);
-  if(spans.length){spans.forEach(s=>{while(s.firstChild)s.parentNode.insertBefore(s.firstChild,s);s.remove();});return;}
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) spans.push(n);
+  if (spans.length){
+    spans.forEach(s => { while (s.firstChild) s.parentNode.insertBefore(s.firstChild, s); s.remove(); });
+    return;
+  }
 
-  const span=document.createElement('span');
-  span.className='hidden-text';
-  span.textContent=range.toString();
-  span.onclick=()=>span.classList.toggle('revealed');
-  range.deleteContents();range.insertNode(span);
+  /* --- 3. nova tarja: cria um <span> para CADA linha ------------------------------ */
+  const text  = range.toString();
+  const lines = text.split(/\n/);            /* detecta quebras de linha */
+  const frag  = document.createDocumentFragment();
 
-  const zwsp=document.createTextNode('\u200B');
-  span.after(zwsp);const nr=document.createRange();nr.setStartAfter(zwsp);nr.collapse(true);
-  sel.removeAllRanges();sel.addRange(nr);
-  exec('removeFormat');
+  lines.forEach((line, i) => {
+    const span = document.createElement('span');
+    span.className  = 'hidden-text';
+    span.textContent = line || '\u200B';     /* mantém linhas vazias */
+    span.onclick    = () => span.classList.toggle('revealed');
+    frag.appendChild(span);
+    if (i < lines.length - 1) frag.appendChild(document.createElement('br'));
+  });
+
+  range.deleteContents();
+  range.insertNode(frag);
+
+  /* posiciona o cursor depois do último span */
+  const after = document.createTextNode('\u200B');
+  frag.appendChild(after);
+  const newR = document.createRange();
+  newR.setStartAfter(after);
+  newR.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(newR);
 };
+
 
 /* ---------- LIMPAR FORMATAÇÃO ---------- */
 clearBtn.onclick = () => {
