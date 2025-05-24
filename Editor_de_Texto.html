@@ -79,18 +79,18 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #editor p{margin:2px 0;line-height:1.3;}
 /* ---------- TARJA DE TEXTO ---------- */
 .hidden-text {
-  display: inline-block; /* para que margem vertical funcione */
-  margin: 1px 0;         /* 2px de espaçamento acima e abaixo */
+  display: inline-block;      /* para que margin vertical funcione */
+  margin: 1px 0;              /* 2px acima e abaixo */
+  padding: 1px 2px;           /* afasta um pouco o texto das bordas */
   background: #404040;
   color: transparent;
   border-radius: 2px;
   cursor: pointer;
-  padding: 1px 2px;
   transition: background 0.2s, color 0.2s;
 }
 .hidden-text.revealed {
-  background: rgba(255, 255, 255, 0.2);  /* fundo ao revelar */
-  color: inherit;                        /* texto aparece */
+  background: rgba(255,255,255,0.2);
+  color: inherit;
 }
 /* ---------- IMAGENS & TARJAS ---------- */
 .image-container{position:relative;display:inline-block;user-select:none;}
@@ -203,14 +203,14 @@ hideBtn.onclick = () => {
   if (!sel.rangeCount || sel.isCollapsed) return;
   const range = sel.getRangeAt(0);
 
-  // Se já estiver dentro de uma tarja, desembrulha
+  // Se já estiver dentro de uma hidden-text, desembrulha:
   const parent = range.startContainer.parentNode;
   if (parent.nodeType === 1 && parent.classList.contains('hidden-text')) {
     parent.replaceWith(...parent.childNodes);
     return;
   }
 
-  // Caso contrário, envolve a seleção
+  // Caso contrário, envolve a seleção:
   const span = document.createElement('span');
   span.className = 'hidden-text';
   span.addEventListener('click', () => {
@@ -221,18 +221,12 @@ hideBtn.onclick = () => {
   span.appendChild(content);
   range.insertNode(span);
 
-  // Reposiciona o cursor logo após a tarja
+  // Reposiciona o cursor logo após a tarja:
   range.setStartAfter(span);
   sel.removeAllRanges();
   sel.addRange(range);
 };
 
-// E, logo após, mantenha este listener para revelar no clique:
-editor.addEventListener('click', e => {
-  if (e.target.classList.contains('hidden-text')) {
-    e.target.classList.toggle('revealed');
-  }
-});
 
 /* ---------- LIMPAR FORMATAÇÃO ---------- */
 clearBtn.onclick = () => {
