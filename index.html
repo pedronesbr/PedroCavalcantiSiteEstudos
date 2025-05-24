@@ -650,6 +650,13 @@ function exportData() {
   sessionStorage.setItem("__exportReady__","yes");
   location.reload();                       // equivale ao F5
 }
+
+  /* ================================================================
+   (NOVO) Gera a chave estável de uma questão
+   ============================================================== */
+function qKey(disc, sub, label) {
+  return `${disc}_${sub}_${encodeURIComponent(label)}`;
+}
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
    ============================================================== */
@@ -712,8 +719,8 @@ function getTotalXPCount() {
     for (const sub in questoesData[disc]) {
       const qs = questoesData[disc][sub];
       // ...para cada questão, conta se st===1 (✓) ou st===2 (✗)
-      qs.forEach((_, i) => {
-        const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
+ qs.forEach(q => {
+   const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
         if (st === 1 || st === 2) count++;
       });
     }
@@ -818,8 +825,8 @@ function showSubjects(disc) {
     for (const sub of Object.keys(questoesData[disc])) {
       const qs = questoesData[disc][sub];
       total += qs.length;
-      qs.forEach((_, i) => {
-        const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
+ qs.forEach(q => {
+   const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
         if (st === 1) correct++;
         if (st === 1 || st === 2) answered++;
       });
@@ -877,8 +884,8 @@ function showQuestions(disc, sub) {
   function refreshStats() {
     const qs = questoesData[disc][sub];
     let c = 0, a = 0;
-    qs.forEach((_, i) => {
-      const st = +localStorage.getItem(`${disc}_${sub}_${i}`) || 0;
+    qs.forEach(q => {
+      const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
       if (st === 1) c++;
       if (st === 1 || st === 2) a++;
     });
@@ -913,7 +920,7 @@ function showQuestions(disc, sub) {
       onclick: () => openPdf(q.GPDFName, q.gabaritoPage) }));
 
     /* Caixa ✓ / ✗ */
-    const key = `${disc}_${sub}_${idx}`;
+      const key    = qKey(disc, sub, q.label);          // estado ✓/✗
     let st    = +localStorage.getItem(key) || 0;
     const box = row.appendChild(Object.assign(
       document.createElement("span"), { className:"state-box" }));
@@ -928,7 +935,7 @@ box.onclick = () => {
   localStorage.setItem(key, st);
 
   const today  = new Date().toISOString().split("T")[0];
-  const logKey = `log_${today}_${disc}_${sub}_${idx}`;
+  const logKey = `log_${today}_${key}`;             // registro diário
 
   if (st === 1 || st === 2) {
     // marcou ✓ ou ✗ → garante o log
@@ -942,7 +949,7 @@ box.onclick = () => {
   refreshStats();
 };
     /* Comentário livre */
-    const cKey = `comment_${disc}_${sub}_${idx}`;
+      const cKey   = `comment_${key}`;                  // comentário
     row.appendChild(Object.assign(
       document.createElement("input"), { type:"text", className:"comment-input",
       value:localStorage.getItem(cKey)||"", oninput:e=>localStorage.setItem(cKey,e.target.value) }));
