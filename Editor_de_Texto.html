@@ -49,7 +49,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #editor{
   border:1px solid var(--accent);
   margin-top:0;
-  padding:0;
+  padding: 3px 3px;     
   min-height:300px;
   background:var(--surface);
   color:var(--text);
@@ -88,9 +88,25 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+.hidden-text * {
+  display: inline-block;      /* para que margin vertical funcione */
+  margin: 1px 0;              /* 2px acima e abaixo */
+  padding: 1px 2px;           /* afasta um pouco o texto das bordas */
+  background: #404040;
+  color: transparent !important;   /* força texto transparente em todos os níveis */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
 .hidden-text.revealed {
   background: rgba(255,255,255,0.2);
   color: inherit;
+}
+.hidden-text.revealed * {
+  /* Quando revelar, volta a cor “inherit” em todos */
+  background: rgba(255,255,255,0.2);
+  color: inherit !important;
 }
 /* ---------- IMAGENS & TARJAS ---------- */
 .image-container{position:relative;display:inline-block;user-select:none;}
@@ -213,6 +229,7 @@ hideBtn.onclick = () => {
   // Caso contrário, envolve a seleção:
   const span = document.createElement('span');
   span.className = 'hidden-text';
+  span.setAttribute('spellcheck', 'false');
   span.addEventListener('click', () => {
     span.classList.toggle('revealed');
   });
