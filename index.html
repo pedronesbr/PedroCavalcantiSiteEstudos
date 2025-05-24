@@ -857,18 +857,27 @@ function showSubjects(disc) {
     btn.insertAdjacentHTML("beforeend",
       `<span class="subject-badge-rect">${INCIDENCE_RANKINGS[disc]?.[sub]||""}</span>`);
 
-    /* Calcula desempenho para cor da faixa */
-    const qs = questoesData[disc][sub];
-    const [c,a] = qs.reduce(([c,a],_,i)=>{
-        const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
-      return [c + (st===1), a + (st===1||st===2)];
-    },[0,0]);
-    const pct = a ? c/a*100 : null;
-    const color = pct==null? "#1e1e1e" : pct>=90? "#2BA7F5" : pct>=80? "#43C743"
-                : pct>=60? "#F47C20" : "#D92020";
-    btn.insertAdjacentHTML("beforeend",
-      `<span class="subject-stripe" style="background:${color}"></span>`);
-  }
+/* Calcula desempenho para cor da faixa */
+const qs = questoesData[disc][sub];
+const [c, a] = qs.reduce(([c, a], q) => {
+  // pega st pelo label em vez de pelo índice
+  const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
+  return [
+    c + (st === 1 ? 1 : 0),                    // conta acertos
+    a + ((st === 1 || st === 2) ? 1 : 0)       // conta respondidas
+  ];
+}, [0, 0]);
+
+const pct = a ? (c / a * 100) : null;
+const color = pct == null
+  ? "#1e1e1e"
+  : pct >= 90 ? "#2BA7F5"
+  : pct >= 80 ? "#43C743"
+  : pct >= 60 ? "#F47C20"
+  : "#D92020";
+
+btn.insertAdjacentHTML("beforeend",
+  `<span class="subject-stripe" style="background:${color}"></span>`);
 }
 
 /* ---------------- LISTA DE QUESTÕES ---------------- */
