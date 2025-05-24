@@ -216,17 +216,35 @@ document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!=
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
   const sel = window.getSelection();
-  if (!sel.rangeCount || sel.isCollapsed) return;
-  const range = sel.getRangeAt(0);
+  if (!sel.rangeCount) return;
 
-  // Se já estiver dentro de uma hidden-text, desembrulha:
-  const parent = range.startContainer.parentNode;
-  if (parent.nodeType === 1 && parent.classList.contains('hidden-text')) {
-    parent.replaceWith(...parent.childNodes);
+  const range = sel.getRangeAt(0);
+  const commonAnc = range.commonAncestorContainer.nodeType === 1
+    ? range.commonAncestorContainer
+    : range.commonAncestorContainer.parentElement;
+
+  // 1) Se a seleção inclui ao menos um .hidden-text, revele todos e saia
+  const toReveal = Array.from(commonAnc.querySelectorAll('.hidden-text'))
+    .filter(span => range.intersectsNode(span));
+
+  if (toReveal.length) {
+    toReveal.forEach(span => {
+      span.replaceWith(...span.childNodes);
+    });
     return;
   }
 
-  // Caso contrário, envolve a seleção:
+  // 2) Se o cursor está dentro de uma tarja (sem seleção), desembrulha
+  const startParent = range.startContainer.parentNode;
+  if (startParent.nodeType === 1 && startParent.classList.contains('hidden-text')) {
+    startParent.replaceWith(...startParent.childNodes);
+    return;
+  }
+
+  // 3) Se não houver seleção ativa, não faz nada
+  if (sel.isCollapsed) return;
+
+  // 4) Caso válido, envolve o trecho selecionado
   const span = document.createElement('span');
   span.className = 'hidden-text';
   span.setAttribute('spellcheck', 'false');
@@ -238,7 +256,7 @@ hideBtn.onclick = () => {
   span.appendChild(content);
   range.insertNode(span);
 
-  // Reposiciona o cursor logo após a tarja:
+  // reposiciona o cursor logo após a tarja recém-criada
   range.setStartAfter(span);
   sel.removeAllRanges();
   sel.addRange(range);
