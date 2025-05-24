@@ -78,32 +78,19 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 
 #editor p{margin:2px 0;line-height:1.3;}
 /* ---------- TARJA DE TEXTO ---------- */
-.hidden-text{
-  /* visual */
-  background:#404040;
-  color:transparent;
-  border-radius:var(--radius);
-  cursor:pointer;
-  user-select:none;
-
-  /* espaçamento */
-  display:inline-block;          /* permite margens verticais */
-  padding:1px 1px;               /* respiro interno */
-  margin:1px 0;                  /* respiro entre tarjas empilhadas */
-
-  /* ↓ faz o fundo parar no texto, criando o espacinho */
-  -webkit-background-clip:content-box;
-          background-clip:content-box;
-
-  /* faz a tarja “clonar” em cada linha quebrada */
-  -webkit-box-decoration-break:clone;
-  box-decoration-break:clone;
-
-  transition:background .2s;
+.hidden-text {
+  display: inline-block; /* para que margem vertical funcione */
+  margin: 1px 0;         /* 2px de espaçamento acima e abaixo */
+  background: #404040;
+  color: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 1px 2px;
+  transition: background 0.2s, color 0.2s;
 }
-.hidden-text.revealed{
-  background:var(--reveal-bg);
-  color:inherit;
+.hidden-text.revealed {
+  background: rgba(255, 255, 255, 0.2);  /* fundo ao revelar */
+  color: inherit;                        /* texto aparece */
 }
 /* ---------- IMAGENS & TARJAS ---------- */
 .image-container{position:relative;display:inline-block;user-select:none;}
@@ -216,55 +203,36 @@ hideBtn.onclick = () => {
   if (!sel.rangeCount || sel.isCollapsed) return;
   const range = sel.getRangeAt(0);
 
-  /* --- 1. se já era tarja, remove ------------------------------------------------ */
-  const same = range.startContainer.parentElement.closest?.('.hidden-text');
-  if (same && same === range.endContainer.parentElement.closest?.('.hidden-text')){
-    while (same.firstChild) same.parentNode.insertBefore(same.firstChild, same);
-    same.remove();
+  // Se já estiver dentro de uma tarja, desembrulha
+  const parent = range.startContainer.parentNode;
+  if (parent.nodeType === 1 && parent.classList.contains('hidden-text')) {
+    parent.replaceWith(...parent.childNodes);
     return;
   }
 
-  /* --- 2. se a seleção cruza tarjas, remove todas -------------------------------- */
-  const spans = [];
-  const walker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: n => n.classList?.contains('hidden-text') && range.intersectsNode(n)
-      ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
-  });
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) spans.push(n);
-  if (spans.length){
-    spans.forEach(s => { while (s.firstChild) s.parentNode.insertBefore(s.firstChild, s); s.remove(); });
-    return;
-  }
-
-  /* --- 3. nova tarja: cria um <span> para CADA linha ------------------------------ */
-  const clone = range.cloneContents();          // preserva HTML da seleção
-  const tmp   = document.createElement('div');
-  tmp.appendChild(clone);
-  const text  = tmp.innerText;                  // <p>, <div> e <br> viram \n
-  const lines = text.split(/\n/);              // cada linha mantém suas quebras
-  const frag  = document.createDocumentFragment();
-
-  lines.forEach((line, i) => {
-    const span = document.createElement('span');
-    span.className  = 'hidden-text';
-    span.textContent = line || '\u200B';     /* mantém linhas vazias */
-    span.onclick    = () => span.classList.toggle('revealed');
-    frag.appendChild(span);
-    if (i < lines.length - 1) frag.appendChild(document.createElement('br'));
+  // Caso contrário, envolve a seleção
+  const span = document.createElement('span');
+  span.className = 'hidden-text';
+  span.addEventListener('click', () => {
+    span.classList.toggle('revealed');
   });
 
-  range.deleteContents();
-  range.insertNode(frag);
+  const content = range.extractContents();
+  span.appendChild(content);
+  range.insertNode(span);
 
-  /* posiciona o cursor depois do último span */
-  const after = document.createTextNode('\u200B');
-  frag.appendChild(after);
-  const newR = document.createRange();
-  newR.setStartAfter(after);
-  newR.collapse(true);
+  // Reposiciona o cursor logo após a tarja
+  range.setStartAfter(span);
   sel.removeAllRanges();
-  sel.addRange(newR);
+  sel.addRange(range);
 };
+
+// E, logo após, mantenha este listener para revelar no clique:
+editor.addEventListener('click', e => {
+  if (e.target.classList.contains('hidden-text')) {
+    e.target.classList.toggle('revealed');
+  }
+});
 
 /* ---------- LIMPAR FORMATAÇÃO ---------- */
 clearBtn.onclick = () => {
