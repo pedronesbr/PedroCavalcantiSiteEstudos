@@ -385,7 +385,46 @@ height: 46px;
   background: rgba(30, 30, 30, .90);
   transform: scale(1.1);
 }
+/* ───────── Botão stripe ───────── */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 6px;
+  background: var(--c-bg-panel);
+  color: var(--c-text-primary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform .1s, filter .2s;
+}
+.btn:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 6px;
+  background: var(--stripe-color);
+  border-radius: 3px 0 0 3px;
+}
 
+/* defina sua paleta no :root */
+:root {
+  --c-exam-enem:       #AC1D22;
+  --c-exam-sas:        #3774FF;
+  --c-exam-bernoulli:  #00A98F;
+}
+
+/* cada exame injeta a cor da faixa */
+.exam-enem       { --stripe-color: var(--c-exam-enem); }
+.exam-sas        { --stripe-color: var(--c-exam-sas); }
+.exam-bernoulli  { --stripe-color: var(--c-exam-bernoulli); }
 /* =====================================================================================
    MOBILE
    =====================================================================================*/
@@ -919,9 +958,20 @@ function showQuestions(disc, sub) {
       document.createElement("div"), { className:"question-row" }));
 
     /* Botão da questão (abre PDF) */
-    row.appendChild(Object.assign(
-      document.createElement("button"), { textContent:q.label,  className: "question-btn",
-      onclick: () => openPdf(q.QPDFName, q.page) }));
+// ─── Botão “stripe” com cor por exame ───
+const qBtn = document.createElement("button");
+qBtn.textContent = q.label;
+qBtn.classList.add("btn");
+
+// detecta ENEM, SAS ou BERNOULLI no label
+const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
+if (m) {
+  const exam = m[0].toLowerCase();          // "enem", "sas" ou "bernoulli"
+  qBtn.classList.add(`exam-${exam}`);       // .exam-enem / .exam-sas / .exam-bernoulli
+}
+
+qBtn.onclick = () => openPdf(q.QPDFName, q.page);
+row.appendChild(qBtn);
 
     /* Botão gabarito */
     row.appendChild(Object.assign(
