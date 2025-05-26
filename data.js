@@ -1,9 +1,10 @@
 /* data.js */
 /* ENEM:      2017-2024 - Natureza: 786 [21 Repetidas] = 765 Questões = 17 Simulados */
 /* SAS:       2021-2025 [1, 2] -       Natureza - 1170 Questões = 26 Simulados */
-/* Bernoulli: 2025-2025 [0, 1, 2, 3] - Natureza - 630 Questões = 14 Simulados */
-/* Natureza (Total): 2565 Questões [+21 Repetidas] */
+/* Bernoulli: 2024-2025 [0, 1, 2, 3] - Natureza - 630 Questões = 14 Simulados */
+/* Natureza (Total): 2565 Questões [+21 Repetidas] = 57 Simulados */
 /* Matemática (Total): 625 Questões (Importado de Lumbergeek, não checado)  */
+/* Total: 3190 [+21] */
 window.listaQuestoes = [
   {"Disciplina": "Química", "Assunto": "02", "label": "ENEM-2017-REG-Q-91", "QPDFName": "ENEM_2017_REG_Nat.pdf", "page": [1], "GPDFName": "ENEM_2017_REG_Nat.pdf", "gabaritoPage": [15]},
   {"Disciplina": "Biologia", "Assunto": "11", "label": "ENEM-2017-REG-Q-92", "QPDFName": "ENEM_2017_REG_Nat.pdf", "page": [1], "GPDFName": "ENEM_2017_REG_Nat.pdf", "gabaritoPage": [15]},
@@ -485,7 +486,7 @@ window.listaQuestoes = [
   {"Disciplina": "Física", "Assunto": "02", "label": "ENEM-2021-PPL-Q-98", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [3], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
   {"Disciplina": "Química", "Assunto": "12", "label": "ENEM-2021-PPL-Q-99", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [3], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
   {"Disciplina": "Química", "Assunto": "17", "label": "ENEM-2021-PPL-Q-100", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [3], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
-  {"Disciplina": "Química", "Assunto": "6", "label": "ENEM-2021-PPL-Q-101", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [3], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
+  {"Disciplina": "Química", "Assunto": "06", "label": "ENEM-2021-PPL-Q-101", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [3], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
   {"Disciplina": "Biologia", "Assunto": "04", "label": "ENEM-2021-PPL-Q-102", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [4], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
   {"Disciplina": "Química", "Assunto": "10", "label": "ENEM-2021-PPL-Q-103", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [4], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
   {"Disciplina": "Biologia", "Assunto": "07", "label": "ENEM-2021-PPL-Q-104", "QPDFName": "ENEM_2021_PPL_Nat.pdf", "page": [4], "GPDFName": "ENEM_2021_PPL_Nat.pdf", "gabaritoPage": [13]},
@@ -2526,7 +2527,7 @@ window.listaQuestoes = [
 {"Disciplina": "Física", "Assunto": "12", "label": "SAS-2025-1-Q-108", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [6], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [6]},
 {"Disciplina": "Biologia", "Assunto": "20", "label": "SAS-2025-1-Q-109", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [7], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [6, 7]},
 {"Disciplina": "Física", "Assunto": "01", "label": "SAS-2025-1-Q-110", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [7], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [7]},
-{"Disciplina": "Química", "Assunto": "25", "label": "SAS-2025-1-Q-111", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [7], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [7]},
+{"Disciplina": "Química", "Assunto": "09", "label": "SAS-2025-1-Q-111", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [7], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [7]},
 {"Disciplina": "Física", "Assunto": "09", "label": "SAS-2025-1-Q-112", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [7], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [7]},
 {"Disciplina": "Biologia", "Assunto": "21", "label": "SAS-2025-1-Q-113", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [8], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [7, 8]},
 {"Disciplina": "Física", "Assunto": "03", "label": "SAS-2025-1-Q-114", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [8], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [8]},
@@ -2544,7 +2545,7 @@ window.listaQuestoes = [
 {"Disciplina": "Biologia", "Assunto": "04", "label": "SAS-2025-1-Q-126", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [12], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [12]},
 {"Disciplina": "Química", "Assunto": "20", "label": "SAS-2025-1-Q-127", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [13], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [12]},
 {"Disciplina": "Biologia", "Assunto": "03", "label": "SAS-2025-1-Q-128", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [13], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [12]},
-{"Disciplina": "Química", "Assunto": "25", "label": "SAS-2025-1-Q-129", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [14], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [12, 13]},
+{"Disciplina": "Química", "Assunto": "24", "label": "SAS-2025-1-Q-129", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [14], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [12, 13]},
 {"Disciplina": "Química", "Assunto": "19", "label": "SAS-2025-1-Q-130", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [14], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [13]},
 {"Disciplina": "Biologia", "Assunto": "01", "label": "SAS-2025-1-Q-131", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [14], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [13]},
 {"Disciplina": "Biologia", "Assunto": "11", "label": "SAS-2025-1-Q-132", "QPDFName": "SAS_2025_1_Azul_Nat.pdf", "page": [14], "GPDFName": "SAS_2025_1_Azul_Nat_Gabarito.pdf", "gabaritoPage": [13]},
@@ -2578,7 +2579,7 @@ window.listaQuestoes = [
 {"Disciplina": "Física", "Assunto": "04", "label": "SAS-2025-2-Q-115", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [8], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [8, 9]},
 {"Disciplina": "Biologia", "Assunto": "04", "label": "SAS-2025-2-Q-116", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [8], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [9]},
 {"Disciplina": "Biologia", "Assunto": "12", "label": "SAS-2025-2-Q-117", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [8], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [9]},
-{"Disciplina": "Química", "Assunto": "26", "label": "SAS-2025-2-Q-118", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [9], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [9, 10]},
+{"Disciplina": "Biologia", "Assunto": "18", "label": "SAS-2025-2-Q-118", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [9], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [9, 10]},
 {"Disciplina": "Física", "Assunto": "16", "label": "SAS-2025-2-Q-119", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [9], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [10]},
 {"Disciplina": "Física", "Assunto": "07", "label": "SAS-2025-2-Q-120", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [9], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [10]},
 {"Disciplina": "Física", "Assunto": "02", "label": "SAS-2025-2-Q-121", "QPDFName": "SAS_2025_2_Azul_Nat.pdf", "page": [9], "GPDFName": "SAS_2025_2_Azul_Nat_Gabarito.pdf", "gabaritoPage": [10, 11]},
