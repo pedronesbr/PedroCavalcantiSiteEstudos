@@ -427,6 +427,58 @@ height: 46px;
 .exam-enem       { --stripe-color: var(--c-exam-enem); }
 .exam-sas        { --stripe-color: var(--c-exam-sas); }
 .exam-bernoulli  { --stripe-color: var(--c-exam-bernoulli); }
+
+/* === Botão Pomodoro === */
+#pomodoroBtn {
+  position: absolute;
+  top: 20px;
+  transform: translateY(-50%);
+  right: 20px;            /* afasta o timer do canto direito */
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  user-select: none;
+  padding: 0 8px;
+  height: 46px;
+  width: 54px;
+}
+#pomodoroBtn.active {
+  font-family: monospace;
+  font-size: 16px;
+  padding: 0 12px;
+}
+
+/* === Modal Pomodoro === */
+#pomodoroModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+#pomodoroModal .modal-content {
+  background: var(--c-bg-panel);
+  color: var(--c-text-primary);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+#pomodoroModal button {
+  margin: 8px;
+}
+#pomodoroModal input {
+  width: 60px;
+  padding: 4px;
+  margin: 8px;
+  text-align: center;
+  border: 1px solid var(--c-border-muted);
+  border-radius: 4px;
+  background: var(--c-bg-app);
+  color: var(--c-text-primary);
+}
 /* =====================================================================================
    MOBILE
    =====================================================================================*/
@@ -543,6 +595,25 @@ height: 46px;
        - Controla: navegação, estatísticas, render de PDF, armazenamento
          em localStorage, import/export, etc.
        ===================================================================== -->
+       <!-- Modal Pomodoro -->
+<div id="pomodoroModal">
+  <div class="modal-content">
+    <h3>Pomodoro</h3>
+    <div id="pomodoroOptions">
+      <button data-min="25">25 minutos</button>
+      <button data-min="5">5 minutos</button>
+      <button id="customBtn">Personalizado</button>
+    </div>
+    <div id="customInput" style="display:none;">
+      <input type="number" id="customMinutes" min="1" placeholder="Min">
+      <button id="startCustomBtn">Iniciar</button>
+    </div>
+    <div id="pomodoroControls" style="display:none;">
+      <button id="pauseResumeBtn">Pausar</button>
+      <button id="stopBtn">Sair</button>
+    </div>
+  </div>
+</div>
   <script>
 /* ================================================================
    1. CONSTANTES & CONFIGURAÇÕES GLOBAIS
@@ -1101,6 +1172,150 @@ importFile.addEventListener("change", ({ target }) => {
 /* Botão Voltar → decide se volta à lista de assuntos ou ao menu */
 backBtn.onclick = () => currentSub ? showSubjects(currentDisc) : showMenu();
 
+// === Estado Pomodoro ===
+let pomodoroInterval = null;
+let pomodoroRemaining = 0;
+let pomodoroPaused = false;
+
+// Cria/injeta botão e modal apenas uma vez
+function ensurePomodoroUI() {
+  const headerEl = document.getElementById('header');
+  if (!headerEl) return;
+
+  // Botão
+  if (!document.getElementById('pomodoroBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'pomodoroBtn';
+    btn.textContent = '🍅';
+    btn.onclick = onPomodoroClick;
+    headerEl.appendChild(btn);
+  }
+
+  // Modal (já está no HTML estático)
+}
+
+// Formata segundos em MM:SS
+function formatTime(sec) {
+  const m = String(Math.floor(sec/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+// Atualiza display do botão
+function updatePomodoroDisplay() {
+  const btn = document.getElementById('pomodoroBtn');
+  if (!btn) return;
+  btn.textContent = formatTime(pomodoroRemaining);
+}
+
+// Inicia Pomodoro
+function startPomodoro(minutes) {
+  stopPomodoro();
+  pomodoroRemaining = minutes*60;
+  pomodoroPaused = false;
+  const btn = document.getElementById('pomodoroBtn');
+  btn.classList.add('active');
+  updatePomodoroDisplay();
+
+  pomodoroInterval = setInterval(() => {
+    if (!pomodoroPaused) {
+      pomodoroRemaining--;
+      updatePomodoroDisplay();
+      if (pomodoroRemaining <= 0) {
+        clearInterval(pomodoroInterval);
+        alert('⏰ Pomodoro concluído!');
+        stopPomodoro();
+      }
+    }
+  }, 1000);
+}
+
+// Pausa/Retoma
+function pauseResumePomodoro() {
+  pomodoroPaused = !pomodoroPaused;
+  document.getElementById('pauseResumeBtn').textContent =
+    pomodoroPaused ? 'Retomar' : 'Pausar';
+}
+
+// Para e reseta
+function stopPomodoro() {
+  clearInterval(pomodoroInterval);
+  pomodoroInterval = null;
+  pomodoroRemaining = 0;
+  pomodoroPaused = false;
+  const btn = document.getElementById('pomodoroBtn');
+  if (btn) {
+    btn.classList.remove('active');
+    btn.textContent = '🍅';
+  }
+}
+
+// Exibe modal com opções
+function onPomodoroClick() {
+  const modal = document.getElementById('pomodoroModal');
+  const opts = modal.querySelector('#pomodoroOptions');
+  const custom = modal.querySelector('#customInput');
+  const ctrls = modal.querySelector('#pomodoroControls');
+
+  // Alterna se timer ativo
+  if (pomodoroInterval) {
+    opts.style.display = 'none';
+    custom.style.display = 'none';
+    ctrls.style.display = 'block';
+  } else {
+    opts.style.display = 'flex';
+    custom.style.display = 'none';
+    ctrls.style.display = 'none';
+  }
+  modal.style.display = 'flex';
+}
+
+// Configurações do modal após o DOM
+function setupPomodoroModal() {
+  const modal = document.getElementById('pomodoroModal');
+  if (!modal) return;
+
+  // Fechar ao clicar fora
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  // Opções fixas
+  modal.querySelectorAll('#pomodoroOptions button[data-min]').forEach(btn => {
+    btn.onclick = () => {
+      startPomodoro(parseInt(btn.dataset.min));
+      modal.style.display = 'none';
+    };
+  });
+
+  // Personalizado
+  modal.querySelector('#customBtn').onclick = () => {
+    modal.querySelector('#pomodoroOptions').style.display = 'none';
+    modal.querySelector('#customInput').style.display = 'block';
+  };
+  modal.querySelector('#startCustomBtn').onclick = () => {
+    const val = parseInt(modal.querySelector('#customMinutes').value);
+    if (val > 0) startPomodoro(val);
+    modal.style.display = 'none';
+  };
+
+  // Controles
+  modal.querySelector('#pauseResumeBtn').onclick = () => pauseResumePomodoro();
+  modal.querySelector('#stopBtn').onclick = () => {
+    stopPomodoro();
+    modal.style.display = 'none';
+  };
+}
+
+// Hooks para reinjetar e inicializar
+const _origShowSubjects = showSubjects;
+showSubjects = disc => { _origShowSubjects(disc); ensurePomodoroUI(); };
+const _origShowQuestions = showQuestions;
+showQuestions = (disc, sub) => { _origShowQuestions(disc, sub); ensurePomodoroUI(); };
+
+// Boot
+ensurePomodoroUI();
+setupPomodoroModal();
 /* ================================================================
    8. BOOT (primeira renderização)
    ============================================================== */
