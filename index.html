@@ -740,10 +740,14 @@ function updateStar(el, state) {
   }
   img.src = `Stars/${PNG}`;
 }
-
+function getTodayStr() {
+  return new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Fortaleza'
+  });
+}
  /* -------- contador de feitas hoje -------- */
 function getTodaySolvedCount() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayStr();
   let count = 0;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -995,7 +999,7 @@ box.onclick = () => {
   st = (st + 1) % 3;
   localStorage.setItem(key, st);
 
-  const today  = new Date().toISOString().split("T")[0];
+  const today  = getTodayStr();
   const logKey = `log_${today}_${key}`;             // registro diário
 
   if (st === 1 || st === 2) {
