@@ -58,7 +58,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   /* fonte/tamanho fixos */
   font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont,
                "San Francisco", system-ui, sans-serif;
-  font-size:16px;
+  font-size:12px;
   line-height:1.3;
 
   /* quebra automática de linha */
@@ -112,15 +112,17 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 .image-container{position:relative;display:inline-block;user-select:none;}
 .image-container img{display:block;max-width:100%;height:auto;cursor:default;}
 .tarja{position:absolute;background:rgba(0,0,0,.95);cursor:move;border-radius:var(--radius);}/* ---------- PALETA ---------- */
-#palette{
-  position:absolute;top:100%;left:0;margin-top:4px;
-  display:grid;grid-template-columns:repeat(8,24px);gap:4px;
-  background:var(--surface);
-  border:1px solid var(--accent);
-  padding:6px;
-  border-radius:var(--radius);
-  z-index:200;
-  visibility:hidden;opacity:0;transition:opacity .15s;
+#palette {
+  position: fixed;       /* mantém fixo à viewport */
+  display: flex;         /* flex em vez de grid */
+  flex-direction: row;   /* itens na horizontal */
+  gap: 4px;              /* espaçamento igual ao antes */
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  padding: 6px;
+  border-radius: var(--radius);
+  visibility: hidden;
+  opacity: 0;
 }
 #palette.show{visibility:visible;opacity:1;}
 .swatch{width:24px;height:24px;border:2px solid var(--surface);border-radius:var(--radius);cursor:pointer;user-select:none;}
@@ -207,9 +209,16 @@ defaultColors.forEach(c=>{
   ['mouseup','mouseleave'].forEach(ev=>sw.addEventListener(ev,()=>clearTimeout(hold)));
   palette.appendChild(sw);
 });
-colorBtn.onclick = ()=>{
-  if(palette.classList.contains('show')) palette.classList.remove('show');
-  else {saveSel();const r=colorBtn.getBoundingClientRect();palette.style.left=r.left+window.scrollX+'px';palette.style.top=r.bottom+window.scrollY+'px';palette.classList.add('show');}
+colorBtn.onclick = () => {
+  if (palette.classList.contains('show')) {
+    palette.classList.remove('show');
+  } else {
+    saveSel();
+    const { left, bottom } = colorBtn.getBoundingClientRect();
+    palette.style.left = `${left}px`;
+    palette.style.top  = `${bottom}px`;
+    palette.classList.add('show');
+  }
 };
 document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!==colorBtn)palette.classList.remove('show');});
 
