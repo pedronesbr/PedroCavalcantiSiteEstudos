@@ -1373,6 +1373,16 @@ ensurePomodoroUI();
 setupPomodoroModal();
 resumePomodoroIfNeeded();
 // …e então chame showMenu()
+// Garante que, sempre que a aba ficar visível de novo,
+// o estado do Pomodoro seja recalculado e o timer atualizado.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    resumePomodoroIfNeeded();
+  }
+});
+
+// Cobre casos em que a janela volta a ter foco
+window.addEventListener('focus', resumePomodoroIfNeeded);
 
 
 /* ================================================================
