@@ -1172,55 +1172,50 @@ importFile.addEventListener("change", ({ target }) => {
 /* Botão Voltar → decide se volta à lista de assuntos ou ao menu */
 backBtn.onclick = () => currentSub ? showSubjects(currentDisc) : showMenu();
 
-// === Estado Pomodoro ===
-let pomodoroInterval = null;
+// ─────────────────────────────────────────────────────────────────
+// POMODORO RESILIENTE A RELOAD (COM CORREÇÃO DE LABEL PAUSE/RESUME)
+// ─────────────────────────────────────────────────────────────────
+
+// Estado global
+let pomodoroInterval  = null;
 let pomodoroRemaining = 0;
-let pomodoroPaused = false;
+let pomodoroPaused    = false;
 
-// Cria/injeta botão e modal apenas uma vez
-function ensurePomodoroUI() {
-  const headerEl = document.getElementById('header');
-  if (!headerEl) return;
-
-  // Botão
-  if (!document.getElementById('pomodoroBtn')) {
-    const btn = document.createElement('button');
-    btn.id = 'pomodoroBtn';
-    btn.textContent = '🍅';
-    btn.onclick = onPomodoroClick;
-    headerEl.appendChild(btn);
-  }
-
-  // Modal (já está no HTML estático)
+// 1) Persistência de estado
+function savePomodoroState({ endTimestamp = null, paused = false, remaining = 0 }) {
+  if (endTimestamp !== null) localStorage.setItem('pomodoro_end', endTimestamp);
+  else                      localStorage.removeItem('pomodoro_end');
+  localStorage.setItem('pomodoro_paused', paused ? '1' : '0');
+  localStorage.setItem('pomodoro_remain', remaining);
+}
+function loadPomodoroState() {
+  return {
+    end:       parseInt(localStorage.getItem('pomodoro_end')    || '0', 10),
+    paused:    localStorage.getItem('pomodoro_paused') === '1',
+    remaining: parseInt(localStorage.getItem('pomodoro_remain') || '0', 10),
+  };
+}
+function clearPomodoroState() {
+  localStorage.removeItem('pomodoro_end');
+  localStorage.removeItem('pomodoro_paused');
+  localStorage.removeItem('pomodoro_remain');
 }
 
-// Formata segundos em MM:SS
+// 2) Formatação MM:SS
 function formatTime(sec) {
-  const m = String(Math.floor(sec/60)).padStart(2,'0');
-  const s = String(sec%60).padStart(2,'0');
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
   return `${m}:${s}`;
 }
 
-// Atualiza display do botão
-function updatePomodoroDisplay() {
+// 3) Helper para (re)iniciar o setInterval
+function runInterval() {
   const btn = document.getElementById('pomodoroBtn');
-  if (!btn) return;
-  btn.textContent = formatTime(pomodoroRemaining);
-}
-
-// Inicia Pomodoro
-function startPomodoro(minutes) {
-  stopPomodoro();
-  pomodoroRemaining = minutes*60;
-  pomodoroPaused = false;
-  const btn = document.getElementById('pomodoroBtn');
-  btn.classList.add('active');
-  updatePomodoroDisplay();
-
+  if (pomodoroInterval) clearInterval(pomodoroInterval);
   pomodoroInterval = setInterval(() => {
     if (!pomodoroPaused) {
       pomodoroRemaining--;
-      updatePomodoroDisplay();
+      btn.textContent = formatTime(pomodoroRemaining);
       if (pomodoroRemaining <= 0) {
         clearInterval(pomodoroInterval);
         alert('⏰ Pomodoro concluído!');
@@ -1230,92 +1225,156 @@ function startPomodoro(minutes) {
   }, 1000);
 }
 
-// Pausa/Retoma
-function pauseResumePomodoro() {
-  pomodoroPaused = !pomodoroPaused;
-  document.getElementById('pauseResumeBtn').textContent =
-    pomodoroPaused ? 'Retomar' : 'Pausar';
+// 4) Injeção do botão no header
+function ensurePomodoroUI() {
+  const headerEl = document.getElementById('header');
+  if (!headerEl || document.getElementById('pomodoroBtn')) return;
+  const btn = document.createElement('button');
+  btn.id          = 'pomodoroBtn';
+  btn.textContent = '🍅';
+  btn.onclick     = onPomodoroClick;
+  headerEl.appendChild(btn);
 }
 
-// Para e reseta
-function stopPomodoro() {
-  clearInterval(pomodoroInterval);
-  pomodoroInterval = null;
-  pomodoroRemaining = 0;
-  pomodoroPaused = false;
-  const btn = document.getElementById('pomodoroBtn');
-  if (btn) {
-    btn.classList.remove('active');
-    btn.textContent = '🍅';
-  }
-}
-
-// Exibe modal com opções
-function onPomodoroClick() {
-  const modal = document.getElementById('pomodoroModal');
-  const opts = modal.querySelector('#pomodoroOptions');
-  const custom = modal.querySelector('#customInput');
-  const ctrls = modal.querySelector('#pomodoroControls');
-
-  // Alterna se timer ativo
-  if (pomodoroInterval) {
-    opts.style.display = 'none';
-    custom.style.display = 'none';
-    ctrls.style.display = 'block';
-  } else {
-    opts.style.display = 'flex';
-    custom.style.display = 'none';
-    ctrls.style.display = 'none';
-  }
-  modal.style.display = 'flex';
-}
-
-// Configurações do modal após o DOM
+// 5) Setup do modal (HTML pré-existente)
 function setupPomodoroModal() {
   const modal = document.getElementById('pomodoroModal');
   if (!modal) return;
-
-  // Fechar ao clicar fora
+  // fechar clicando fora
   modal.addEventListener('click', e => {
     if (e.target === modal) modal.style.display = 'none';
   });
-
-  // Opções fixas
-  modal.querySelectorAll('#pomodoroOptions button[data-min]').forEach(btn => {
-    btn.onclick = () => {
-      startPomodoro(parseInt(btn.dataset.min));
-      modal.style.display = 'none';
-    };
-  });
-
-  // Personalizado
+  // opções fixas
+  modal.querySelectorAll('#pomodoroOptions button[data-min]')
+       .forEach(b => b.onclick = () => {
+         startPomodoro(parseInt(b.dataset.min, 10));
+         modal.style.display = 'none';
+       });
+  // personalizado
   modal.querySelector('#customBtn').onclick = () => {
     modal.querySelector('#pomodoroOptions').style.display = 'none';
-    modal.querySelector('#customInput').style.display = 'block';
+    modal.querySelector('#customInput').style.display    = 'block';
   };
   modal.querySelector('#startCustomBtn').onclick = () => {
-    const val = parseInt(modal.querySelector('#customMinutes').value);
+    const val = parseInt(modal.querySelector('#customMinutes').value, 10);
     if (val > 0) startPomodoro(val);
     modal.style.display = 'none';
   };
-
-  // Controles
-  modal.querySelector('#pauseResumeBtn').onclick = () => pauseResumePomodoro();
+  // controles
+  modal.querySelector('#pauseResumeBtn').onclick = () => {
+    pauseResumePomodoro();
+    modal.style.display = 'none';
+  };
   modal.querySelector('#stopBtn').onclick = () => {
     stopPomodoro();
     modal.style.display = 'none';
   };
 }
 
-// Hooks para reinjetar e inicializar
-const _origShowSubjects = showSubjects;
-showSubjects = disc => { _origShowSubjects(disc); ensurePomodoroUI(); };
-const _origShowQuestions = showQuestions;
-showQuestions = (disc, sub) => { _origShowQuestions(disc, sub); ensurePomodoroUI(); };
+// 6) Abre o modal — atualizando o label corretamente
+function onPomodoroClick() {
+  const modal  = document.getElementById('pomodoroModal');
+  const opts   = modal.querySelector('#pomodoroOptions');
+  const custom = modal.querySelector('#customInput');
+  const ctrls  = modal.querySelector('#pomodoroControls');
+  const pauseBtn = modal.querySelector('#pauseResumeBtn');
 
-// Boot
+  // atualiza o texto do botão de acordo com o estado
+  pauseBtn.textContent = pomodoroPaused ? 'Retomar' : 'Pausar';
+
+  if (pomodoroInterval || pomodoroPaused) {
+    opts.style.display   = 'none';
+    custom.style.display = 'none';
+    ctrls.style.display  = 'block';
+  } else {
+    opts.style.display   = 'flex';
+    custom.style.display = 'none';
+    ctrls.style.display  = 'none';
+  }
+  modal.style.display = 'flex';
+}
+
+// 7) Inicia Pomodoro e salva endTimestamp
+function startPomodoro(minutes) {
+  stopPomodoro();
+  const now          = Date.now();
+  const endTimestamp = now + minutes * 60 * 1000;
+  savePomodoroState({ endTimestamp, paused: false, remaining: minutes * 60 });
+
+  pomodoroRemaining = minutes * 60;
+  pomodoroPaused    = false;
+
+  const btn = document.getElementById('pomodoroBtn');
+  btn.classList.add('active');
+  btn.textContent = formatTime(pomodoroRemaining);
+
+  runInterval();
+}
+
+// 8) Pausa / Retoma e persiste estado
+function pauseResumePomodoro() {
+  pomodoroPaused = !pomodoroPaused;
+  const pauseBtn = document.getElementById('pauseResumeBtn');
+  pauseBtn.textContent = pomodoroPaused ? 'Retomar' : 'Pausar';
+
+  if (pomodoroPaused) {
+    savePomodoroState({ endTimestamp: null, paused: true, remaining: pomodoroRemaining });
+  } else {
+    const endTimestamp = Date.now() + pomodoroRemaining * 1000;
+    savePomodoroState({ endTimestamp, paused: false, remaining: pomodoroRemaining });
+    runInterval();
+  }
+}
+
+// 9) Para e limpa estado
+function stopPomodoro() {
+  clearInterval(pomodoroInterval);
+  pomodoroInterval  = null;
+  pomodoroRemaining = 0;
+  pomodoroPaused    = false;
+  clearPomodoroState();
+
+  const btn = document.getElementById('pomodoroBtn');
+  btn.classList.remove('active');
+  btn.textContent = '🍅';
+}
+
+// 10) No boot, retoma se havia Pomodoro salvo
+function resumePomodoroIfNeeded() {
+  const { end, paused, remaining } = loadPomodoroState();
+  const btn   = document.getElementById('pomodoroBtn');
+  const modal = document.getElementById('pomodoroModal');
+
+  if (paused && remaining > 0) {
+    // estava pausado
+    pomodoroRemaining = remaining;
+    pomodoroPaused    = true;
+    btn.classList.add('active');
+    btn.textContent = formatTime(remaining);
+    // já atualiza o label do botão do modal
+    modal.querySelector('#pauseResumeBtn').textContent = 'Retomar';
+
+  } else if (end && end > Date.now()) {
+    // ativo — calcula remaining e reinicia intervalo
+    pomodoroRemaining = Math.ceil((end - Date.now()) / 1000);
+    pomodoroPaused    = false;
+    btn.classList.add('active');
+    btn.textContent = formatTime(pomodoroRemaining);
+    runInterval();
+
+  } else {
+    // nada válido
+    clearPomodoroState();
+  }
+}
+
+// 11) Integração final
 ensurePomodoroUI();
 setupPomodoroModal();
+resumePomodoroIfNeeded();
+// …e então chame showMenu()
+
+
 /* ================================================================
    8. BOOT (primeira renderização)
    ============================================================== */
