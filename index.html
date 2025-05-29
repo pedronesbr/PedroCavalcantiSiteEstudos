@@ -976,7 +976,24 @@ function showSubjects(disc) {
   }
 
   refreshDiscStats();
+  /* Ordena os assuntos com base na flag isIncidenceOrder */
+const subjectList = SUBJECT_NAMES[disc]; // ordem oficial
+const orderedSubs = isIncidenceOrder
+  ? Object.keys(INCIDENCE_RANKINGS[disc] || {}).sort((a, b) => {
+      const rankA = parseInt(INCIDENCE_RANKINGS[disc]?.[a] || "999", 10);
+      const rankB = parseInt(INCIDENCE_RANKINGS[disc]?.[b] || "999", 10);
+      return rankA - rankB;
+    })
+  : subjectList.map((_, i) => String(i + 1).padStart(2, '0'));
 
+for (const sub of orderedSubs) {
+  const btn = app.appendChild(Object.assign(
+    document.createElement("button"), {
+      className: "subject-btn",
+      textContent: getFriendlyName(disc, sub),
+      onclick: () => showQuestions(disc, sub),
+    }));
+    : subs.sort();
   /* Botões por assunto */
   for (const sub of Object.keys(questoesData[disc]).sort()) {
     const btn = app.appendChild(Object.assign(
