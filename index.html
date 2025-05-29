@@ -671,7 +671,8 @@ const summaryFrame     = document.getElementById("summaryFrame");
    ============================================================== */
 let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
-
+let isIncidenceOrder = false;
+    
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
 
@@ -788,16 +789,21 @@ function updateHeader(show, title = "") {
   /* título */
   headerTitle.textContent = title;
 
-  if (currentSub && show) {        // estamos dentro de um assunto
-    headerTitle.style.cursor           = "pointer";
-    headerTitle.title                  = "Clique para abrir o resumo";
-    headerTitle.onclick                = openSummary;
-  } else {
-    headerTitle.style.cursor         = "default";
-    headerTitle.style.textDecoration = "none";
-    headerTitle.title                = "";
-    headerTitle.onclick              = null;
-  }
+if (currentDisc && !currentSub && show) {
+  headerTitle.style.cursor = "pointer";
+  headerTitle.title = "Clique para mudar a ordem dos assuntos";
+  headerTitle.onclick = () => {
+    isIncidenceOrder = !isIncidenceOrder;
+    showSubjects(currentDisc); // recarrega com nova ordem
+  };
+} else if (currentSub && show) {
+  headerTitle.style.cursor = "pointer";
+  headerTitle.title = "Clique para abrir o resumo";
+  headerTitle.onclick = openSummary;
+} else {
+  headerTitle.style.cursor = "default";
+  headerTitle.title = "";
+  headerTitle.onclick = null;
 }
 
 /** Sincroniza a imagem/cor de uma estrela quando seu estado muda. */
@@ -902,21 +908,30 @@ app.insertAdjacentHTML("beforeend", `
     const stars = line.appendChild(Object.assign(
       document.createElement("div"), { className: "stars-container" }));
 
-    for (const sub of Object.keys(questoesData[disc]).sort()) {
-      const star = stars.appendChild(Object.assign(
-        document.createElement("span"), { className: "star" }));
-      star.innerHTML = `<span class="star-index">${sub}</span>`;
+const starSubs = Object.keys(questoesData[disc]);
+const sortedStarSubs = isIncidenceOrder
+  ? starSubs.sort((a, b) => {
+      const rankA = parseInt(INCIDENCE_RANKINGS[disc]?.[a] || "999", 10);
+      const rankB = parseInt(INCIDENCE_RANKINGS[disc]?.[b] || "999", 10);
+      return rankA - rankB;
+    })
+  : starSubs.sort();
 
-      const key = `star_${disc}_${sub}`;
-      let st    = +localStorage.getItem(key) || 0;
-      updateStar(star, st);
+for (const sub of sortedStarSubs) {
+  const star = stars.appendChild(Object.assign(
+    document.createElement("span"), { className: "star" }));
+  star.innerHTML = `<span class="star-index">${sub}</span>`;
 
-      star.onclick = () => {
-        st = (st + 1) % 5;
-        localStorage.setItem(key, st);
-        updateStar(star, st);
-      };
-    }
+  const key = `star_${disc}_${sub}`;
+  let st = +localStorage.getItem(key) || 0;
+  updateStar(star, st);
+
+  star.onclick = () => {
+    st = (st + 1) % 5;
+    localStorage.setItem(key, st);
+    updateStar(star, st);
+  };
+}
   }
 
   /* Botões de backup de progresso */
