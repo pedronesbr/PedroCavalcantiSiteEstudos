@@ -1377,18 +1377,23 @@ function resumePomodoroIfNeeded() {
     // já atualiza o label do botão do modal
     modal.querySelector('#pauseResumeBtn').textContent = 'Retomar';
 
-  } else if (end && end > Date.now()) {
-    // ativo — calcula remaining e reinicia intervalo
-    pomodoroRemaining = Math.ceil((end - Date.now()) / 1000);
-    pomodoroPaused    = false;
-    btn.classList.add('active');
-    btn.textContent = formatTime(pomodoroRemaining);
-    runInterval();
+} else if (end && end > Date.now()) {
+  // ativo — calcula remaining e reinicia intervalo
+  pomodoroRemaining = Math.ceil((end - Date.now()) / 1000);
+  pomodoroPaused    = false;
+  btn.classList.add('active');
+  btn.textContent = formatTime(pomodoroRemaining);
+  runInterval();
 
-  } else {
-    // nada válido
-    clearPomodoroState();
-  }
+} else if (end && end <= Date.now()) {
+  // ciclo finalizado enquanto a aba estava oculta
+  alert('⏰ Pomodoro concluído!');
+  stopPomodoro();
+
+} else {
+  // nada válido
+  clearPomodoroState();
+}
 }
 
 // 11) Integração final
