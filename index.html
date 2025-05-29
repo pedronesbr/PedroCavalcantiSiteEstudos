@@ -915,7 +915,6 @@ const sortedStarSubs = isIncidenceOrder
       const rankB = parseInt(INCIDENCE_RANKINGS[disc]?.[b] || "999", 10);
       return rankA - rankB;
     })
-  : starSubs.sort();
 
 for (const sub of sortedStarSubs) {
   const star = stars.appendChild(Object.assign(
