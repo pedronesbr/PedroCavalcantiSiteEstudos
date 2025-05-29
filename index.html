@@ -671,8 +671,8 @@ const summaryFrame     = document.getElementById("summaryFrame");
    ============================================================== */
 let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
-let isIncidenceOrder = false;
-    
+let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
+
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
 
@@ -789,23 +789,18 @@ function updateHeader(show, title = "") {
   /* título */
   headerTitle.textContent = title;
 
-if (currentDisc && !currentSub && show) {
-  headerTitle.style.cursor = "pointer";
-  headerTitle.title = "Clique para mudar a ordem dos assuntos";
-  headerTitle.onclick = () => {
-    isIncidenceOrder = !isIncidenceOrder;
-    showSubjects(currentDisc); // recarrega com nova ordem
-  };
-} else if (currentSub && show) {
-  headerTitle.style.cursor = "pointer";
-  headerTitle.title = "Clique para abrir o resumo";
-  headerTitle.onclick = openSummary;
-} else {
-  headerTitle.style.cursor = "default";
-  headerTitle.title = "";
-  headerTitle.onclick = null;
+  if (currentSub && show) {        // estamos dentro de um assunto
+    headerTitle.style.cursor           = "pointer";
+    headerTitle.title                  = "Clique para abrir o resumo";
+    headerTitle.onclick                = openSummary;
+  } else {
+    headerTitle.style.cursor         = "default";
+    headerTitle.style.textDecoration = "none";
+    headerTitle.title                = "";
+    headerTitle.onclick              = null;
+  }
 }
-}
+
 /** Sincroniza a imagem/cor de uma estrela quando seu estado muda. */
 function updateStar(el, state) {
   const PNG  = ["Black","Red","Orange","Green","Blue"][state] + ".png";
@@ -908,29 +903,21 @@ app.insertAdjacentHTML("beforeend", `
     const stars = line.appendChild(Object.assign(
       document.createElement("div"), { className: "stars-container" }));
 
-const starSubs = Object.keys(questoesData[disc]);
-const sortedStarSubs = isIncidenceOrder
-  ? starSubs.sort((a, b) => {
-      const rankA = parseInt(INCIDENCE_RANKINGS[disc]?.[a] || "999", 10);
-      const rankB = parseInt(INCIDENCE_RANKINGS[disc]?.[b] || "999", 10);
-      return rankA - rankB;
-    })
+    for (const sub of Object.keys(questoesData[disc]).sort()) {
+      const star = stars.appendChild(Object.assign(
+        document.createElement("span"), { className: "star" }));
+      star.innerHTML = `<span class="star-index">${sub}</span>`;
 
-for (const sub of sortedStarSubs) {
-  const star = stars.appendChild(Object.assign(
-    document.createElement("span"), { className: "star" }));
-  star.innerHTML = `<span class="star-index">${sub}</span>`;
+      const key = `star_${disc}_${sub}`;
+      let st    = +localStorage.getItem(key) || 0;
+      updateStar(star, st);
 
-  const key = `star_${disc}_${sub}`;
-  let st = +localStorage.getItem(key) || 0;
-  updateStar(star, st);
-
-  star.onclick = () => {
-    st = (st + 1) % 5;
-    localStorage.setItem(key, st);
-    updateStar(star, st);
-  };
-}
+      star.onclick = () => {
+        st = (st + 1) % 5;
+        localStorage.setItem(key, st);
+        updateStar(star, st);
+      };
+    }
   }
 
   /* Botões de backup de progresso */
@@ -944,88 +931,93 @@ for (const sub of sortedStarSubs) {
 function showSubjects(disc) {
   currentDisc = disc;
   currentSub  = null;
+
+  // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
+
+  // 2) Anexa ao título da disciplina o toggle de ordenação
+  headerTitle.style.cursor = 'pointer';
+  headerTitle.title       = 'Clique para alternar ordenação';
+  headerTitle.onclick     = () => {
+    // alterna entre 'normal' e 'ranking' e re-renderiza
+    subjectsOrder = subjectsOrder === 'normal' ? 'ranking' : 'normal';
+    showSubjects(disc);
+  };
+
+  // 3) Limpa e reseta scroll
   clear();
   window.scrollTo(0, 0);
 
+  // 4) Estatísticas no topo
   const statDiv = document.getElementById("headerStats");
-
   function refreshDiscStats() {
     let total = 0, correct = 0, answered = 0;
     for (const sub of Object.keys(questoesData[disc])) {
       const qs = questoesData[disc][sub];
       total += qs.length;
- qs.forEach(q => {
-   const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
+      qs.forEach(q => {
+        const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
         if (st === 1) correct++;
         if (st === 1 || st === 2) answered++;
       });
     }
-    const pct = answered ? (correct / answered * 100) : 0;
+    const pct = answered ? (correct/answered*100) : 0;
     statDiv.textContent = `Desempenho: ${correct}/${answered} (${pct.toFixed(1)}%) | Total: ${total}`;
-    statDiv.className   = answered === 0
-                         ? "stat neutral"
-                         : pct >= 90
-                           ? "stat blue"
-                           : pct >= 80
-                             ? "stat green"
-                             : pct >= 60
-                               ? "stat orange"
-                               : "stat red";
+    statDiv.className = answered === 0
+      ? "stat neutral"
+      : pct >= 90 ? "stat blue"
+      : pct >= 80 ? "stat green"
+      : pct >= 60 ? "stat orange"
+      : "stat red";
+  }
+  refreshDiscStats();
+
+  // 5) Monta a lista de assuntos na ordem certa
+  let subs = Object.keys(questoesData[disc]);
+  if (subjectsOrder === 'ranking') {
+    subs.sort((a, b) =>
+      parseInt(INCIDENCE_RANKINGS[disc][a], 10)
+    - parseInt(INCIDENCE_RANKINGS[disc][b], 10)
+    );
+  } else {
+    subs.sort(); // '01', '02', ...
   }
 
-  refreshDiscStats();
-  /* Ordena os assuntos com base na flag isIncidenceOrder */
-const subjectList = SUBJECT_NAMES[disc]; // ordem oficial
-const orderedSubs = isIncidenceOrder
-  ? Object.keys(INCIDENCE_RANKINGS[disc] || {}).sort((a, b) => {
-      const rankA = parseInt(INCIDENCE_RANKINGS[disc]?.[a] || "999", 10);
-      const rankB = parseInt(INCIDENCE_RANKINGS[disc]?.[b] || "999", 10);
-      return rankA - rankB;
-    })
-  : subjectList.map((_, i) => String(i + 1).padStart(2, '0'));
-
-for (const sub of orderedSubs) {
-  const btn = app.appendChild(Object.assign(
-    document.createElement("button"), {
-      className: "subject-btn",
-      textContent: getFriendlyName(disc, sub),
-      onclick: () => showQuestions(disc, sub),
-    }));
-    : subs.sort();
-  /* Botões por assunto */
-  for (const sub of Object.keys(questoesData[disc]).sort()) {
+  // 6) Renderiza cada botão de assunto
+  for (const sub of subs) {
     const btn = app.appendChild(Object.assign(
-      document.createElement("button"), { className:"subject-btn",
-      textContent: getFriendlyName(disc, sub),
-      onclick: () => showQuestions(disc, sub) }));
+      document.createElement("button"), {
+        className: "subject-btn",
+        textContent: getFriendlyName(disc, sub),
+        onclick: () => showQuestions(disc, sub)
+      }
+    ));
 
-    /* Badge de ranking de incidência */
+    // badge de ranking de incidência
     btn.insertAdjacentHTML("beforeend",
-      `<span class="subject-badge-rect">${INCIDENCE_RANKINGS[disc]?.[sub]||""}</span>`);
+      `<span class="subject-badge-rect">
+         ${INCIDENCE_RANKINGS[disc]?.[sub]||""}
+       </span>`);
 
-/* Calcula desempenho para cor da faixa */
-const qs = questoesData[disc][sub];
-const [c, a] = qs.reduce(([c, a], q) => {
-  // pega st pelo label em vez de pelo índice
-  const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
-  return [
-    c + (st === 1 ? 1 : 0),                    // conta acertos
-    a + ((st === 1 || st === 2) ? 1 : 0)       // conta respondidas
-  ];
-}, [0, 0]);
-
-const pct = a ? (c / a * 100) : null;
-const color = pct == null
-  ? "#1e1e1e"
-  : pct >= 90 ? "#2BA7F5"
-  : pct >= 80 ? "#43C743"
-  : pct >= 60 ? "#F47C20"
-  : "#D92020";
-
-btn.insertAdjacentHTML("beforeend",
-  `<span class="subject-stripe" style="background:${color}"></span>`);
-}
+    // faixa de cor de desempenho
+    const qs = questoesData[disc][sub];
+    const [c, a] = qs.reduce(([c, a], q) => {
+      const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
+      return [
+        c + (st === 1 ? 1 : 0),
+        a + ((st === 1 || st === 2) ? 1 : 0)
+      ];
+    }, [0, 0]);
+    const pct = a ? (c/a*100) : null;
+    const color = pct == null
+      ? "#1e1e1e"
+      : pct >= 90 ? "#2BA7F5"
+      : pct >= 80 ? "#43C743"
+      : pct >= 60 ? "#F47C20"
+      : "#D92020";
+    btn.insertAdjacentHTML("beforeend",
+      `<span class="subject-stripe" style="background:${color}"></span>`);
+  }
 }
 /* ---------------- LISTA DE QUESTÕES ---------------- */
 function showQuestions(disc, sub) {
