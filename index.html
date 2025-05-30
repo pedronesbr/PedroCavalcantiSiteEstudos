@@ -577,7 +577,7 @@ height: 46px;
 
 
 #xpModalHeader #xpEnem{
-  color:#AC1D22;      /* escolha a cor que quiser */
+  color:#136FCC;      /* escolha a cor que quiser */
   font-weight:bold;   /* (opcional) deixa o texto em negrito */
 }
 /* =====================================================================================
@@ -1600,7 +1600,7 @@ function drawChart(labels, counts){
       labels,
       datasets: [{
         data: counts,
-        backgroundColor: '#9CA3AF',
+        backgroundColor: '#727780',
         borderWidth: 1,
         borderRadius: 3
       }]
@@ -1622,17 +1622,32 @@ function drawChart(labels, counts){
     }
   },
   x: {
+            ticks: {
+          // ───── aqui está o “bold” que funciona ─────
+          font: {
+            size: 11,        // qualquer tamanho >0
+            weight: 'bold',  // ou 700
+            // family: 'Arial', style:'normal'  // (opcionais)
+          },
+          color: '#8b949e',   // se quiser trocar a cor
+        },
     grid: { display: false },
-    border: { display: false }  // (opcional) tira a borda do eixo x também
+    border: { display: false },  // (opcional) tira a borda do eixo x também
   }
 },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          displayColors: false,
-          callbacks: {
-            title: () => '',
-            label: ctx => `${ctx.parsed.y} XP`
+tooltip: {
+      backgroundColor: '#232323',   // cor do balão
+      borderWidth: 1,
+      cornerRadius: 6,
+      caretSize: 1,
+      displayColors: false,         // já está no seu código
+      padding: 2,
+      callbacks: {
+        /* ⬇️ Aqui trocamos “XP” por qualquer coisa: */
+        title: () => '',
+        label: ctx => `🎯 +${ctx.parsed.y} XP`,   // mude ⭐ por ✨, 🎯, 🔥, etc.
           }
         }
       }
