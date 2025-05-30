@@ -22,6 +22,11 @@
        PDF.js – Renderiza PDFs dentro de <canvas> via JavaScript
        ===================================================================== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <!-- =====================================================================
+     Chart.js – usado para o gráfico de barras do XP semanal
+     ===================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
   <script>
     /* Informa ao pdf.js onde está o *worker* que processa o PDF
        (executa em thread separada p/ não travar a interface) */
@@ -195,6 +200,7 @@ height: 46px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  position:relative; 
 }
 #xp-hoje {
   margin-top: 4px; 
@@ -480,6 +486,101 @@ height: 46px;
   color: var(--c-text-primary);
 }
 /* =====================================================================================
+   MODAL DE XP (gráfico semanal)
+   =====================================================================================*/
+/* ======================================================
+   XP MODAL – VISUAL CLONADO DO EXEMPLO, POSIÇÃO INALTERADA
+   ====================================================== */
+#xpModal{
+  /* *** posição ORIGINAL preservada *** */
+  position:absolute;
+  left:10px;          /* mantenha/ajuste top/right/bottom se precisar */
+  /* ----------------------------------- */
+
+  width:280px;        /* mesmo tamanho do wrapper do exemplo  */
+  height: 280px;
+  background:#1e1e1e; /* cinza-grafite do GitHub dark */
+  border:1px solid #30363d;
+  border-radius:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+  display:none;       /* continua oculto até ser chamado via JS */
+  flex-direction:column;
+  z-index:50;
+  padding:0;          /* igual ao exemplo (o padding está nos filhos) */
+  font-family:'Segoe UI',sans-serif;
+  color:#e6edf3;
+}
+
+/* ====== CABEÇALHO (linha de navegação + título/contador) ============== */
+#xpModalHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:6px;
+
+  background:#232323;              /* faixa superior mais escura         */
+  border-top-left-radius:12px;
+  border-top-right-radius:12px;
+  font-size:11px;
+   font-weight:bold; 
+  user-select:none;
+  padding:6px 8px;
+}
+
+/* botões de navegação e fechar (mesmos estilos do exemplo) */
+#xpModalHeader .nav,
+#xpModalHeader .close{
+  background:none;
+  border:none;
+  color:#8b949e;
+  font-size:14px;
+  cursor:pointer;
+  padding:0 4px;
+  line-height:1;
+}
+#xpModalHeader .nav:hover,
+#xpModalHeader .close:hover{
+  color:#e6edf3;                    /* fica branco ao passar o mouse      */
+}
+
+/* container central com intervalo da semana + contagem regressiva */
+#xpModalHeader .week-header{
+  display:flex;
+  flex:1;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  text-align:center;
+  font-size:12px;
+}
+#xpModalHeader #semana-label{ color:#e6edf3; }
+#xpModalHeader #countdown   { color:#58a6ff; }
+
+/* ====== GRÁFICO ======================================================== */
+#xpChart{
+  width:100%;
+  flex: 1 1 auto;       /* mesmo canvas do exemplo                     */
+   max-height: 220px;
+  padding:0 8px 8px;   /* espaço para as barras não encostarem na borda*/
+}
+
+/* ====== RESUMO (“Total da Semana…”) =========================== */
+#xpSummary{
+  text-align:center;
+   font-weight:bold; 
+  font-size:11px;
+  color:#8b949e;
+  padding:4px;
+  background:#1e1e1e;
+  border-top:1px solid #30363d;
+}
+
+
+#xpModalHeader #xpEnem{
+  color:#AC1D22;      /* escolha a cor que quiser */
+  font-weight:bold;   /* (opcional) deixa o texto em negrito */
+}
+/* =====================================================================================
    MOBILE
    =====================================================================================*/
 @media (max-width: 768px) {
@@ -583,6 +684,20 @@ height: 46px;
      ===================================================================== -->
 <div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
   <iframe id="summaryFrame" style="border:none;width:100%;height:100%;"></iframe>
+</div>
+<!-- =====================================================================
+     MODAL DE XP (gráfico semanal)
+     ===================================================================== -->
+<div id="xpModal">
+  <div id="xpModalHeader">
+    <span class="nav" id="xpPrevWeek"><i class="fas fa-chevron-left"></i></span>
+      <span class="nav" id="xpNextWeek"><i class="fas fa-chevron-right"></i></span>  <!-- NOVO -->
+    <span id="xpPeriod">--/----/--/--</span>
+    <span id="xpEnem">ENEM: -- dias</span>
+
+      </div>
+    <div id="xpSummary"></div>
+  <canvas id="xpChart"></canvas>
 </div>
   <!-- =====================================================================
        BANCO DE DADOS
@@ -856,76 +971,76 @@ if (sessionStorage.getItem("__exportReady__") === "yes") {
   exportData();            // cai direto no ramo que baixa o arquivo
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
-function showMenu() {
-  currentDisc = currentSub = null;
-  updateHeader(false); clear();
+function showMenu () {
+      /* 1 ▸ devolve o xpModal para <body> antes que clear() o remova        */
+      const xpModalEl = document.getElementById('xpModal');
+      if (xpModalEl && xpModalEl.parentElement !== document.body) {
+        document.body.appendChild(xpModalEl);   // salva o modal
+      }
 
-  /* -------- Introdução -------- */
-app.insertAdjacentHTML("beforeend", `
-  <div class="intro-block">
-    <div class="intro-left">
-      <img src="arcano_newtonius.png"
-           alt="Arcano Newtonius"
-           class="intro-img">
-      <div id="xp-hoje">
-     🔮 Hoje: +${getTodaySolvedCount()}XP |
-        Total: ${getTotalXPCount()}XP |
-        ${Math.round( getTotalXPCount() / getTotalQuestionsCount() * 100 )}%
-      </div>
-    </div>
-    <div class="intro-text">
-      <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br/>
-      <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br/>
-      Guardião dos segredos do universo, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br/>
-      <p>Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo!</p>
-    </div>
-  </div>`);
+      /* 2 ▸ layout padrão */
+      currentDisc = currentSub = null;
+      updateHeader(false);
+      clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
 
+      /* 3 ▸ Introdução */
+      app.insertAdjacentHTML("beforeend", `
+        <div class="intro-block">
+          <div class="intro-left">
+            <img src="arcano_newtonius.png" alt="Arcano Newtonius" class="intro-img">
+            <div id="xp-hoje">
+              🔮 Hoje: +${getTodaySolvedCount()}XP |
+              Total: ${getTotalXPCount()}XP |
+              ${Math.round(getTotalXPCount() / getTotalQuestionsCount() * 100)}%
+            </div>
+          </div>
+          <div class="intro-text">
+            <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br/>
+            <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br/>
+            Guardião dos segredos do universo, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br/>
+            <p>Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo!</p>
+          </div>
+        </div>`);
 
-  /* -------- Lista de disciplinas -------- */
-  const lines = app.appendChild(Object.assign(
-    document.createElement("div"), { className: "metacog-lines" }));
+      /* 4 ▸ reinstala o listener no botão "🔮 Hoje" recém-criado           */
+      window.bindXpTrigger();
 
-  for (const disc of ["Biologia","Química","Física","Matemática"]) {
-    /* Container de cada linha */
-    const line = lines.appendChild(Object.assign(
-      document.createElement("div"), { className: "disc-line" }));
+      /* 5 ▸ Lista de disciplinas (código original)                          */
+      const lines = app.appendChild(Object.assign(
+        document.createElement("div"), { className: "metacog-lines" }));
 
-    /* Botão da disciplina */
-    line.appendChild(Object.assign(
-      document.createElement("button"), {
-        className: `disc-btn ${discClasses[disc]}`,
-        textContent: disc,
-        onclick: () => showSubjects(disc),
-    }));
+      for (const disc of ["Biologia","Química","Física","Matemática"]) {
+        const line = lines.appendChild(Object.assign(
+          document.createElement("div"), { className: "disc-line" }));
+        line.appendChild(Object.assign(
+          document.createElement("button"), {
+            className: `disc-btn ${discClasses[disc]}`,
+            textContent: disc,
+            onclick: () => showSubjects(disc),
+          }));
+        const stars = line.appendChild(Object.assign(
+          document.createElement("div"), { className: "stars-container" }));
+        for (const sub of Object.keys(questoesData[disc]).sort()) {
+          const star = stars.appendChild(Object.assign(
+            document.createElement("span"), { className: "star" }));
+          star.innerHTML = `<span class="star-index">${sub}</span>`;
+          const key = `star_${disc}_${sub}`;
+          let st = +localStorage.getItem(key) || 0;
+          updateStar(star, st);
+          star.onclick = () => {
+            st = (st + 1) % 5;
+            localStorage.setItem(key, st);
+            updateStar(star, st);
+          };
+        }
+      }
 
-    /* Estrelas de progresso (uma por assunto) */
-    const stars = line.appendChild(Object.assign(
-      document.createElement("div"), { className: "stars-container" }));
-
-    for (const sub of Object.keys(questoesData[disc]).sort()) {
-      const star = stars.appendChild(Object.assign(
-        document.createElement("span"), { className: "star" }));
-      star.innerHTML = `<span class="star-index">${sub}</span>`;
-
-      const key = `star_${disc}_${sub}`;
-      let st    = +localStorage.getItem(key) || 0;
-      updateStar(star, st);
-
-      star.onclick = () => {
-        st = (st + 1) % 5;
-        localStorage.setItem(key, st);
-        updateStar(star, st);
-      };
+      /* 6 ▸ Botões de backup */
+      app.appendChild(Object.assign(
+        document.createElement("button"), { textContent:"Exportar", onclick: exportData }));
+      app.appendChild(Object.assign(
+        document.createElement("button"), { textContent:"Importar", onclick: () => importFile.click() }));
     }
-  }
-
-  /* Botões de backup de progresso */
-  app.appendChild(Object.assign(
-    document.createElement("button"), { textContent:"Exportar", onclick: exportData }));
-  app.appendChild(Object.assign(
-    document.createElement("button"), { textContent:"Importar", onclick: () => importFile.click() }));
-}
 
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
@@ -1412,6 +1527,196 @@ document.addEventListener('visibilitychange', () => {
 // Cobre casos em que a janela volta a ter foco
 window.addEventListener('focus', resumePomodoroIfNeeded);
 
+/* ================================================================
+   XP MODAL – Cálculo de estatísticas e gráfico semanal
+   ============================================================== */
+(() => {
+
+  /* ---------- Configurações ---------- */
+  const EXAM_DATE = new Date('2025-11-09T00:00:00-03:00');  // 09/11/2025
+
+  /* ---------- Seletores ---------- */
+  const xpModal      = document.getElementById('xpModal');
+  const xpPrevWeek   = document.getElementById('xpPrevWeek');
+  const xpNextWeek = document.getElementById('xpNextWeek');   // NOVO
+  const xpPeriod     = document.getElementById('xpPeriod');
+  const xpEnem       = document.getElementById('xpEnem');
+  const xpSummary    = document.getElementById('xpSummary');
+  const xpChartElm   = document.getElementById('xpChart');
+    // >>> acrescente aqui <<<
+  const arcanoImg = document.querySelector('.intro-img');
+  const introLeft = document.querySelector('.intro-left');
+
+  /* ---------- Utilidades de data ---------- */
+  const DAY_MS = 24*60*60*1000;
+
+  function mondayOf(date){
+    const d = new Date(date);
+    d.setHours(0,0,0,0);
+    const diff = (d.getDay()+6) % 7; // 0=Seg,6=Dom
+    return new Date(d.getTime() - diff*DAY_MS);
+  }
+  function fmt(d){ return d.toLocaleDateString('pt-BR'); }
+
+  /* ---------- Contador de XP por data ---------- */
+  function countXpOn(dateStr){
+    let n = 0;
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k.startsWith(`log_${dateStr}_`)) n++;
+    }
+    return n;
+  }
+
+  /* ---------- Dados para a semana desejada ---------- */
+  function getWeekData(monday){
+    const labels = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+    const counts = [];
+    for(let i=0;i<7;i++){
+      const d = new Date(monday.getTime() + i*DAY_MS);
+      counts.push( countXpOn(d.toISOString().slice(0,10)) );
+    }
+    return { labels, counts };
+  }
+
+  /* ---------- Média móvel dos últimos 7 dias ---------- */
+  function last7DaysAvg(){
+    let sum=0;
+    for(let i=0;i<7;i++){
+      const d = new Date(Date.now() - i*DAY_MS);
+      sum += countXpOn(d.toISOString().slice(0,10));
+    }
+    return sum/7;
+  }
+
+  /* ---------- Gráfico ---------- */
+  let chart = null;
+function drawChart(labels, counts){
+  if (chart) chart.destroy();
+
+  chart = new Chart(xpChartElm, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: counts,
+        backgroundColor: '#9CA3AF',
+        borderWidth: 1,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+  y: {
+    beginAtZero: true,
+    ticks: { stepSize: 5 },
+    grid: {
+      color: '#30363d'          // cor das linhas horizontais
+    },
+    /* ─── aqui está o que remove a linha vertical ─── */
+    border: {
+      display: false            // oculta a borda do eixo y
+      // (se quisesse só “apagar” a cor, poderia usar borderColor:'transparent')
+    }
+  },
+  x: {
+    grid: { display: false },
+    border: { display: false }  // (opcional) tira a borda do eixo x também
+  }
+},
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          displayColors: false,
+          callbacks: {
+            title: () => '',
+            label: ctx => `${ctx.parsed.y} XP`
+          }
+        }
+      }
+    }
+  });
+}
+
+  /* ---------- Renderização completa do modal ---------- */
+  let currentMonday = mondayOf(new Date());   // começa na semana atual
+
+  function refreshModal(){
+    const {labels, counts} = getWeekData(currentMonday);
+    drawChart(labels, counts);
+
+    const weekStart = fmt(currentMonday);
+    const weekEnd   = fmt(new Date(currentMonday.getTime()+6*DAY_MS));
+    xpPeriod.textContent = `${weekStart}-${weekEnd}`;
+
+    const today = new Date();
+    const diasProva = Math.ceil( (EXAM_DATE - today) / DAY_MS );
+    xpEnem.textContent = `ENEM: ${diasProva} dias`;
+
+    const totalSemana = counts.reduce((a,b)=>a+b,0);
+    const restantes   = getTotalQuestionsCount() - getTotalXPCount();
+    const media7      = last7DaysAvg();
+    const previsao    = media7>0 ? Math.ceil(restantes / media7) : '∞';
+    xpSummary.textContent = `Total Semanal: ${totalSemana}XP | Previsão: ${previsao} dias`;
+  }
+
+  /* ---------- Navegação de semana ---------- */
+  xpPrevWeek.onclick = () => {
+    currentMonday = new Date(currentMonday.getTime() - 7*DAY_MS);
+    refreshModal();
+  };
+  xpNextWeek.onclick = () => {
+  /* só avança se NÃO for a semana atual */
+  const todayMonday = mondayOf(new Date());
+  if (currentMonday.getTime() + 7*DAY_MS > todayMonday.getTime()) return;
+
+  currentMonday = new Date(currentMonday.getTime() + 7*DAY_MS);
+  refreshModal();
+};
+
+/* ---------- Abrir / Fechar ---------- */
+
+/* ---------- Atalho no “🔮 Hoje” ---------- */
+/* ---------- Toggle no “🔮 Hoje” ---------- */
+function bindXpTrigger () {
+  const btn = document.getElementById('xp-hoje');
+  if (!btn) return;               // não está na tela? sai.
+
+  btn.style.cursor = 'pointer';
+  btn.title        = 'Clique para ver / ocultar gráfico semanal';
+
+  /* zera qualquer handler antigo */
+  btn.onclick = null;
+
+  btn.onclick = () => {
+    /* <<< captura o elemento atualizado do menu >>> */
+    const introLeft = document.querySelector('.intro-left');
+    if (!introLeft) return;       // (não deveria acontecer)
+
+    const aberto = xpModal.style.display === 'flex';
+
+    if (aberto) {
+      xpModal.style.display = 'none';
+    } else {
+      /* ancora o modal no menu recém-renderizado */
+      introLeft.appendChild(xpModal);
+      currentMonday = mondayOf(new Date());
+      refreshModal();
+      xpModal.style.display = 'flex';
+    }
+  };
+}
+
+/* deixa a função acessível fora do IIFE */
+window.bindXpTrigger = bindXpTrigger;
+
+bindXpTrigger();
+setTimeout(bindXpTrigger);   // reforço pós-showMenu()
+
+
+})();
 
 /* ================================================================
    8. BOOT (primeira renderização)
