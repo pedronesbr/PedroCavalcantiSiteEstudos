@@ -1762,10 +1762,11 @@ tooltip: {
       caretSize: 1,
       displayColors: false,         // já está no seu código
       padding: 2,
+      bodyAlign: 'center',
       callbacks: {
         /* ⬇️ Aqui trocamos “XP” por qualquer coisa: */
         title: () => '',
-        label: ctx => `🎯 +${ctx.parsed.y} XP`,   // mude ⭐ por ✨, 🎯, 🔥, etc.
+        label: ctx => ['✨', `+${ctx.parsed.y} XP`],   // mude ⭐ por ✨, 🎯, 🔥, etc.
           }
         }
       }
