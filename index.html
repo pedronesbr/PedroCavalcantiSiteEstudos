@@ -510,7 +510,7 @@ height: 46px;
   z-index:50;
   padding:0;          /* igual ao exemplo (o padding está nos filhos) */
   font-family:'Segoe UI',sans-serif;
-  color:#e6edf3;
+  color:#8b949e;
 }
 
 /* ====== CABEÇALHO (linha de navegação + título/contador) ============== */
@@ -518,7 +518,7 @@ height: 46px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:6px;
+  gap:0px;
 
   background:#232323;              /* faixa superior mais escura         */
   border-top-left-radius:12px;
@@ -579,7 +579,7 @@ height: 46px;
 
 
 #xpModalHeader #xpEnem{
-  color:#136FCC;      /* escolha a cor que quiser */
+  color:#FF712B;      /* escolha a cor que quiser */
   font-weight:bold;   /* (opcional) deixa o texto em negrito */
 }
 
@@ -1718,7 +1718,7 @@ function drawChart(labels, counts){
       labels,
       datasets: [{
         data: counts,
-        backgroundColor: '#727780',
+        backgroundColor: '#7D828C',
         borderWidth: 1,
         borderRadius: 3
       }]
@@ -1766,7 +1766,7 @@ tooltip: {
       callbacks: {
         /* ⬇️ Aqui trocamos “XP” por qualquer coisa: */
         title: () => '',
-        label: ctx => ['✨', `+${ctx.parsed.y} XP`],   // mude ⭐ por ✨, 🎯, 🔥, etc.
+        label: ctx => [`+${ctx.parsed.y} XP`],   // mude ⭐ por ✨, 🎯, 🔥, etc.
           }
         }
       }
@@ -1783,7 +1783,7 @@ tooltip: {
 
     const weekStart = fmt(currentMonday);
     const weekEnd   = fmt(new Date(currentMonday.getTime()+6*DAY_MS));
-    xpPeriod.textContent = `${weekStart}-${weekEnd}`;
+    xpPeriod.textContent = `${weekStart}-${weekEnd} |`;
 
     const today = new Date();
     const diasProva = Math.ceil( (EXAM_DATE - today) / DAY_MS );
