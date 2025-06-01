@@ -439,7 +439,7 @@ height: 46px;
   position: absolute;
   top: 20px;
   transform: translateY(-50%);
-  right: 20px;            /* afasta o timer do canto direito */
+  right: 10px;            /* afasta o timer do canto direito */
   background: transparent;
   border: none;
   font-size: 24px;
@@ -447,12 +447,14 @@ height: 46px;
   user-select: none;
   padding: 0 8px;
   height: 46px;
-  width: 54px;
+  width: 30px;
 }
 #pomodoroBtn.active {
   font-family: monospace;
+  top: 22px;
   font-size: 16px;
   padding: 0 12px;
+  right: 30px;      /* ➜ quando ativo, desloca-se mais p/ a esquerda */
 }
 
 /* === Modal Pomodoro === */
@@ -580,6 +582,72 @@ height: 46px;
   color:#136FCC;      /* escolha a cor que quiser */
   font-weight:bold;   /* (opcional) deixa o texto em negrito */
 }
+
+/* ===== Botão engrenagem ===== */
+#settingsBtn{
+  position:absolute;
+  top:0;
+  right:0;
+  width:54px;
+  height:46px;
+  background:transparent;
+  border:none;
+  font-size:22px;
+  color:var(--c-text-primary);
+  cursor:pointer;
+  transition:filter .2s;
+}
+#settingsBtn:hover{ filter:brightness(1.3); }
+
+/* ===== Menu flutuante ===== */
+#settingsMenu{
+  position:absolute;
+  top:46px;          /* logo abaixo do header */
+  right:8px;
+  background:var(--c-bg-panel);
+  border:1px solid var(--c-border-muted);
+  border-radius:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  padding:6px;
+  display:none;      /* só abre via JS        */
+  flex-direction:column;
+  z-index:1500;
+}
+#settingsMenu button{
+  all:unset;
+  display:block;
+  padding:8px 12px;
+  font-size:14px;
+  color:var(--c-text-primary);
+  cursor:pointer;
+  border-radius:4px;
+  transition:background .15s;
+}
+#settingsMenu button:hover:not([disabled]){
+  background:#2a2a2a;
+}
+#settingsMenu button[disabled]{
+  opacity:.45;
+  cursor:default;
+}
+/* ───────────── HOME LOOK ───────────── */
+body.home #header          { background: var(--c-bg-app); }   /* barra preta */
+
+/* posição horizontal (para a esquerda) – vale nas duas situações */
+body.home #pomodoroBtn      { right: 70px; }
+
+/* posição vertical:
+   • ícone 🍅   → 22 px
+   • cronômetro → 20 px  */
+body.home #pomodoroBtn       { top: 20px; }
+body.home #pomodoroBtn.active{ top: 23px; }
+
+/* esconder o ícone 🍅 na Home; se o timer entrar em .active, ele reaparece */
+body.home #pomodoroBtn:not(.active) {        /* 👈 regra nova  */
+  display: none;
+}
+
+body.home #headerStats      { display: none !important; }      /* esconde estatísticas */
 /* =====================================================================================
    MOBILE
    =====================================================================================*/
@@ -651,6 +719,18 @@ height: 46px;
 <div id="header">
   <button id="backBtn">
     <i class="fas fa-arrow-left"></i>
+    <!-- Botão engrenagem -->
+<button id="settingsBtn" aria-label="Configurações">
+  <i class="fas fa-cog"></i>
+</button>
+
+<!-- Menu flutuante das configurações -->
+<div id="settingsMenu">
+  <button id="simuladoBtn" disabled>Simulado Personalizado</button>
+  <button id="erradasBtn"  disabled>Erradas da Semana</button>
+  <button id="importBtn">Importar</button>
+  <button id="exportBtn">Exportar</button>
+</div>
   </button>
   <div class="header-top">
     <span id="headerTitle">Título Dinâmico</span>
@@ -780,6 +860,11 @@ const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
 const summaryContainer = document.getElementById("summaryContainer");
 const summaryFrame     = document.getElementById("summaryFrame");
+
+const settingsBtn   = document.getElementById("settingsBtn");
+const settingsMenu  = document.getElementById("settingsMenu");
+const exportBtn     = document.getElementById("exportBtn");
+const importBtn     = document.getElementById("importBtn");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -980,7 +1065,8 @@ function showMenu () {
 
       /* 2 ▸ layout padrão */
       currentDisc = currentSub = null;
-      updateHeader(false);
+      enterHome();            // aplica o visual preto + ajustes
+      updateHeader(true);
       clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
 
       /* 3 ▸ Introdução */
@@ -1034,18 +1120,48 @@ function showMenu () {
           };
         }
       }
-
-      /* 6 ▸ Botões de backup */
-      app.appendChild(Object.assign(
-        document.createElement("button"), { textContent:"Exportar", onclick: exportData }));
-      app.appendChild(Object.assign(
-        document.createElement("button"), { textContent:"Importar", onclick: () => importFile.click() }));
+      toggleSettingsVisibility(true);   // mostra engrenagem
     }
 
+// Abre/fecha ao clicar na engrenagem
+settingsBtn.onclick = e => {
+  e.stopPropagation();   // evita fechar imediatamente
+  settingsMenu.style.display =
+    settingsMenu.style.display === "flex" ? "none" : "flex";
+};
+
+// Fecha se clicar fora do menu
+document.addEventListener("click", e=>{
+  if(!settingsMenu.contains(e.target) && e.target!==settingsBtn){
+    settingsMenu.style.display = "none";
+  }
+});
+
+function toggleSettingsVisibility(showHome){
+  settingsBtn.style.display  = showHome ? 'block' : 'none';
+  /* se saiu da home, fecha o menu para não ficar solto */
+  if (!showHome) settingsMenu.style.display = 'none';
+}
+
+exportBtn.onclick = () => {
+  settingsMenu.style.display = "none";
+  exportData();
+};
+importBtn.onclick = () => {
+  settingsMenu.style.display = "none";
+  importFile.click();
+};
+
+// Placeholders — por enquanto só avisam
+document.getElementById("simuladoBtn").onclick =
+document.getElementById("erradasBtn").onclick  = () =>
+  alert("Funcionalidade em desenvolvimento 🙂");
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
   currentDisc = disc;
   currentSub  = null;
+  leaveHome();            // volta ao visual normal fora da Home
+  toggleSettingsVisibility(false);  // esconde engrenagem
 
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
@@ -1138,6 +1254,8 @@ function showSubjects(disc) {
 function showQuestions(disc, sub) {
   currentDisc = disc;
   currentSub  = sub;
+  leaveHome();            // volta ao visual normal fora da Home
+  toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc} – ${getFriendlyName(disc, sub)}`);
   clear();
   window.scrollTo(0, 0);
@@ -1729,6 +1847,10 @@ window.bindXpTrigger = bindXpTrigger;
 
 bindXpTrigger();
 setTimeout(bindXpTrigger);   // reforço pós-showMenu()
+
+/* ====== habilita / desabilita o visual exclusivo da Home ====== */
+window.enterHome = function () { document.body.classList.add('home'); };
+window.leaveHome = function () { document.body.classList.remove('home'); };
 
 
 })();
