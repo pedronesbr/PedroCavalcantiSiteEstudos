@@ -651,6 +651,11 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
 
 /* COMENTÁRIO: COMPORTAMENTO PADRÃO: uma linha com “...” se exceder */
 .comment-edit {
+  /* ─────────── Layout flex ORIGINAL (para manter largura responsiva) ─────────── */
+  flex: 1 1 400px;    /* permite o campo encolher/expandir como antes */
+  min-width: 0;       /* garante que, em flexbox, ele não estoure o container pai */
+
+  /* ─────────── Estilo visual ─────────── */
   background: var(--c-bg-panel);
   color: var(--c-text-primary);
   font-size: 14px;
@@ -661,35 +666,36 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   margin: 8px 0 0 15px;
   cursor: text;
 
-  /* Layout “uma linha + ellipsis” */
+  /* ─────────── Texto em UMA LINHA + reticências se ultrapassar ─────────── */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: 38px;        /* altura aproximada de uma linha */
+  max-height: 38px;        /* altura ≈ 1 linha, como antes */
 }
 
-/* Quando estiver em estado “expanded”, muda para multiline */
+/* Quando o usuário clicar (focus), adicionamos multiline e scroll */
 .comment-edit.expanded {
   white-space: pre-wrap;   /* permite quebra de linha */
-  overflow-y: auto;        /* habilita scroll vertical, se necessário */
-  max-height: 240px;       /* altura máxima para multiline (ou ajuste conforme desejar) */
+  overflow-y: auto;        /* scroll vertical se passar do max-height */
+  max-height: 240px;       /* altura máxima no estado expandido */
 }
 
-/* Placeholder visível quando .comment-edit estiver vazio */
+/* Placeholder visível quando está vazio */
 .comment-edit:empty:before {
   content: attr(data-ph);
   color: var(--c-text-muted);
   pointer-events: none;
 }
 
-/* COR DO LINK dentro do comentário (sem sublinhado) */
+/* Links dentro do comentário sem sublinhado, em cor que destaque no fundo escuro */
 .comment-edit a {
   text-decoration: none;
-  color: #8a79e6; /* roxo-claro que destaca no fundo escuro */
+  color: #8a79e6; /* roxo-claro que contrasta no fundo escuro */
 }
 .comment-edit a:hover {
   opacity: 0.9;
 }
+
 
 /* =====================================================================================
    MOBILE
@@ -1470,12 +1476,21 @@ editDiv.dataset.ph      = '';
 // carrega qualquer comentário salvo (sem formatação extra)
 editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-// 1) BLOCO “COLAR SÓ TEXTO PLANO”
+// 1) BLOCO “COLAR SÓ TEXTO PURO” (sem nenhuma formatação)
 editDiv.addEventListener('paste', e => {
   e.preventDefault();
-  // pega apenas texto puro
   const plain = e.clipboardData.getData('text/plain');
-  document.execCommand('insertText', false, plain);
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+
+  // insere um nó de texto limpo exatamente onde está o cursor
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  range.insertNode(document.createTextNode(plain));
+  // coloca o cursor logo após o texto inserido
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
 });
 
 // 2) “input”: ao digitar, reajusta altura se estiver expandido
