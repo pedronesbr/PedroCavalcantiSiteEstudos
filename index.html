@@ -1601,7 +1601,14 @@ editDiv.addEventListener("blur", () => {
   atualizaIndicadorOverflow(editDiv);
   /* restante do código de blur… */
 });
-
+// no fim de showQuestions (antes de fechar a função), adicione:
+document.querySelectorAll('.comment-edit').forEach(div => {
+  div.blur();
+});
+// Caso ainda reste algum elemento focado, bruta-force:
+if (document.activeElement && document.activeElement.classList.contains('comment-edit')) {
+  document.activeElement.blur();
+}
 // E também, depois de inserir o elemento pela primeira vez,  
 // executa logo de cara para casos em que já haja texto longo:
 atualizaIndicadorOverflow(editDiv);
