@@ -25,7 +25,7 @@
   <!-- =====================================================================
      Chart.js – usado para o gráfico de barras do XP semanal
      ===================================================================== -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <script>
     /* Informa ao pdf.js onde está o *worker* que processa o PDF
@@ -165,11 +165,11 @@ button:hover { filter: brightness(1.2); }
   font-size: 15px;          /* estatística inline, fonte menor */
 }
 #backBtn {
-position: absolute;
-left: 0px;
-top: 0px;
-width: 54px;
-height: 46px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 54px;
+  height: 46px;
 }
 
 /* =====================================================================================
@@ -562,14 +562,14 @@ height: 46px;
 #xpChart{
   width:100%;
   flex: 1 1 auto;       /* mesmo canvas do exemplo                     */
-   max-height: 236px;
+  max-height: 236px;
   padding:0 8px 8px;   /* espaço para as barras não encostarem na borda*/
 }
 
 /* ====== RESUMO (“Total da Semana…”) =========================== */
 #xpSummary{
   text-align:center;
-   font-weight:bold; 
+  font-weight:bold; 
   font-size:11px;
   color:#8b949e;
   padding:4px;
@@ -672,13 +672,21 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   transition: max-height .2s ease;
 }
 
+/* quando estiver expandido, permite scroll */
 .comment-edit.expanded{
-  overflow-y: auto;          /* mostra scroll se passar do limite  */
+  overflow-y: auto;
 }
+/* placeholder visível quando vazio */
 .comment-edit:empty:before{
   content: attr(data-ph);
   color: var(--c-text-muted);
   pointer-events: none;
+}
+
+/* Opcional: sublinha links fora de edição */
+.comment-edit:not(:focus) a {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* =====================================================================================
@@ -749,29 +757,29 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
        - Botão “Voltar”, título dinâmico e um div vazio usado só
          como espaçador para manter o título centralizado.
        ===================================================================== -->
-<div id="header">
-  <button id="backBtn">
-    <i class="fas fa-arrow-left"></i>
-    <!-- Botão engrenagem -->
-<button id="settingsBtn" aria-label="Configurações">
-  <i class="fas fa-cog"></i>
-</button>
+  <div id="header">
+    <button id="backBtn">
+      <i class="fas fa-arrow-left"></i>
+      <!-- Botão engrenagem -->
+      <button id="settingsBtn" aria-label="Configurações">
+        <i class="fas fa-cog"></i>
+      </button>
 
-<!-- Menu flutuante das configurações -->
-<div id="settingsMenu">
-  <button id="simuladoBtn" disabled>Simulado Personalizado</button>
-  <button id="erradasBtn"  disabled>Erradas da Semana</button>
-  <button id="importBtn">Importar</button>
-  <button id="exportBtn">Exportar</button>
-</div>
-  </button>
-  <div class="header-top">
-    <span id="headerTitle">Título Dinâmico</span>
+      <!-- Menu flutuante das configurações -->
+      <div id="settingsMenu">
+        <button id="simuladoBtn" disabled>Simulado Personalizado</button>
+        <button id="erradasBtn"  disabled>Erradas da Semana</button>
+        <button id="importBtn">Importar</button>
+        <button id="exportBtn">Exportar</button>
+      </div>
+    </button>
+    <div class="header-top">
+      <span id="headerTitle">Título Dinâmico</span>
+    </div>
+    <div class="header-bottom">
+      <span id="headerStats" class="stat neutral">Estatísticas</span>
+    </div>
   </div>
-  <div class="header-bottom">
-    <span id="headerStats" class="stat neutral">Estatísticas</span>
-  </div>
-</div>
 
   <!-- =====================================================================
        CONTEÚDO DINÂMICO
@@ -795,23 +803,22 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   <!-- =====================================================================
      RESUMO (overlay com o editor de texto)
      ===================================================================== -->
-<div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
-  <iframe id="summaryFrame" style="border:none;width:100%;height:100%;"></iframe>
-</div>
-<!-- =====================================================================
-     MODAL DE XP (gráfico semanal)
-     ===================================================================== -->
-<div id="xpModal">
-  <div id="xpModalHeader">
-    <span class="nav" id="xpPrevWeek"><i class="fas fa-chevron-left"></i></span>
-      <span class="nav" id="xpNextWeek"><i class="fas fa-chevron-right"></i></span>  <!-- NOVO -->
-    <span id="xpPeriod">--/----/--/--</span>
-    <span id="xpEnem">ENEM: -- dias</span>
-
-      </div>
+  <div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
+    <iframe id="summaryFrame" style="border:none;width:100%;height:100%;"></iframe>
+  </div>
+  <!-- =====================================================================
+       MODAL DE XP (gráfico semanal)
+       ===================================================================== -->
+  <div id="xpModal">
+    <div id="xpModalHeader">
+      <span class="nav" id="xpPrevWeek"><i class="fas fa-chevron-left"></i></span>
+      <span class="nav" id="xpNextWeek"><i class="fas fa-chevron-right"></i></span>
+      <span id="xpPeriod">--/----/--/--</span>
+      <span id="xpEnem">ENEM: -- dias</span>
+    </div>
     <div id="xpSummary"></div>
-  <canvas id="xpChart"></canvas>
-</div>
+    <canvas id="xpChart"></canvas>
+  </div>
   <!-- =====================================================================
        BANCO DE DADOS
        - Arquivo gerado externamente contendo listaQuestoes[] (JSON)
@@ -823,25 +830,25 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
        - Controla: navegação, estatísticas, render de PDF, armazenamento
          em localStorage, import/export, etc.
        ===================================================================== -->
-       <!-- Modal Pomodoro -->
-<div id="pomodoroModal">
-  <div class="modal-content">
-    <h3>Pomodoro</h3>
-    <div id="pomodoroOptions">
-      <button data-min="25">25 minutos</button>
-      <button data-min="5">5 minutos</button>
-      <button id="customBtn">Personalizado</button>
-    </div>
-    <div id="customInput" style="display:none;">
-      <input type="number" id="customMinutes" min="1" placeholder="Min">
-      <button id="startCustomBtn">Iniciar</button>
-    </div>
-    <div id="pomodoroControls" style="display:none;">
-      <button id="pauseResumeBtn">Pausar</button>
-      <button id="stopBtn">Sair</button>
+  <!-- Modal Pomodoro -->
+  <div id="pomodoroModal">
+    <div class="modal-content">
+      <h3>Pomodoro</h3>
+      <div id="pomodoroOptions">
+        <button data-min="25">25 minutos</button>
+        <button data-min="5">5 minutos</button>
+        <button id="customBtn">Personalizado</button>
+      </div>
+      <div id="customInput" style="display:none;">
+        <input type="number" id="customMinutes" min="1" placeholder="Min">
+        <button id="startCustomBtn">Iniciar</button>
+      </div>
+      <div id="pomodoroControls" style="display:none;">
+        <button id="pauseResumeBtn">Pausar</button>
+        <button id="stopBtn">Sair</button>
+      </div>
     </div>
   </div>
-</div>
   <script>
 /* ================================================================
    1. CONSTANTES & CONFIGURAÇÕES GLOBAIS
@@ -857,18 +864,73 @@ const SUBJECT_TOTALS = {
 /* Lista “amigável” dos assuntos: índice → nome completo.
    Mantém separada da lógica para facilitar troca/edição.            */
 const SUBJECT_NAMES = {
-    Biologia:   ['1. Ecologia Básica', '2. Ecologia Avançada', '3. Evolução', '4.  Impacto Ambiental', '5. Moléculas Orgânicas', '6. Transporte de Moléculas (Difusão e Osmose)', '7. Citologia', '8. Energia Celular', '9. Origem da Vida', '10. Bactérias (Procariontes), Algas e Fungos', '11. Filogenia e Indrodução à Botânica', '12. Morfologia e Reprodução de Plantas', '13. Transporte de Seiva e de Sementes', '14. Invertebrados', '15. Parasitoses e Doenças Endêmicas', '16. Vertebrados e Conquista Terrestre', '17. Sistema Digestório, Endócrino e Excretor', '18. Sistema Reprodutor e Reprodução Humana', '19. Sistema Cardiorrespiratório e Sangue', '20. Sistema Nervoso e Musculoesquelético', '21. Estrutura do DNA e Dogma Central', '22. Genética', '23. Hereditariedade', '24. Genética Avançada', '25. Vírus e Imunidade', '26. Neoplasia e Farmacologia'],
-    Química:    ['1. Modelos Atômicos', '2. Camadas Eletrônicas', '3. Tabela Periódica', '4. Ligações Químicas', '5. Forças Intermoleculares', '6. Sistemas e Misturas', '7. Fórmulas Químicas', '8. Reações Químicas', '9. Ácidos e Bases', '10. Reações com Ácidos', '11. Sais e Óxidos', '12. Estequiometria', '13. Termoquímica', '14. Equilíbrio Químico', '15. Reação de Oxirredução', '16. Pilha', '17. Química Orgânica', '18. Cadeias Orgânicas', '19. Isomeria', '20. Reações Orgânicas', '21. Ciclos da Matéria', '22. Derivados do Petróleo', '23. Descarte de Materiais', '24. Reações Nucleares'],
-    Física:     ['1. Eletricidade', '2. Potencial Elétrico', '3. Eletrodinâmica Básica', '4. Eletrodinâmica Avançada', '5. Eletromagnetismo', '6. Óptica Básica', '7. Fenômenos Ópticos', '8. Óptica Avançada', '9. Ondulatória', '10. Ondulatória Avançada e Acústica', '11. Termologia', '12. Dilatação e Escalas de Temperatura', '13. Energia, Potência e Termodinâmica', '14. Estudo dos Gases', '15. Cinemática', '16. Momento Linear (Quantidade de Movimento)', '17. Dinâmica', '18. Gravitação', '19. Molas e Estática', '20. Hidrostática'],
-    Matemática: ['1. Matemática Básica', '2. Potenciação', '3. Porcentagem e Conversões', '4. Razão e Matemática Financeira', '5. Sistemas e Vazão', '6. Equação do 1º Grau', '7. Estatística Básica', '8. Progressões Matemáticas', '9. Equações do 2º Grau', '10. Outras Equações (Equação da Circunferência)', '11. Logaritmo', '12. Trigonometria (Ciclo Trigonométrico)', '13. Diagramas (Venn) e Mapas', '14. Análise de Gráficos', '15. Paralelogramos', '16. Triângulos', '17. Cículos e Projeção','18. Prismas e Pirâmides', '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'],
+  Biologia: [
+    '1. Ecologia Básica', '2. Ecologia Avançada', '3. Evolução', '4.  Impacto Ambiental',
+    '5. Moléculas Orgânicas', '6. Transporte de Moléculas (Difusão e Osmose)', '7. Citologia',
+    '8. Energia Celular', '9. Origem da Vida', '10. Bactérias (Procariontes), Algas e Fungos',
+    '11. Filogenia e Indrodução à Botânica', '12. Morfologia e Reprodução de Plantas',
+    '13. Transporte de Seiva e de Sementes', '14. Invertebrados', '15. Parasitoses e Doenças Endêmicas',
+    '16. Vertebrados e Conquista Terrestre', '17. Sistema Digestório, Endócrino e Excretor',
+    '18. Sistema Reprodutor e Reprodução Humana', '19. Sistema Cardiorrespiratório e Sangue',
+    '20. Sistema Nervoso e Musculoesquelético', '21. Estrutura do DNA e Dogma Central', '22. Genética',
+    '23. Hereditariedade', '24. Genética Avançada', '25. Vírus e Imunidade', '26. Neoplasia e Farmacologia'
+  ],
+  Química: [
+    '1. Modelos Atômicos', '2. Camadas Eletrônicas', '3. Tabela Periódica', '4. Ligações Químicas',
+    '5. Forças Intermoleculares', '6. Sistemas e Misturas', '7. Fórmulas Químicas', '8. Reações Químicas',
+    '9. Ácidos e Bases', '10. Reações com Ácidos', '11. Sais e Óxidos', '12. Estequiometria',
+    '13. Termoquímica', '14. Equilíbrio Químico', '15. Reação de Oxirredução', '16. Pilha',
+    '17. Química Orgânica', '18. Cadeias Orgânicas', '19. Isomeria', '20. Reações Orgânicas',
+    '21. Ciclos da Matéria', '22. Derivados do Petróleo', '23. Descarte de Materiais', '24. Reações Nucleares'
+  ],
+  Física: [
+    '1. Eletricidade', '2. Potencial Elétrico', '3. Eletrodinâmica Básica', '4. Eletrodinâmica Avançada',
+    '5. Eletromagnetismo', '6. Óptica Básica', '7. Fenômenos Ópticos', '8. Óptica Avançada',
+    '9. Ondulatória', '10. Ondulatória Avançada e Acústica', '11. Termologia',
+    '12. Dilatação e Escalas de Temperatura', '13. Energia, Potência e Termodinâmica',
+    '14. Estudo dos Gases', '15. Cinemática', '16. Momento Linear (Quantidade de Movimento)',
+    '17. Dinâmica', '18. Gravitação', '19. Molas e Estática', '20. Hidrostática'
+  ],
+  Matemática: [
+    '1. Matemática Básica', '2. Potenciação', '3. Porcentagem e Conversões', '4. Razão e Matemática Financeira',
+    '5. Sistemas e Vazão', '6. Equação do 1º Grau', '7. Estatística Básica', '8. Progressões Matemáticas',
+    '9. Equações do 2º Grau', '10. Outras Equações (Equação da Circunferência)', '11. Logaritmo',
+    '12. Trigonometria (Ciclo Trigonométrico)', '13. Diagramas (Venn) e Mapas', '14. Análise de Gráficos',
+    '15. Paralelogramos', '16. Triângulos', '17. Cículos e Projeção', '18. Prismas e Pirâmides',
+    '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'
+  ],
 };
 
 /* Ranking de incidência (com base no ENEM) para mostrar badge.      */
 const INCIDENCE_RANKINGS = {
-    Biologia: { "01": '17º', "02": '10º', "03": '6º', "04": '1º', "05": '25º', "06": '19º', "07": '21º', "08": '2º', "09": '26º', "10": '20º', "11": '23º', "12": '3º', "13": '13º', "14": '22º', "15": '18º', "16": '5º', "17": '7º', "18": '24º', "19": '16º', "20": '12º', "21": '9º', "22": '15º', "23": '4º', "24": '14º', "25": '8º', "26": '11º' },
-    Química: { "01": '23º', "02": '15º', "03": '17º', "04": '18º', "05": '7º', "06": '1º', "07": '24º', "08": '4º', "09": '5º', "10": '19º', "11": '13º', "12": '2º', "13": '22º', "14": '21º', "15": '8º', "16": '6º', "17": '12º', "18": '3º', "19": '20º', "20": '10º', "21": '14º', "22": '16º', "23": '11º', "24": '9º' },
-    Física: { "01": '13º', "02": '10º', "03": '1º', "04": '18º', "05": '7º', "06": '4º', "07": '15º', "08": '19º', "09": '8º', "10": '5º', "11": '2º', "12": '20º', "13": '6º', "14": '14º', "15": '3º', "16": '11º', "17": '9º', "18": '16º', "19": '12º', "20": '17º' },
-    Matemática: { "01": '7º', "02": '17º', "03": '1º', "04": '6º', "05": '3º', "06": '20º', "07": '2º', "08": '15º', "09": '12º', "10": '22º', "11": '16º', "12": '14º', "13": '19º', "14": '5º', "15": '18º', "16": '9º', "17": '4º', "18": '13º', "19": '10º', "20": '11º', "21": '8º', "22": '21º' }
+  Biologia: {
+    "01": '17º', "02": '10º', "03": '6º',  "04": '1º',  "05": '25º',
+    "06": '19º', "07": '21º', "08": '2º',  "09": '26º', "10": '20º',
+    "11": '23º', "12": '3º',  "13": '13º', "14": '22º', "15": '18º',
+    "16": '5º',  "17": '7º',  "18": '24º', "19": '16º', "20": '12º',
+    "21": '9º',  "22": '15º', "23": '4º',  "24": '14º', "25": '8º',
+    "26": '11º'
+  },
+  Química: {
+    "01": '23º', "02": '15º', "03": '17º', "04": '18º', "05": '7º',
+    "06": '1º',  "07": '24º', "08": '4º',  "09": '5º',  "10": '19º',
+    "11": '13º', "12": '2º',  "13": '22º', "14": '21º', "15": '8º',
+    "16": '6º',  "17": '12º', "18": '3º',  "19": '20º', "20": '10º',
+    "21": '14º', "22": '16º', "23": '11º', "24": '9º'
+  },
+  Física: {
+    "01": '13º', "02": '10º', "03": '1º',  "04": '18º', "05": '7º',
+    "06": '4º',  "07": '15º', "08": '19º', "09": '8º',  "10": '5º',
+    "11": '2º',  "12": '20º', "13": '6º',  "14": '14º', "15": '3º',
+    "16": '11º', "17": '9º',  "18": '16º', "19": '12º', "20": '17º'
+  },
+  Matemática: {
+    "01": '7º',  "02": '17º', "03": '1º',  "04": '6º',  "05": '3º',
+    "06": '20º', "07": '2º',  "08": '15º', "09": '12º', "10": '22º',
+    "11": '16º', "12": '14º', "13": '19º', "14": '5º',  "15": '18º',
+    "16": '9º',  "17": '4º',  "18": '13º', "19": '10º', "20": '11º',
+    "21": '8º',  "22": '21º'
+  }
 };
 
 /* Mapeia cada disciplina para a classe CSS que define sua cor.      */
@@ -1088,8 +1150,8 @@ function getTotalXPCount() {
     for (const sub in questoesData[disc]) {
       const qs = questoesData[disc][sub];
       // ...para cada questão, conta se st===1 (✓) ou st===2 (✗)
- qs.forEach(q => {
-   const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
+      qs.forEach(q => {
+        const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
         if (st === 1 || st === 2) count++;
       });
     }
@@ -1109,71 +1171,71 @@ if (sessionStorage.getItem("__exportReady__") === "yes") {
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
 function showMenu () {
-      /* 1 ▸ devolve o xpModal para <body> antes que clear() o remova        */
-      const xpModalEl = document.getElementById('xpModal');
-      if (xpModalEl && xpModalEl.parentElement !== document.body) {
-        document.body.appendChild(xpModalEl);   // salva o modal
-      }
+  /* 1 ▸ devolve o xpModal para <body> antes que clear() o remova        */
+  const xpModalEl = document.getElementById('xpModal');
+  if (xpModalEl && xpModalEl.parentElement !== document.body) {
+    document.body.appendChild(xpModalEl);   // salva o modal
+  }
 
-      /* 2 ▸ layout padrão */
-      currentDisc = currentSub = null;
-      enterHome();            // aplica o visual preto + ajustes
-      updateHeader(true);
-      clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
+  /* 2 ▸ layout padrão */
+  currentDisc = currentSub = null;
+  enterHome();            // aplica o visual preto + ajustes
+  updateHeader(true);
+  clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
 
-      /* 3 ▸ Introdução */
-      app.insertAdjacentHTML("beforeend", `
-        <div class="intro-block">
-          <div class="intro-left">
-            <img src="arcano_newtonius.png" alt="Arcano Newtonius" class="intro-img">
-            <div id="xp-hoje">
-              🔮 Hoje: +${getTodaySolvedCount()}XP |
-              Total: ${getTotalXPCount()}XP |
-              ${Math.round(getTotalXPCount() / getTotalQuestionsCount() * 100)}%
-            </div>
-          </div>
-          <div class="intro-text">
-            <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br/>
-            <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br/>
-            Guardião dos segredos do universo, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br/>
-            <p>Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo!</p>
-          </div>
-        </div>`);
+  /* 3 ▸ Introdução */
+  app.insertAdjacentHTML("beforeend", `
+    <div class="intro-block">
+      <div class="intro-left">
+        <img src="arcano_newtonius.png" alt="Arcano Newtonius" class="intro-img">
+        <div id="xp-hoje">
+          🔮 Hoje: +${getTodaySolvedCount()}XP |
+          Total: ${getTotalXPCount()}XP |
+          ${Math.round(getTotalXPCount() / getTotalQuestionsCount() * 100)}%
+        </div>
+      </div>
+      <div class="intro-text">
+        <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br/>
+        <p>Eu sou <strong>Arcano Newtonius</strong>, o Mago das Ciências da Natureza e da Matemática!<br/>
+        Guardião dos segredos do universo, e teu guia nesta jornada rumo à aprovação em Medicina no ENEM.</p><br/>
+        <p>Cumpre tuas missões, conquista tuas estrelas e avança de nível até alcançar o topo!</p>
+      </div>
+    </div>`);
 
-      /* 4 ▸ reinstala o listener no botão "🔮 Hoje" recém-criado           */
-      window.bindXpTrigger();
+  /* 4 ▸ reinstala o listener no botão "🔮 Hoje" recém-criado           */
+  window.bindXpTrigger();
 
-      /* 5 ▸ Lista de disciplinas (código original)                          */
-      const lines = app.appendChild(Object.assign(
-        document.createElement("div"), { className: "metacog-lines" }));
+  /* 5 ▸ Lista de disciplinas (código original)                          */
+  const lines = app.appendChild(Object.assign(
+    document.createElement("div"), { className: "metacog-lines" }));
 
-      for (const disc of ["Biologia","Química","Física","Matemática"]) {
-        const line = lines.appendChild(Object.assign(
-          document.createElement("div"), { className: "disc-line" }));
-        line.appendChild(Object.assign(
-          document.createElement("button"), {
-            className: `disc-btn ${discClasses[disc]}`,
-            textContent: disc,
-            onclick: () => showSubjects(disc),
-          }));
-        const stars = line.appendChild(Object.assign(
-          document.createElement("div"), { className: "stars-container" }));
-        for (const sub of Object.keys(questoesData[disc]).sort()) {
-          const star = stars.appendChild(Object.assign(
-            document.createElement("span"), { className: "star" }));
-          star.innerHTML = `<span class="star-index">${sub}</span>`;
-          const key = `star_${disc}_${sub}`;
-          let st = +localStorage.getItem(key) || 0;
-          updateStar(star, st);
-          star.onclick = () => {
-            st = (st + 1) % 5;
-            localStorage.setItem(key, st);
-            updateStar(star, st);
-          };
-        }
-      }
-      toggleSettingsVisibility(true);   // mostra engrenagem
+  for (const disc of ["Biologia","Química","Física","Matemática"]) {
+    const line = lines.appendChild(Object.assign(
+      document.createElement("div"), { className: "disc-line" }));
+    line.appendChild(Object.assign(
+      document.createElement("button"), {
+        className: `disc-btn ${discClasses[disc]}`,
+        textContent: disc,
+        onclick: () => showSubjects(disc),
+      }));
+    const stars = line.appendChild(Object.assign(
+      document.createElement("div"), { className: "stars-container" }));
+    for (const sub of Object.keys(questoesData[disc]).sort()) {
+      const star = stars.appendChild(Object.assign(
+        document.createElement("span"), { className: "star" }));
+      star.innerHTML = `<span class="star-index">${sub}</span>`;
+      const key = `star_${disc}_${sub}`;
+      let st = +localStorage.getItem(key) || 0;
+      updateStar(star, st);
+      star.onclick = () => {
+        st = (st + 1) % 5;
+        localStorage.setItem(key, st);
+        updateStar(star, st);
+      };
     }
+  }
+  toggleSettingsVisibility(true);   // mostra engrenagem
+}
 
 // Abre/fecha ao clicar na engrenagem
 settingsBtn.onclick = e => {
@@ -1302,6 +1364,7 @@ function showSubjects(disc) {
       `<span class="subject-stripe" style="background:${color}"></span>`);
   }
 }
+
 /* ---------------- LISTA DE QUESTÕES ---------------- */
 function showQuestions(disc, sub) {
   currentDisc = disc;
@@ -1343,20 +1406,20 @@ function showQuestions(disc, sub) {
       document.createElement("div"), { className:"question-row" }));
 
     /* Botão da questão (abre PDF) */
-// ─── Botão “stripe” com cor por exame ───
-const qBtn = document.createElement("button");
-qBtn.textContent = q.label;
-qBtn.classList.add("btn");
+    // ─── Botão “stripe” com cor por exame ───
+    const qBtn = document.createElement("button");
+    qBtn.textContent = q.label;
+    qBtn.classList.add("btn");
 
-// detecta ENEM, SAS ou BERNOULLI no label
-const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
-if (m) {
-  const exam = m[0].toLowerCase();          // "enem", "sas" ou "bernoulli"
-  qBtn.classList.add(`exam-${exam}`);       // .exam-enem / .exam-sas / .exam-bernoulli
-}
+    // detecta ENEM, SAS ou BERNOULLI no label
+    const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
+    if (m) {
+      const exam = m[0].toLowerCase();          // "enem", "sas" ou "bernoulli"
+      qBtn.classList.add(`exam-${exam}`);       // .exam-enem / .exam-sas / .exam-bernoulli
+    }
 
-qBtn.onclick = () => openPdf(q.QPDFName, q.page);
-row.appendChild(qBtn);
+    qBtn.onclick = () => openPdf(q.QPDFName, q.page);
+    row.appendChild(qBtn);
 
     /* Botão gabarito */
     row.appendChild(Object.assign(
@@ -1364,7 +1427,7 @@ row.appendChild(qBtn);
       onclick: () => openPdf(q.GPDFName, q.gabaritoPage) }));
 
     /* Caixa ✓ / ✗ */
-      const key    = qKey(disc, sub, q.label);          // estado ✓/✗
+    const key    = qKey(disc, sub, q.label);          // estado ✓/✗
     let st    = +localStorage.getItem(key) || 0;
     const box = row.appendChild(Object.assign(
       document.createElement("span"), { className:"state-box" }));
@@ -1374,92 +1437,93 @@ row.appendChild(qBtn);
       box.style.color= st===1 ? "#32cd32" : st===2 ? "#ff0000" : "#f0f0f0";
     };
     paint();
-box.onclick = () => {
-  st = (st + 1) % 3;
-  localStorage.setItem(key, st);
+    box.onclick = () => {
+      st = (st + 1) % 3;
+      localStorage.setItem(key, st);
 
-  const today  = getTodayStr();
-  const logKey = `log_${today}_${key}`;             // registro diário
+      const today  = getTodayStr();
+      const logKey = `log_${today}_${key}`;             // registro diário
 
-  if (st === 1 || st === 2) {
-    // marcou ✓ ou ✗ → garante o log
-    localStorage.setItem(logKey, "1");
-  } else {
-    // voltou pra “não marcado” → remove o log
-    localStorage.removeItem(logKey);
-  }
+      if (st === 1 || st === 2) {
+        // marcou ✓ ou ✗ → garante o log
+        localStorage.setItem(logKey, "1");
+      } else {
+        // voltou pra “não marcado” → remove o log
+        localStorage.removeItem(logKey);
+      }
 
-  paint();
-  refreshStats();
-};
-// ------ Editor rico de comentário (SUBSTITUA por este) ------
-  const cKey = `comment_${qKey(disc, sub, q.label)}`;
+      paint();
+      refreshStats();
+    };
 
-  // cria o container editável
-  const editDiv = document.createElement('div');
-  editDiv.className       = 'comment-edit';
-  editDiv.contentEditable = 'true';
-  editDiv.dataset.ph      = 'Comentário…';
+    // ------ Editor rico de comentário (SUBSTITUÍDO) ------
+    const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-  // carrega qualquer comentário salvo (inclui <a> se existir)
-  editDiv.innerHTML = localStorage.getItem(cKey) || '';
+    // cria o container editável
+    const editDiv = document.createElement('div');
+    editDiv.className       = 'comment-edit';
+    editDiv.contentEditable = 'true';
+    editDiv.dataset.ph      = 'Comentário…';
 
-  // função que salva no storage
-  const save = () => {
-    // se estiver vazio, será limpo no blur
-    localStorage.setItem(cKey, editDiv.innerHTML);
-  };
-  editDiv.addEventListener('input', save);
+    // carrega qualquer comentário salvo (inclui <a> se existir)
+    editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-  // ―― 1) reajusta altura enquanto digita ――
-  editDiv.addEventListener('input', () => {
-    if (editDiv.classList.contains('expanded')) {
-      fitHeight(editDiv);
-    }
-  });
+    // função que salva no storage
+    const save = () => {
+      // se estiver vazio, será limpo no blur
+      localStorage.setItem(cKey, editDiv.innerHTML);
+    };
+    editDiv.addEventListener('input', save);
 
-  // ―― 2) blur: volta a compacto e, se vazio, retorna ao placeholder ――
-  editDiv.addEventListener('blur', () => {
-    if (editDiv.textContent.trim() === '') {
-      // limpa de verdade para ativar :empty → placeholder reaparece
-      editDiv.innerHTML = '';
-      localStorage.removeItem(cKey);
-    }
-    editDiv.classList.remove('expanded');
-    editDiv.style.maxHeight = '38px';
-    editDiv.scrollTop = 0;
-  });
+    // ―― 1) reajusta altura enquanto digita ――
+    editDiv.addEventListener('input', () => {
+      if (editDiv.classList.contains('expanded')) {
+        fitHeight(editDiv);
+      }
+    });
 
-  // ―― 3) contextmenu: abrir menu de link personalizado ――
-  editDiv.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    openLinkMenu(e, editDiv);
-  });
+    // ―― 2) blur: volta a compacto e, se vazio, retorna ao placeholder ――
+    editDiv.addEventListener('blur', () => {
+      if (editDiv.textContent.trim() === '') {
+        // limpa de verdade para ativar :empty → placeholder reaparece
+        editDiv.innerHTML = '';
+        localStorage.removeItem(cKey);
+      }
+      editDiv.classList.remove('expanded');
+      editDiv.style.maxHeight = '38px';
+      editDiv.scrollTop = 0;
+    });
 
-  // ―― 4) cliques em <a>: ou editamos/abrimos ――
-  editDiv.addEventListener('click', e => {
-    const a = e.target.closest('a');
-    if (!a) return;
-
-    if (editDiv.matches(':focus')) {
-      // se está editando, chamar menu de contexto (abrir/editar/remover)
-      openLinkMenu(e, editDiv);
-    } else {
-      // fora de edição, apenas abre em nova aba
+    // ―― 3) contextmenu: abrir menu de link personalizado ――
+    editDiv.addEventListener('contextmenu', e => {
       e.preventDefault();
-      window.open(a.href, '_blank', 'noopener');
-    }
-  });
+      openLinkMenu(e, editDiv);
+    });
 
-  // ―― 5) ao focar, expande e ajusta altura inicial ――
-  editDiv.addEventListener('focus', () => {
-    editDiv.classList.add('expanded');
-    fitHeight(editDiv);
-  });
+    // ―― 4) cliques em <a>: ou editamos/abrimos ――
+    editDiv.addEventListener('click', e => {
+      const a = e.target.closest('a');
+      if (!a) return;
 
-  row.appendChild(editDiv);
-  /* … essas duas linhas abaixo já existiam antes – não duplique! … */
-});           // ← fecha o forEach((q, idx) => { … })
+      if (editDiv.matches(':focus')) {
+        // se está editando, chamar menu de contexto (abrir/editar/remover)
+        openLinkMenu(e, editDiv);
+      } else {
+        // fora de edição, apenas abre em nova aba
+        e.preventDefault();
+        window.open(a.href, '_blank', 'noopener');
+      }
+    });
+
+    // ―― 5) ao focar, expande e ajusta altura inicial ――
+    editDiv.addEventListener('focus', () => {
+      editDiv.classList.add('expanded');
+      fitHeight(editDiv);
+    });
+
+    row.appendChild(editDiv);
+    /* … essas duas linhas abaixo já existiam antes – não duplique! … */
+  });           // ← fecha o forEach((q, idx) => { … })
 }             // ← fecha a função showQuestions
 
 /* ================================================================
@@ -1490,7 +1554,6 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
 }
 closeBtn.onclick = () => (pdfContainer.style.display = "none");
 
-
 function openSummary(){                      // usa a disciplina/assunto atuais
   const d = encodeURIComponent(currentDisc);
   const s = encodeURIComponent(currentSub);
@@ -1500,7 +1563,7 @@ function openSummary(){                      // usa a disciplina/assunto atuais
 function closeSummary(){ summaryContainer.style.display = "none"; }
 window.closeSummary = closeSummary;           // para o iframe conseguir fechar
 
-    /* ===================================================================
+/* ===================================================================
    MENU DE LINK (Add / Edit / Remove)
    ===================================================================*/
 (function(){
@@ -1528,70 +1591,67 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
   }
 
   // API pública ------------------------------------------------------
-/* ============================================
-   1) SUBSTITUA A FUNÇÃO openLinkMenu por ESTA:
-   ============================================ */
+  window.openLinkMenu = function (evt, editDiv) {
+    evt.preventDefault();              // remove o menu nativo do navegador
+    const sel    = window.getSelection();
+    const anchor = evt.target.closest('a');      // se clicou num <a>, pega-o
+    const range  = sel.rangeCount ? sel.getRangeAt(0) : null;
+    const hasSel = range && !range.collapsed;    // true se houver texto selecionado
 
-window.openLinkMenu = function (evt, editDiv) {
-  evt.preventDefault();              // remove o menu nativo do navegador
-  const sel    = window.getSelection();
-  const anchor = evt.target.closest('a');      // se clicou num <a>, pega-o
-  const range  = sel.rangeCount ? sel.getRangeAt(0) : null;
-  const hasSel = range && !range.collapsed;    // true se houver texto selecionado
+    // limpa opções anteriores
+    menu.innerHTML = '';
 
-  // limpa opções anteriores
-  menu.innerHTML = '';
+    /* ―― 1. “Abrir link” (só se clicou num <a>) ―― */
+    if (anchor) {
+      menu.appendChild(buildItem('Abrir link', () => {
+        window.open(anchor.href, '_blank', 'noopener');
+      }));
+    }
 
-  /* ―― 1. “Abrir link” (só se clicou num <a>) ―― */
-  if (anchor) {
-    menu.appendChild(buildItem('Abrir link', () => {
-      window.open(anchor.href, '_blank', 'noopener');
-    }));
-  }
+    /* ―― 2. “Inserir link” ou “Editar link” ―― */
+    if (anchor || hasSel) {
+      const label = anchor ? 'Editar link' : 'Inserir link';
+      menu.appendChild(buildItem(label, () => {
+        const url = prompt('URL do link:', anchor ? anchor.href : '') || '';
+        if (!url) return;   // se cancelar, sai
 
-  /* ―― 2. “Inserir link” ou “Editar link” ―― */
-  if (anchor || hasSel) {
-    const label = anchor ? 'Editar link' : 'Inserir link';
-    menu.appendChild(buildItem(label, () => {
-      const url = prompt('URL do link:', anchor ? anchor.href : '') || '';
-      if (!url) return;   // se cancelar, sai
-
-      if (anchor) {
-        // editar href existente
-        anchor.href = url;
-      } else {
-        // inserir <a>
-        document.execCommand('createLink', false, url);
-        // garantir target="_blank" e rel="noopener":
-        const a = sel.anchorNode.parentElement.closest('a');
-        if (a) {
-          a.target = '_blank';
-          a.rel    = 'noopener';
+        if (anchor) {
+          // editar href existente
+          anchor.href = url;
+        } else {
+          // inserir <a>
+          document.execCommand('createLink', false, url);
+          // garantir target="_blank" e rel="noopener":
+          const a = sel.anchorNode.parentElement.closest('a');
+          if (a) {
+            a.target = '_blank';
+            a.rel    = 'noopener';
+          }
         }
-      }
-      editDiv.focus();
-    }));
-  }
+        editDiv.focus();
+      }));
+    }
 
-  /* ―― 3. “Remover link” (só se clicou num <a>) ―― */
-  if (anchor) {
-    menu.appendChild(buildItem('Remover link', () => {
-      const parent = anchor.parentNode;
-      while (anchor.firstChild) {
-        parent.insertBefore(anchor.firstChild, anchor);
-      }
-      parent.removeChild(anchor);
-      editDiv.focus();
-    }));
-  }
+    /* ―― 3. “Remover link” (só se clicou num <a>) ―― */
+    if (anchor) {
+      menu.appendChild(buildItem('Remover link', () => {
+        const parent = anchor.parentNode;
+        while (anchor.firstChild) {
+          parent.insertBefore(anchor.firstChild, anchor);
+        }
+        parent.removeChild(anchor);
+        editDiv.focus();
+      }));
+    }
 
-  // Se não há nenhuma opção a exibir, não mostra o menu
-  if (!menu.children.length) return;
+    // Se não há nenhuma opção a exibir, não mostra o menu
+    if (!menu.children.length) return;
 
-  menu.style.left    = `${evt.clientX}px`;
-  menu.style.top     = `${evt.clientY}px`;
-  menu.style.display = 'block';
-};
+    menu.style.left    = `${evt.clientX}px`;
+    menu.style.top     = `${evt.clientY}px`;
+    menu.style.display = 'block';
+  };
+})();
 
 /* ================================================================
    7. EVENTOS GLOBAIS
@@ -1818,23 +1878,23 @@ function resumePomodoroIfNeeded() {
     // já atualiza o label do botão do modal
     modal.querySelector('#pauseResumeBtn').textContent = 'Retomar';
 
-} else if (end && end > Date.now()) {
-  // ativo — calcula remaining e reinicia intervalo
-  pomodoroRemaining = Math.ceil((end - Date.now()) / 1000);
-  pomodoroPaused    = false;
-  btn.classList.add('active');
-  btn.textContent = formatTime(pomodoroRemaining);
-  runInterval();
+  } else if (end && end > Date.now()) {
+    // ativo — calcula remaining e reinicia intervalo
+    pomodoroRemaining = Math.ceil((end - Date.now()) / 1000);
+    pomodoroPaused    = false;
+    btn.classList.add('active');
+    btn.textContent = formatTime(pomodoroRemaining);
+    runInterval();
 
-} else if (end && end <= Date.now()) {
-  // ciclo finalizado enquanto a aba estava oculta
-  alert('⏰ Pomodoro concluído!');
-  stopPomodoro();
+  } else if (end && end <= Date.now()) {
+    // ciclo finalizado enquanto a aba estava oculta
+    alert('⏰ Pomodoro concluído!');
+    stopPomodoro();
 
-} else {
-  // nada válido
-  clearPomodoroState();
-}
+  } else {
+    // nada válido
+    clearPomodoroState();
+  }
 }
 
 // 11) Integração final
@@ -1869,7 +1929,7 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
   const xpEnem       = document.getElementById('xpEnem');
   const xpSummary    = document.getElementById('xpSummary');
   const xpChartElm   = document.getElementById('xpChart');
-    // >>> acrescente aqui <<<
+  // >>> acrescente aqui <<<
   const arcanoImg = document.querySelector('.intro-img');
   const introLeft = document.querySelector('.intro-left');
 
@@ -1917,70 +1977,70 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
 
   /* ---------- Gráfico ---------- */
   let chart = null;
-function drawChart(labels, counts){
-  if (chart) chart.destroy();
+  function drawChart(labels, counts){
+    if (chart) chart.destroy();
 
-  chart = new Chart(xpChartElm, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: counts,
-        backgroundColor: '#7D828C',
-        borderWidth: 1,
-        borderRadius: 3
-      }]
-    },
-    options: {
-      maintainAspectRatio: false,
-      animation: false,
-      scales: {
-  y: {
-    beginAtZero: true,
-    ticks: { stepSize: 5 },
-    grid: {
-      color: '#30363d'          // cor das linhas horizontais
-    },
-    /* ─── aqui está o que remove a linha vertical ─── */
-    border: {
-      display: false            // oculta a borda do eixo y
-      // (se quisesse só “apagar” a cor, poderia usar borderColor:'transparent')
-    }
-  },
-  x: {
-            ticks: {
-          // ───── aqui está o “bold” que funciona ─────
-          font: {
-            size: 11,        // qualquer tamanho >0
-            weight: 'bold',  // ou 700
-            // family: 'Arial', style:'normal'  // (opcionais)
+    chart = new Chart(xpChartElm, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: counts,
+          backgroundColor: '#7D828C',
+          borderWidth: 1,
+          borderRadius: 3
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 5 },
+            grid: {
+              color: '#30363d'          // cor das linhas horizontais
+            },
+            /* ─── aqui está o que remove a linha vertical ─── */
+            border: {
+              display: false            // oculta a borda do eixo y
+              // (se quisesse só “apagar” a cor, poderia usar borderColor:'transparent')
+            }
           },
-          color: '#8b949e',   // se quiser trocar a cor
+          x: {
+            ticks: {
+              // ───── aqui está o “bold” que funciona ─────
+              font: {
+                size: 11,        // qualquer tamanho >0
+                weight: 'bold',  // ou 700
+                // family: 'Arial', style:'normal'  // (opcionais)
+              },
+              color: '#8b949e',   // se quiser trocar a cor
+            },
+            grid: { display: false },
+            border: { display: false },  // (opcional) tira a borda do eixo x também
+          }
         },
-    grid: { display: false },
-    border: { display: false },  // (opcional) tira a borda do eixo x também
-  }
-},
-      plugins: {
-        legend: { display: false },
-tooltip: {
-      backgroundColor: '#232323',   // cor do balão
-      borderWidth: 1,
-      cornerRadius: 6,
-      caretSize: 1,
-      displayColors: false,         // já está no seu código
-      padding: 2,
-      bodyAlign: 'center',
-      callbacks: {
-        /* ⬇️ Aqui trocamos “XP” por qualquer coisa: */
-        title: () => '',
-        label: ctx => [`+${ctx.parsed.y} XP`],   // mude ⭐ por ✨, 🎯, 🔥, etc.
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#232323',   // cor do balão
+            borderWidth: 1,
+            cornerRadius: 6,
+            caretSize: 1,
+            displayColors: false,         // já está no seu código
+            padding: 2,
+            bodyAlign: 'center',
+            callbacks: {
+              /* ⬇️ Aqui trocamos “XP” por qualquer coisa: */
+              title: () => '',
+              label: ctx => [`+${ctx.parsed.y} XP`],   // mude ⭐ por ✨, 🎯, 🔥, etc.
+            }
           }
         }
       }
-    }
-  });
-}
+    });
+  }
 
   /* ---------- Renderização completa do modal ---------- */
   let currentMonday = mondayOf(new Date());   // começa na semana atual
@@ -2010,62 +2070,60 @@ tooltip: {
     refreshModal();
   };
   xpNextWeek.onclick = () => {
-  /* só avança se NÃO for a semana atual */
-  const todayMonday = mondayOf(new Date());
-  if (currentMonday.getTime() + 7*DAY_MS > todayMonday.getTime()) return;
+    /* só avança se NÃO for a semana atual */
+    const todayMonday = mondayOf(new Date());
+    if (currentMonday.getTime() + 7*DAY_MS > todayMonday.getTime()) return;
 
-  currentMonday = new Date(currentMonday.getTime() + 7*DAY_MS);
-  refreshModal();
-};
-
-/* ---------- Abrir / Fechar ---------- */
+    currentMonday = new Date(currentMonday.getTime() + 7*DAY_MS);
+    refreshModal();
+  };
 
 /* ---------- Atalho no “🔮 Hoje” ---------- */
-/* ---------- Toggle no “🔮 Hoje” ---------- */
-function bindXpTrigger () {
-  const btn = document.getElementById('xp-hoje');
-  if (!btn) return;               // não está na tela? sai.
+  function bindXpTrigger () {
+    const btn = document.getElementById('xp-hoje');
+    if (!btn) return;               // não está na tela? sai.
 
-  btn.style.cursor = 'pointer';
-  btn.title        = 'Clique para ver / ocultar gráfico semanal';
+    btn.style.cursor = 'pointer';
+    btn.title        = 'Clique para ver / ocultar gráfico semanal';
 
-  /* zera qualquer handler antigo */
-  btn.onclick = null;
+    /* zera qualquer handler antigo */
+    btn.onclick = null;
 
-  btn.onclick = () => {
-    /* <<< captura o elemento atualizado do menu >>> */
-    const introLeft = document.querySelector('.intro-left');
-    if (!introLeft) return;       // (não deveria acontecer)
+    btn.onclick = () => {
+      /* <<< captura o elemento atualizado do menu >>> */
+      const introLeft = document.querySelector('.intro-left');
+      if (!introLeft) return;       // (não deveria acontecer)
 
-    const aberto = xpModal.style.display === 'flex';
+      const aberto = xpModal.style.display === 'flex';
 
-    if (aberto) {
-      xpModal.style.display = 'none';
-    } else {
-      /* ancora o modal no menu recém-renderizado */
-      introLeft.appendChild(xpModal);
-      currentMonday = mondayOf(new Date());
-      refreshModal();
-      xpModal.style.display = 'flex';
-    }
-  };
-}
+      if (aberto) {
+        xpModal.style.display = 'none';
+      } else {
+        /* ancora o modal no menu recém-renderizado */
+        introLeft.appendChild(xpModal);
+        currentMonday = mondayOf(new Date());
+        refreshModal();
+        xpModal.style.display = 'flex';
+      }
+    };
+  }
 
-/* deixa a função acessível fora do IIFE */
-window.bindXpTrigger = bindXpTrigger;
+  /* deixa a função acessível fora do IIFE */
+  window.bindXpTrigger = bindXpTrigger;
 
-bindXpTrigger();
-setTimeout(bindXpTrigger);   // reforço pós-showMenu()
+  bindXpTrigger();
+  setTimeout(bindXpTrigger);   // reforço pós-showMenu()
 
-/* ====== habilita / desabilita o visual exclusivo da Home ====== */
-window.enterHome = function () { document.body.classList.add('home'); };
-window.leaveHome = function () { document.body.classList.remove('home'); };
+  /* ====== habilita / desabilita o visual exclusivo da Home ====== */
+  window.enterHome = function () { document.body.classList.add('home'); };
+  window.leaveHome = function () { document.body.classList.remove('home'); };
 
-
-})();
+})(); /* Fecha o IIFE do XP Modal */
 
 /* ================================================================
    8. BOOT (primeira renderização)
    ============================================================== */
 showMenu(); // Render inicial da aplicação
-</script>
+  </script>
+</body>
+</html>
