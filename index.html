@@ -648,6 +648,36 @@ body.home #pomodoroBtn:not(.active) {        /* 👈 regra nova  */
 }
 
 body.home #headerStats      { display: none !important; }      /* esconde estatísticas */
+
+/* editor compacto (sem foco) */
+.comment-edit{
+  display:inline-block;
+  min-width:400px;
+  max-height:38px;           /* ≈ 1 linha */
+  overflow:hidden;           /* esconde texto excedente */
+  padding:8px;
+  margin:8px 0 0 15px;
+  border:1px solid var(--c-border-muted);
+  border-radius:4px;
+  background:var(--c-bg-panel);
+  color:var(--c-text-primary);
+  font-size:14px;
+  line-height:1.4;
+  white-space:pre-wrap;
+  cursor:text;
+  transition:max-height .2s ease;
+}
+.comment-edit:empty:before{
+  content:attr(data-ph);
+  color:var(--c-text-muted);
+  pointer-events:none;
+}
+
+/* editor expandido (com foco) */
+.comment-edit.expanded{
+  overflow-y:auto;           /* rolagem se ultrapassar limite */
+}
+
 /* =====================================================================================
    MOBILE
    =====================================================================================*/
@@ -986,7 +1016,13 @@ function parseLinks(text) {
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
    ============================================================== */
-
+/* ajusta a altura vertical do editor (até um máximo)  */
+function fitHeight(div, maxPx = 240){
+  // zera para recalcular; precisa do setTimeout para pegar o scrollHeight correto
+  div.style.maxHeight = 'auto';
+  const needed = Math.min(div.scrollHeight + 2, maxPx); // +2 evita corte de borda
+  div.style.maxHeight = needed + 'px';
+}
 /* Remove todo o conteúdo renderizado. */
 const clear = () => (app.innerHTML = "");
 
@@ -1352,58 +1388,55 @@ box.onclick = () => {
 
   paint();
   refreshStats();
-};
-    /* Comentário livre */
-      const cKey   = `comment_${key}`;                  // comentário
-/* ---------- Campo de comentário ---------- */
-const commentInput = document.createElement('input');
-commentInput.type  = 'text';
-commentInput.className = 'comment-input';
+};/* ---------- Editor rico de comentário ---------- */
+const cKey = `comment_${key}`;
 
-/* contêiner que mostrará os hyperlinks */
-const linksHolder = document.createElement('span');
-linksHolder.style.marginLeft = '6px';
-linksHolder.style.whiteSpace = 'nowrap';   // mantém em linha
+// 1 ▸ cria o editor visual
+const editDiv = document.createElement('div');
+editDiv.className        = 'comment-edit';   // estilos em CSS
+editDiv.contentEditable  = 'true';
+editDiv.setAttribute('data-ph', 'Comentário…');
 
-/* carrega do storage (texto e URLs, se houver) */
-commentInput.value = localStorage.getItem(cKey) || '';
-const savedUrls = JSON.parse(localStorage.getItem(cKey+'_urls') || '[]');
-renderLinks(savedUrls);
+// 2 ▸ carrega o HTML salvo (pode conter <a>)
+editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-/* sempre que o usuário digitar… */
-commentInput.addEventListener('input', e => {
-  const { aliased, links } = parseLinks(e.target.value);
+// 3 ▸ helper de salvamento
+const save = () => localStorage.setItem(cKey, editDiv.innerHTML);
 
-  /* mostra apenas “Link” dentro do input */
-  e.target.value = aliased;
+// 4 ▸ eventos básicos
+editDiv.addEventListener('blur',  save);
+editDiv.addEventListener('input', save);
 
-  /* salva: texto + URLs originais */
-  localStorage.setItem(cKey, aliased);
-  localStorage.setItem(cKey+'_urls', JSON.stringify(links));
-
-  /* exibe / atualiza os <a> */
-  renderLinks(links);
+// 5 ▸ EXPANDIR ao focar
+editDiv.addEventListener('focus', () => {
+  editDiv.classList.add('expanded');
+  fitHeight(editDiv);                 // ↖︎ ajusta a altura inicial
 });
 
-/* helper para (re)desenhar os <a> */
-function renderLinks(urls){
-  linksHolder.innerHTML = '';
-  urls.forEach(url => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.textContent = 'Link';
-    a.target = '_blank';
-    a.rel = 'noopener';
-    linksHolder.appendChild(a);
-    linksHolder.append(' ');   // pequeno espaço entre eles
-  });
-}
+// 6 ▸ reajustar altura conforme digita
+editDiv.addEventListener('input', () => {
+  if (editDiv.classList.contains('expanded')) fitHeight(editDiv);
+});
 
-row.appendChild(commentInput);
-row.appendChild(linksHolder);
+// 7 ▸ VOLTAR para compacto ao perder foco
+editDiv.addEventListener('blur', () => {
+  editDiv.classList.remove('expanded');
+  editDiv.style.maxHeight = '38px';   // altura “fechada”
+  editDiv.scrollTop = 0;              // garante que mostre o topo
+});
 
-  });
-}
+// 8 ▸ menu de contexto para adicionar / editar / remover links
+editDiv.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  openLinkMenu(e, editDiv);           // função global criada antes
+});
+
+// 9 ▸ injeta na linha da questão
+row.appendChild(editDiv);
+
+/*  ⬇️ estas duas linhas já existiam antes — NÃO duplique!  */
+});           // ← fecha o forEach((q, idx) => { ... })
+}             // ← fecha a função showQuestions
 
 /* ================================================================
    6. VISUALIZAÇÃO DE PDF (PDF.js)
@@ -1442,6 +1475,80 @@ function openSummary(){                      // usa a disciplina/assunto atuais
 }
 function closeSummary(){ summaryContainer.style.display = "none"; }
 window.closeSummary = closeSummary;           // para o iframe conseguir fechar
+
+    /* ===================================================================
+   MENU DE LINK (Add / Edit / Remove)
+   ===================================================================*/
+(function(){
+  // cria o menu flutuante apenas uma vez
+  const menu = document.createElement('div');
+  menu.style.cssText = `
+    position:fixed; background:#2a2a2a; border:1px solid #555;
+    border-radius:4px; padding:4px; z-index:3000; display:none`;
+  document.body.appendChild(menu);
+
+  function hide(){ menu.style.display = 'none'; }
+  document.addEventListener('click', hide);
+  document.addEventListener('scroll', hide, true);
+
+  // helpers ---------------------------------------------------------
+  function buildItem(label, fn){
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText =
+      'all:unset; display:block; padding:6px 12px; color:#fff; cursor:pointer';
+    b.onmouseenter = () => b.style.background = '#3a3a3a';
+    b.onmouseleave = () => b.style.background = 'none';
+    b.onclick = () => { fn(); hide(); };
+    return b;
+  }
+
+  // API pública ------------------------------------------------------
+  window.openLinkMenu = function (evt, editDiv){
+    const sel = window.getSelection();
+    const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+    const anchor = evt.target.closest('a');
+
+    menu.innerHTML = '';
+
+    // 1) opção “Adicionar/Editar Link”
+    if ((range && !range.collapsed) || anchor){
+      menu.appendChild(buildItem('Adicionar/Editar Link', () => {
+        const urlOrig = anchor ? anchor.href : '';
+        const url = prompt('URL do link:', urlOrig) || '';
+        if (!url) return;   // cancelado
+
+        if (anchor){        // editar
+          anchor.href = url;
+        } else {            // criar
+          document.execCommand('createLink', false, url);
+          // garante target e rel
+          const a = sel.anchorNode.parentElement.closest('a');
+          if (a){ a.target = '_blank'; a.rel = 'noopener'; }
+        }
+        editDiv.focus();
+      }));
+    }
+
+    // 2) opção “Remover Link”
+    if (anchor){
+      menu.appendChild(buildItem('Remover Link', () => {
+        const parent = anchor.parentNode;
+        while (anchor.firstChild) parent.insertBefore(anchor.firstChild, anchor);
+        parent.removeChild(anchor);
+        editDiv.focus();
+      }));
+    }
+
+    if (!menu.children.length) return; // nada para mostrar
+
+    // posiciona e exibe
+    menu.style.left = evt.clientX + 'px';
+    menu.style.top  = evt.clientY + 'px';
+    menu.style.display = 'block';
+  };
+})();
+
 /* ================================================================
    7. EVENTOS GLOBAIS
    ============================================================== */
