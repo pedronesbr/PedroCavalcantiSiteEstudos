@@ -970,6 +970,19 @@ function exportData() {
 function qKey(disc, sub, label) {
   return `${disc}_${sub}_${encodeURIComponent(label)}`;
 }
+    /* ---------------------------------------------------------------
+   Recebe um texto e devolve:
+   { aliased: texto com URLs → 'Link', links: [array de URLs] }
+   ---------------------------------------------------------------*/
+function parseLinks(text) {
+  const urls  = [];
+  const alias = text.replace(/https?:\/\/\S+/gi, url => {
+    urls.push(url);
+    return 'Link';           // sempre a mesma palavra
+  });
+  return { aliased: alias, links: urls };
+}
+
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
    ============================================================== */
@@ -1342,9 +1355,53 @@ box.onclick = () => {
 };
     /* Comentário livre */
       const cKey   = `comment_${key}`;                  // comentário
-    row.appendChild(Object.assign(
-      document.createElement("input"), { type:"text", className:"comment-input",
-      value:localStorage.getItem(cKey)||"", oninput:e=>localStorage.setItem(cKey,e.target.value) }));
+/* ---------- Campo de comentário ---------- */
+const commentInput = document.createElement('input');
+commentInput.type  = 'text';
+commentInput.className = 'comment-input';
+
+/* contêiner que mostrará os hyperlinks */
+const linksHolder = document.createElement('span');
+linksHolder.style.marginLeft = '6px';
+linksHolder.style.whiteSpace = 'nowrap';   // mantém em linha
+
+/* carrega do storage (texto e URLs, se houver) */
+commentInput.value = localStorage.getItem(cKey) || '';
+const savedUrls = JSON.parse(localStorage.getItem(cKey+'_urls') || '[]');
+renderLinks(savedUrls);
+
+/* sempre que o usuário digitar… */
+commentInput.addEventListener('input', e => {
+  const { aliased, links } = parseLinks(e.target.value);
+
+  /* mostra apenas “Link” dentro do input */
+  e.target.value = aliased;
+
+  /* salva: texto + URLs originais */
+  localStorage.setItem(cKey, aliased);
+  localStorage.setItem(cKey+'_urls', JSON.stringify(links));
+
+  /* exibe / atualiza os <a> */
+  renderLinks(links);
+});
+
+/* helper para (re)desenhar os <a> */
+function renderLinks(urls){
+  linksHolder.innerHTML = '';
+  urls.forEach(url => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.textContent = 'Link';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    linksHolder.appendChild(a);
+    linksHolder.append(' ');   // pequeno espaço entre eles
+  });
+}
+
+row.appendChild(commentInput);
+row.appendChild(linksHolder);
+
   });
 }
 
