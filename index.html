@@ -652,10 +652,9 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
 /* COMENTÁRIO: COMPORTAMENTO PADRÃO: uma linha com “...” se exceder */
 .comment-edit {
   /* ─────────── Layout flex ORIGINAL (para manter largura responsiva) ─────────── */
-  flex: 1 1 400px;    /* permite o campo encolher/expandir como antes */
-  min-width: 0;       /* garante que, em flexbox, ele não estoure o container pai */
+    flex: 1 1 400px;
+  min-width: 0;
 
-  /* ─────────── Estilo visual ─────────── */
   background: var(--c-bg-panel);
   color: var(--c-text-primary);
   font-size: 14px;
@@ -666,31 +665,46 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   margin: 8px 0 0 15px;
   cursor: text;
 
-  /* ─────────── Texto em UMA LINHA + reticências se ultrapassar ─────────── */
-  white-space: nowrap;
+  /* exibir apenas UMA LINHA (primeiro parágrafo), esconder o resto */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;    /* mostra só a 1ª linha (mesmo que haja Enter) */
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-height: 38px;        /* altura ≈ 1 linha, como antes */
+  white-space: normal;      /* aceita quebras, mas corta após a 1ª linha */
+  position: relative;       /* para posicionar o “[...]” se houver overflow */
 }
 
-/* Quando o usuário clicar (focus), adicionamos multiline e scroll */
+/* ─── SE HOUVER MAIS DE UMA LINHA, adiciona “[…]” ─── */
+.comment-edit.has-overflow::after {
+  content: "[…]";
+  position: absolute;
+  right: 8px;               /* ajusta conforme o padding: 8px */
+  bottom: 0;
+  background: var(--c-bg-panel);
+  padding-left: 4px;        /* espaço antes do “[...]” */
+  color: var(--c-text-muted);
+  pointer-events: none;
+}
+
+/* ─── AO CLICAR (focus): MODO MULTILINHA (edição) ─── */
 .comment-edit.expanded {
-  white-space: pre-wrap;   /* permite quebra de linha */
-  overflow-y: auto;        /* scroll vertical se passar do max-height */
-  max-height: 240px;       /* altura máxima no estado expandido */
+  display: block;
+  white-space: pre-wrap;    /* respeita quebras de linha */
+  overflow-y: auto;         /* scroll vertical se passar da altura */
+  max-height: 240px;        /* limite opcional de altura quando editando */
 }
 
-/* Placeholder visível quando está vazio */
+/* placeholder quando vazio */
 .comment-edit:empty:before {
   content: attr(data-ph);
   color: var(--c-text-muted);
   pointer-events: none;
 }
 
-/* Links dentro do comentário sem sublinhado, em cor que destaque no fundo escuro */
+/* links dentro do comentário continuam iguais */
 .comment-edit a {
   text-decoration: none;
-  color: #8a79e6; /* roxo-claro que contrasta no fundo escuro */
+  color: #8a79e6;
 }
 .comment-edit a:hover {
   opacity: 0.9;
@@ -748,6 +762,46 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   }
 }
   </style>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.comment-edit').forEach(div => {
+      // 1) Quando o campo entrar em foco: entrar no modo multilinha
+      div.addEventListener('focus', () => {
+        div.classList.remove('collapsed', 'has-overflow');
+        div.classList.add('expanded');
+      });
+
+      // 2) Quando o campo perder foco: voltar a modo “apenas 1 linha” e checar overflow
+      div.addEventListener('blur', () => {
+        div.classList.remove('expanded');
+        div.classList.add('collapsed');
+
+        // Checa se o conteúdo tem mais de uma linha “real”:
+        const style = getComputedStyle(div);
+        const lineHeight = parseFloat(style.lineHeight);
+        // scrollHeight conta todas as linhas; se > lineHeight, há overflow
+        if (div.scrollHeight > lineHeight + 1) {
+          div.classList.add('has-overflow');
+        } else {
+          div.classList.remove('has-overflow');
+        }
+      });
+
+      // 3) Se a janela for redimensionada enquanto estiver colapsado, re-checa overflow
+      window.addEventListener('resize', () => {
+        if (div.classList.contains('collapsed')) {
+          const style = getComputedStyle(div);
+          const lineHeight = parseFloat(style.lineHeight);
+          if (div.scrollHeight > lineHeight + 1) {
+            div.classList.add('has-overflow');
+          } else {
+            div.classList.remove('has-overflow');
+          }
+        }
+      });
+    });
+  });
+</script>
 
   <!-- CSS EXTERNO OPCIONAL (sobrepõe ou complementa o inline) -->
   <link rel="stylesheet" href="home-style-update.css" />
@@ -1464,97 +1518,72 @@ function showQuestions(disc, sub) {
       refreshStats();
     };
 
-// ------ Editor rico de comentário (COM ELLIPSIS + COLAR SÓ TEXTO PLANO) ------
-const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-// cria o container editável
-const editDiv = document.createElement('div');
-editDiv.className       = 'comment-edit';
-editDiv.contentEditable = 'true';
-editDiv.dataset.ph      = '';
+    // ------ Editor rico de comentário (com novo comportamento) ------
+    const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-// carrega qualquer comentário salvo (sem formatação extra)
-editDiv.innerHTML = localStorage.getItem(cKey) || '';
+    // cria o container editável
+    const editDiv = document.createElement("div");
+    editDiv.className = "comment-edit";
+    editDiv.contentEditable = "true";
+    editDiv.dataset.ph = ""; // placeholder vazio (usa CSS)
 
-// 1) BLOCO “COLAR SÓ TEXTO PURO” (sem nenhuma formatação)
-editDiv.addEventListener('paste', e => {
-  e.preventDefault();
-  const plain = e.clipboardData.getData('text/plain');
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
+    // carrega qualquer comentário salvo (sem formatação extra)
+    editDiv.innerHTML = localStorage.getItem(cKey) || "";
 
-  // insere um nó de texto limpo exatamente onde está o cursor
-  const range = sel.getRangeAt(0);
-  range.deleteContents();
-  range.insertNode(document.createTextNode(plain));
-  // coloca o cursor logo após o texto inserido
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
-});
+    // 1) “paste”: cola só texto puro, sem formatação
+    editDiv.addEventListener("paste", e => {
+      e.preventDefault();
+      const plain = e.clipboardData.getData("text/plain");
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      // substitui quebras por espaços para manter a lógica
+      const cleaned = plain.replace(/\r?\n/g, " ");
+      range.insertNode(document.createTextNode(cleaned));
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
 
-// 2) “input”: ao digitar, reajusta altura se estiver expandido
-editDiv.addEventListener('input', () => {
-  if (editDiv.classList.contains('expanded')) {
-    fitHeight(editDiv);
-  }
-});
+    // 2) “input”: ao digitar, reajusta altura se estiver expandido
+    editDiv.addEventListener("input", () => {
+      if (editDiv.classList.contains("expanded")) {
+        fitHeight(editDiv);
+      }
+      // salva no storage
+      localStorage.setItem(cKey, editDiv.innerHTML);
+    });
 
-// 3) “blur”: volta ao estado normal (ellipsis) e, se vazio, limpa de verdade
-editDiv.addEventListener('blur', () => {
-  if (editDiv.textContent.trim() === '') {
-    // se só tiver espaços/br que não contam, limpa pra ativar o placeholder
-    editDiv.innerHTML = '';
-    localStorage.removeItem(cKey);
-  }
-  editDiv.classList.remove('expanded');
-  // fecha o multiline e volta a mostrar somente 1 linha com “...”
-  editDiv.style.maxHeight = '38px';
-  editDiv.style.whiteSpace = 'nowrap';
-  editDiv.style.textOverflow = 'ellipsis';
-  editDiv.style.overflow = 'hidden';
-  editDiv.scrollTop = 0;
-});
+    // 3) “contextmenu”: abre menu customizado de links
+    editDiv.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      openLinkMenu(e, editDiv);
+    });
 
-// 4) “contextmenu”: abre nosso menu customizado de links
-editDiv.addEventListener('contextmenu', e => {
-  e.preventDefault();
-  openLinkMenu(e, editDiv);
-});
+    // 4) “click” em <a>: se estiver editando, mostra menu de link; se não, abre em nova aba
+    editDiv.addEventListener("click", e => {
+      const a = e.target.closest("a");
+      if (!a) return;
+      if (editDiv.matches(":focus")) {
+        openLinkMenu(e, editDiv);
+      } else {
+        e.preventDefault();
+        window.open(a.href, "_blank", "noopener");
+      }
+    });
 
-// 5) “click” em <a>: se estiver editando, mostra menu de link; se não, abre em nova aba
-editDiv.addEventListener('click', e => {
-  const a = e.target.closest('a');
-  if (!a) return;
+    // 5) “focus”: expande para multiline e ajusta altura inicial
+    editDiv.addEventListener("focus", () => {
+      editDiv.classList.add("expanded");
+      editDiv.style.whiteSpace = "pre-wrap";
+      editDiv.style.overflowY = "auto";
+      fitHeight(editDiv);
+    });
 
-  if (editDiv.matches(':focus')) {
-    // em modo edição: exibe menu “Abrir/Editar/Remover”
-    openLinkMenu(e, editDiv);
-  } else {
-    // fora da edição: simplesmente abre em nova aba
-    e.preventDefault();
-    window.open(a.href, '_blank', 'noopener');
-  }
-});
-
-// 6) “focus”: expande para multiline e ajusta altura inicial
-editDiv.addEventListener('focus', () => {
-  editDiv.classList.add('expanded');
-  // permite quebrar linha e exibir todo o texto
-  editDiv.style.whiteSpace = 'pre-wrap';
-  editDiv.style.overflowY = 'auto';
-  fitHeight(editDiv);
-});
-
-// 7) SALVAR NO STORAGE a cada input
-const save = () => {
-  localStorage.setItem(cKey, editDiv.innerHTML);
-};
-editDiv.addEventListener('input', save);
-
-// Ao inserir o elemento na tela:
-row.appendChild(editDiv);
-
+    // 6) Ao inserir o elemento na tela:
+    row.appendChild(editDiv);
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
 }             // ← fecha a função showQuestions
