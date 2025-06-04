@@ -649,33 +649,36 @@ body.home #pomodoroBtn:not(.active) {        /* 👈 regra nova  */
 
 body.home #headerStats      { display: none !important; }      /* esconde estatísticas */
 
-/* editor compacto (sem foco) */
 .comment-edit{
-  display:inline-block;
-  min-width:400px;
-  max-height:38px;           /* ≈ 1 linha */
-  overflow:hidden;           /* esconde texto excedente */
-  padding:8px;
-  margin:8px 0 0 15px;
-  border:1px solid var(--c-border-muted);
-  border-radius:4px;
-  background:var(--c-bg-panel);
-  color:var(--c-text-primary);
-  font-size:14px;
-  line-height:1.4;
-  white-space:pre-wrap;
-  cursor:text;
-  transition:max-height .2s ease;
-}
-.comment-edit:empty:before{
-  content:attr(data-ph);
-  color:var(--c-text-muted);
-  pointer-events:none;
+  /* --- mantém “look” do input --- */
+  background: var(--c-bg-panel);
+  color: var(--c-text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  border: 1px solid var(--c-border-muted);
+  border-radius: 4px;
+  padding: 8px;
+  margin: 8px 0 0 15px;
+  white-space: pre-wrap;
+  cursor: text;
+
+  /* --- NOVO: replica o flex do input antigo --- */
+  flex: 1 1 400px;   /* cresce/encolhe e larga até 400 px mínimo */
+  min-width: 0;      /* autoriza encolher se faltar espaço       */
+
+  /* --- comportamento de altura --- */
+  max-height: 38px;          /* “fechado” ≈ 1 linha                */
+  overflow: hidden;          /* corta excedente nessa fase         */
+  transition: max-height .2s ease;
 }
 
-/* editor expandido (com foco) */
 .comment-edit.expanded{
-  overflow-y:auto;           /* rolagem se ultrapassar limite */
+  overflow-y: auto;          /* mostra scroll se passar do limite  */
+}
+.comment-edit:empty:before{
+  content: attr(data-ph);
+  color: var(--c-text-muted);
+  pointer-events: none;
 }
 
 /* =====================================================================================
@@ -1388,51 +1391,61 @@ box.onclick = () => {
 
   paint();
   refreshStats();
-};/* ---------- Editor rico de comentário ---------- */
+};
+   /* ---------- Editor rico de comentário ---------- */
 const cKey = `comment_${key}`;
 
-// 1 ▸ cria o editor visual
+/* cria o editor */
 const editDiv = document.createElement('div');
-editDiv.className        = 'comment-edit';   // estilos em CSS
-editDiv.contentEditable  = 'true';
-editDiv.setAttribute('data-ph', 'Comentário…');
+editDiv.className       = 'comment-edit';
+editDiv.contentEditable = 'true';
+editDiv.dataset.ph      = 'Comentário…';
 
-// 2 ▸ carrega o HTML salvo (pode conter <a>)
+/* carrega conteúdo salvo (inclui <a>, se houver) */
 editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-// 3 ▸ helper de salvamento
+/* salva no storage */
 const save = () => localStorage.setItem(cKey, editDiv.innerHTML);
-
-// 4 ▸ eventos básicos
 editDiv.addEventListener('blur',  save);
 editDiv.addEventListener('input', save);
 
-// 5 ▸ EXPANDIR ao focar
+/* expande ao focar */
 editDiv.addEventListener('focus', () => {
   editDiv.classList.add('expanded');
-  fitHeight(editDiv);                 // ↖︎ ajusta a altura inicial
+  fitHeight(editDiv);                 // calcula altura inicial
 });
 
-// 6 ▸ reajustar altura conforme digita
+/* reajusta altura enquanto digita */
 editDiv.addEventListener('input', () => {
   if (editDiv.classList.contains('expanded')) fitHeight(editDiv);
 });
 
-// 7 ▸ VOLTAR para compacto ao perder foco
+/* volta para compacto ao sair */
 editDiv.addEventListener('blur', () => {
   editDiv.classList.remove('expanded');
-  editDiv.style.maxHeight = '38px';   // altura “fechada”
-  editDiv.scrollTop = 0;              // garante que mostre o topo
+  editDiv.style.maxHeight = '38px';
+  editDiv.scrollTop = 0;
 });
 
-// 8 ▸ menu de contexto para adicionar / editar / remover links
+/* menu de contexto (add/editar/remover link) */
 editDiv.addEventListener('contextmenu', e => {
   e.preventDefault();
-  openLinkMenu(e, editDiv);           // função global criada antes
+  openLinkMenu(e, editDiv);
 });
 
-// 9 ▸ injeta na linha da questão
+/* clique abre o link se NÃO estiver em edição */
+editDiv.addEventListener('click', e => {
+  if (!editDiv.matches(':focus')) {
+    const a = e.target.closest('a');
+    if (a) {
+      e.preventDefault();
+      window.open(a.href, '_blank', 'noopener');
+    }
+  }
+});
+
 row.appendChild(editDiv);
+
 
 /*  ⬇️ estas duas linhas já existiam antes — NÃO duplique!  */
 });           // ← fecha o forEach((q, idx) => { ... })
