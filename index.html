@@ -649,7 +649,7 @@ body.home #pomodoroBtn:not(.active) {        /* 👈 regra nova  */
 
 body.home #headerStats      { display: none !important; }      /* esconde estatísticas */
 
-/* COMENTÁRIO: COMPORTAMENTO PADRÃO: uma linha com “...” se exceder */
+/* COMENTÁRIO: COMPORTAMENTO PADRÃO: uma linha “cortada” com “[...]” */
 .comment-edit {
   /* ─────────── Layout flex ORIGINAL (para manter largura responsiva) ─────────── */
   flex: 1 1 400px;    /* permite o campo encolher/expandir como antes */
@@ -666,11 +666,30 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   margin: 8px 0 0 15px;
   cursor: text;
 
-  /* ─────────── Texto em UMA LINHA + reticências se ultrapassar ─────────── */
+  /* ─────────── Texto em UMA LINHA + oculta overflow ─────────── */
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   max-height: 38px;        /* altura ≈ 1 linha, como antes */
+
+  /* ─────────── Permite posicionar o “[...]” ─────────── */
+  position: relative;
+}
+
+/* só exibe o “[...]” se .has-overflow estiver presente */
+.comment-edit.has-overflow::after {
+  content: "[...]";
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  background: linear-gradient(
+    to left,
+    rgba(18, 18, 18, 0.9) 0%,
+    transparent 60%
+  );
+  padding-left: 4px;
+  font-size: 14px;
+  color: var(--c-text-muted);
+  pointer-events: none;
 }
 
 /* Quando o usuário clicar (focus), adicionamos multiline e scroll */
@@ -1558,6 +1577,32 @@ row.appendChild(editDiv);
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
 }             // ← fecha a função showQuestions
+function atualizaIndicadorOverflow(editDiv) {
+  // só faz sentido quando NÃO está expandido
+  if (editDiv.classList.contains("expanded")) {
+    editDiv.classList.remove("has-overflow");
+    return;
+  }
+
+  // compara largura interna real com a largura visível
+  if (editDiv.scrollWidth > editDiv.clientWidth) {
+    editDiv.classList.add("has-overflow");
+  } else {
+    editDiv.classList.remove("has-overflow");
+  }
+}
+
+// Exemplo: ao criar cada editDiv (seu campo .comment-edit), 
+// você pode chamar algo como:
+editDiv.addEventListener("blur", () => {
+  // reavalie overflow quando o campo perder o foco
+  atualizaIndicadorOverflow(editDiv);
+  /* restante do código de blur… */
+});
+
+// E também, depois de inserir o elemento pela primeira vez,  
+// executa logo de cara para casos em que já haja texto longo:
+atualizaIndicadorOverflow(editDiv);
 
 /* ================================================================
    6. VISUALIZAÇÃO DE PDF (PDF.js)
