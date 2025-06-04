@@ -679,18 +679,24 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   content: "[...]";
   position: absolute;
   right: 8px;
-  bottom: 0;
-  background: linear-gradient(
-    to left,
-    rgba(18, 18, 18, 0.9) 0%,
-    transparent 60%
-  );
-  padding-left: 4px;
+
+  /* 1) centraliza verticalmente */
+  top: 50%;
+  transform: translateY(-50%);
+
+  /* 2) fundo igual ao painel, para “esconder” o texto atrás */
+  background: var(--c-bg-panel);
+
+  /* 3) espaçamento lateral e tamanho de fonte */
+  padding: 0 4px;
   font-size: 14px;
+  line-height: 38px;       /* mesma altura de linha do .comment-edit */
   color: var(--c-text-muted);
   pointer-events: none;
 }
-
+.comment-edit.expanded::after {
+  content: none;
+}
 /* Quando o usuário clicar (focus), adicionamos multiline e scroll */
 .comment-edit.expanded {
   white-space: pre-wrap;   /* permite quebra de linha */
