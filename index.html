@@ -1392,63 +1392,74 @@ box.onclick = () => {
   paint();
   refreshStats();
 };
-   /* ---------- Editor rico de comentário ---------- */
-const cKey = `comment_${key}`;
+// ------ Editor rico de comentário (SUBSTITUA por este) ------
+  const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-/* cria o editor */
-const editDiv = document.createElement('div');
-editDiv.className       = 'comment-edit';
-editDiv.contentEditable = 'true';
-editDiv.dataset.ph      = 'Comentário…';
+  // cria o container editável
+  const editDiv = document.createElement('div');
+  editDiv.className       = 'comment-edit';
+  editDiv.contentEditable = 'true';
+  editDiv.dataset.ph      = 'Comentário…';
 
-/* carrega conteúdo salvo (inclui <a>, se houver) */
-editDiv.innerHTML = localStorage.getItem(cKey) || '';
+  // carrega qualquer comentário salvo (inclui <a> se existir)
+  editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-/* salva no storage */
-const save = () => localStorage.setItem(cKey, editDiv.innerHTML);
-editDiv.addEventListener('blur',  save);
-editDiv.addEventListener('input', save);
+  // função que salva no storage
+  const save = () => {
+    // se estiver vazio, será limpo no blur
+    localStorage.setItem(cKey, editDiv.innerHTML);
+  };
+  editDiv.addEventListener('input', save);
 
-/* expande ao focar */
-editDiv.addEventListener('focus', () => {
-  editDiv.classList.add('expanded');
-  fitHeight(editDiv);                 // calcula altura inicial
-});
+  // ―― 1) reajusta altura enquanto digita ――
+  editDiv.addEventListener('input', () => {
+    if (editDiv.classList.contains('expanded')) {
+      fitHeight(editDiv);
+    }
+  });
 
-/* reajusta altura enquanto digita */
-editDiv.addEventListener('input', () => {
-  if (editDiv.classList.contains('expanded')) fitHeight(editDiv);
-});
+  // ―― 2) blur: volta a compacto e, se vazio, retorna ao placeholder ――
+  editDiv.addEventListener('blur', () => {
+    if (editDiv.textContent.trim() === '') {
+      // limpa de verdade para ativar :empty → placeholder reaparece
+      editDiv.innerHTML = '';
+      localStorage.removeItem(cKey);
+    }
+    editDiv.classList.remove('expanded');
+    editDiv.style.maxHeight = '38px';
+    editDiv.scrollTop = 0;
+  });
 
-/* volta para compacto ao sair */
-editDiv.addEventListener('blur', () => {
-  editDiv.classList.remove('expanded');
-  editDiv.style.maxHeight = '38px';
-  editDiv.scrollTop = 0;
-});
+  // ―― 3) contextmenu: abrir menu de link personalizado ――
+  editDiv.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    openLinkMenu(e, editDiv);
+  });
 
-/* menu de contexto (add/editar/remover link) */
-editDiv.addEventListener('contextmenu', e => {
-  e.preventDefault();
-  openLinkMenu(e, editDiv);
-});
-
-/* clique abre o link se NÃO estiver em edição */
-editDiv.addEventListener('click', e => {
-  if (!editDiv.matches(':focus')) {
+  // ―― 4) cliques em <a>: ou editamos/abrimos ――
+  editDiv.addEventListener('click', e => {
     const a = e.target.closest('a');
-    if (a) {
+    if (!a) return;
+
+    if (editDiv.matches(':focus')) {
+      // se está editando, chamar menu de contexto (abrir/editar/remover)
+      openLinkMenu(e, editDiv);
+    } else {
+      // fora de edição, apenas abre em nova aba
       e.preventDefault();
       window.open(a.href, '_blank', 'noopener');
     }
-  }
-});
+  });
 
-row.appendChild(editDiv);
+  // ―― 5) ao focar, expande e ajusta altura inicial ――
+  editDiv.addEventListener('focus', () => {
+    editDiv.classList.add('expanded');
+    fitHeight(editDiv);
+  });
 
-
-/*  ⬇️ estas duas linhas já existiam antes — NÃO duplique!  */
-});           // ← fecha o forEach((q, idx) => { ... })
+  row.appendChild(editDiv);
+  /* … essas duas linhas abaixo já existiam antes – não duplique! … */
+});           // ← fecha o forEach((q, idx) => { … })
 }             // ← fecha a função showQuestions
 
 /* ================================================================
@@ -1517,50 +1528,70 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
   }
 
   // API pública ------------------------------------------------------
-  window.openLinkMenu = function (evt, editDiv){
-    const sel = window.getSelection();
-    const range = sel.rangeCount ? sel.getRangeAt(0) : null;
-    const anchor = evt.target.closest('a');
+/* ============================================
+   1) SUBSTITUA A FUNÇÃO openLinkMenu por ESTA:
+   ============================================ */
 
-    menu.innerHTML = '';
+window.openLinkMenu = function (evt, editDiv) {
+  evt.preventDefault();              // remove o menu nativo do navegador
+  const sel    = window.getSelection();
+  const anchor = evt.target.closest('a');      // se clicou num <a>, pega-o
+  const range  = sel.rangeCount ? sel.getRangeAt(0) : null;
+  const hasSel = range && !range.collapsed;    // true se houver texto selecionado
 
-    // 1) opção “Adicionar/Editar Link”
-    if ((range && !range.collapsed) || anchor){
-      menu.appendChild(buildItem('Adicionar/Editar Link', () => {
-        const urlOrig = anchor ? anchor.href : '';
-        const url = prompt('URL do link:', urlOrig) || '';
-        if (!url) return;   // cancelado
+  // limpa opções anteriores
+  menu.innerHTML = '';
 
-        if (anchor){        // editar
-          anchor.href = url;
-        } else {            // criar
-          document.execCommand('createLink', false, url);
-          // garante target e rel
-          const a = sel.anchorNode.parentElement.closest('a');
-          if (a){ a.target = '_blank'; a.rel = 'noopener'; }
+  /* ―― 1. “Abrir link” (só se clicou num <a>) ―― */
+  if (anchor) {
+    menu.appendChild(buildItem('Abrir link', () => {
+      window.open(anchor.href, '_blank', 'noopener');
+    }));
+  }
+
+  /* ―― 2. “Inserir link” ou “Editar link” ―― */
+  if (anchor || hasSel) {
+    const label = anchor ? 'Editar link' : 'Inserir link';
+    menu.appendChild(buildItem(label, () => {
+      const url = prompt('URL do link:', anchor ? anchor.href : '') || '';
+      if (!url) return;   // se cancelar, sai
+
+      if (anchor) {
+        // editar href existente
+        anchor.href = url;
+      } else {
+        // inserir <a>
+        document.execCommand('createLink', false, url);
+        // garantir target="_blank" e rel="noopener":
+        const a = sel.anchorNode.parentElement.closest('a');
+        if (a) {
+          a.target = '_blank';
+          a.rel    = 'noopener';
         }
-        editDiv.focus();
-      }));
-    }
+      }
+      editDiv.focus();
+    }));
+  }
 
-    // 2) opção “Remover Link”
-    if (anchor){
-      menu.appendChild(buildItem('Remover Link', () => {
-        const parent = anchor.parentNode;
-        while (anchor.firstChild) parent.insertBefore(anchor.firstChild, anchor);
-        parent.removeChild(anchor);
-        editDiv.focus();
-      }));
-    }
+  /* ―― 3. “Remover link” (só se clicou num <a>) ―― */
+  if (anchor) {
+    menu.appendChild(buildItem('Remover link', () => {
+      const parent = anchor.parentNode;
+      while (anchor.firstChild) {
+        parent.insertBefore(anchor.firstChild, anchor);
+      }
+      parent.removeChild(anchor);
+      editDiv.focus();
+    }));
+  }
 
-    if (!menu.children.length) return; // nada para mostrar
+  // Se não há nenhuma opção a exibir, não mostra o menu
+  if (!menu.children.length) return;
 
-    // posiciona e exibe
-    menu.style.left = evt.clientX + 'px';
-    menu.style.top  = evt.clientY + 'px';
-    menu.style.display = 'block';
-  };
-})();
+  menu.style.left    = `${evt.clientX}px`;
+  menu.style.top     = `${evt.clientY}px`;
+  menu.style.display = 'block';
+};
 
 /* ================================================================
    7. EVENTOS GLOBAIS
