@@ -649,8 +649,8 @@ body.home #pomodoroBtn:not(.active) {        /* 👈 regra nova  */
 
 body.home #headerStats      { display: none !important; }      /* esconde estatísticas */
 
-.comment-edit{
-  /* --- mantém “look” do input --- */
+/* COMENTÁRIO: COMPORTAMENTO PADRÃO: uma linha com “...” se exceder */
+.comment-edit {
   background: var(--c-bg-panel);
   color: var(--c-text-primary);
   font-size: 14px;
@@ -659,34 +659,36 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   border-radius: 4px;
   padding: 8px;
   margin: 8px 0 0 15px;
-  white-space: pre-wrap;
   cursor: text;
 
-  /* --- NOVO: replica o flex do input antigo --- */
-  flex: 1 1 400px;   /* cresce/encolhe e larga até 400 px mínimo */
-  min-width: 0;      /* autoriza encolher se faltar espaço       */
-
-  /* --- comportamento de altura --- */
-  max-height: 38px;          /* “fechado” ≈ 1 linha                */
-  overflow: hidden;          /* corta excedente nessa fase         */
-  transition: max-height .2s ease;
+  /* Layout “uma linha + ellipsis” */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 38px;        /* altura aproximada de uma linha */
 }
 
-/* quando estiver expandido, permite scroll */
-.comment-edit.expanded{
-  overflow-y: auto;
+/* Quando estiver em estado “expanded”, muda para multiline */
+.comment-edit.expanded {
+  white-space: pre-wrap;   /* permite quebra de linha */
+  overflow-y: auto;        /* habilita scroll vertical, se necessário */
+  max-height: 240px;       /* altura máxima para multiline (ou ajuste conforme desejar) */
 }
-/* placeholder visível quando vazio */
-.comment-edit:empty:before{
+
+/* Placeholder visível quando .comment-edit estiver vazio */
+.comment-edit:empty:before {
   content: attr(data-ph);
   color: var(--c-text-muted);
   pointer-events: none;
 }
 
-/* Opcional: sublinha links fora de edição */
-.comment-edit:not(:focus) a {
-  text-decoration: underline;
-  cursor: pointer;
+/* COR DO LINK dentro do comentário (sem sublinhado) */
+.comment-edit a {
+  text-decoration: none;
+  color: #8a79e6; /* roxo-claro que destaca no fundo escuro */
+}
+.comment-edit a:hover {
+  opacity: 0.9;
 }
 
 /* =====================================================================================
@@ -1456,72 +1458,88 @@ function showQuestions(disc, sub) {
       refreshStats();
     };
 
-    // ------ Editor rico de comentário (SUBSTITUÍDO) ------
-    const cKey = `comment_${qKey(disc, sub, q.label)}`;
+// ------ Editor rico de comentário (COM ELLIPSIS + COLAR SÓ TEXTO PLANO) ------
+const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-    // cria o container editável
-    const editDiv = document.createElement('div');
-    editDiv.className       = 'comment-edit';
-    editDiv.contentEditable = 'true';
-    editDiv.dataset.ph      = 'Comentário…';
+// cria o container editável
+const editDiv = document.createElement('div');
+editDiv.className       = 'comment-edit';
+editDiv.contentEditable = 'true';
+editDiv.dataset.ph      = '';
 
-    // carrega qualquer comentário salvo (inclui <a> se existir)
-    editDiv.innerHTML = localStorage.getItem(cKey) || '';
+// carrega qualquer comentário salvo (sem formatação extra)
+editDiv.innerHTML = localStorage.getItem(cKey) || '';
 
-    // função que salva no storage
-    const save = () => {
-      // se estiver vazio, será limpo no blur
-      localStorage.setItem(cKey, editDiv.innerHTML);
-    };
-    editDiv.addEventListener('input', save);
+// 1) BLOCO “COLAR SÓ TEXTO PLANO”
+editDiv.addEventListener('paste', e => {
+  e.preventDefault();
+  // pega apenas texto puro
+  const plain = e.clipboardData.getData('text/plain');
+  document.execCommand('insertText', false, plain);
+});
 
-    // ―― 1) reajusta altura enquanto digita ――
-    editDiv.addEventListener('input', () => {
-      if (editDiv.classList.contains('expanded')) {
-        fitHeight(editDiv);
-      }
-    });
+// 2) “input”: ao digitar, reajusta altura se estiver expandido
+editDiv.addEventListener('input', () => {
+  if (editDiv.classList.contains('expanded')) {
+    fitHeight(editDiv);
+  }
+});
 
-    // ―― 2) blur: volta a compacto e, se vazio, retorna ao placeholder ――
-    editDiv.addEventListener('blur', () => {
-      if (editDiv.textContent.trim() === '') {
-        // limpa de verdade para ativar :empty → placeholder reaparece
-        editDiv.innerHTML = '';
-        localStorage.removeItem(cKey);
-      }
-      editDiv.classList.remove('expanded');
-      editDiv.style.maxHeight = '38px';
-      editDiv.scrollTop = 0;
-    });
+// 3) “blur”: volta ao estado normal (ellipsis) e, se vazio, limpa de verdade
+editDiv.addEventListener('blur', () => {
+  if (editDiv.textContent.trim() === '') {
+    // se só tiver espaços/br que não contam, limpa pra ativar o placeholder
+    editDiv.innerHTML = '';
+    localStorage.removeItem(cKey);
+  }
+  editDiv.classList.remove('expanded');
+  // fecha o multiline e volta a mostrar somente 1 linha com “...”
+  editDiv.style.maxHeight = '38px';
+  editDiv.style.whiteSpace = 'nowrap';
+  editDiv.style.textOverflow = 'ellipsis';
+  editDiv.style.overflow = 'hidden';
+  editDiv.scrollTop = 0;
+});
 
-    // ―― 3) contextmenu: abrir menu de link personalizado ――
-    editDiv.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      openLinkMenu(e, editDiv);
-    });
+// 4) “contextmenu”: abre nosso menu customizado de links
+editDiv.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  openLinkMenu(e, editDiv);
+});
 
-    // ―― 4) cliques em <a>: ou editamos/abrimos ――
-    editDiv.addEventListener('click', e => {
-      const a = e.target.closest('a');
-      if (!a) return;
+// 5) “click” em <a>: se estiver editando, mostra menu de link; se não, abre em nova aba
+editDiv.addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if (!a) return;
 
-      if (editDiv.matches(':focus')) {
-        // se está editando, chamar menu de contexto (abrir/editar/remover)
-        openLinkMenu(e, editDiv);
-      } else {
-        // fora de edição, apenas abre em nova aba
-        e.preventDefault();
-        window.open(a.href, '_blank', 'noopener');
-      }
-    });
+  if (editDiv.matches(':focus')) {
+    // em modo edição: exibe menu “Abrir/Editar/Remover”
+    openLinkMenu(e, editDiv);
+  } else {
+    // fora da edição: simplesmente abre em nova aba
+    e.preventDefault();
+    window.open(a.href, '_blank', 'noopener');
+  }
+});
 
-    // ―― 5) ao focar, expande e ajusta altura inicial ――
-    editDiv.addEventListener('focus', () => {
-      editDiv.classList.add('expanded');
-      fitHeight(editDiv);
-    });
+// 6) “focus”: expande para multiline e ajusta altura inicial
+editDiv.addEventListener('focus', () => {
+  editDiv.classList.add('expanded');
+  // permite quebrar linha e exibir todo o texto
+  editDiv.style.whiteSpace = 'pre-wrap';
+  editDiv.style.overflowY = 'auto';
+  fitHeight(editDiv);
+});
 
-    row.appendChild(editDiv);
+// 7) SALVAR NO STORAGE a cada input
+const save = () => {
+  localStorage.setItem(cKey, editDiv.innerHTML);
+};
+editDiv.addEventListener('input', save);
+
+// Ao inserir o elemento na tela:
+row.appendChild(editDiv);
+
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
 }             // ← fecha a função showQuestions
