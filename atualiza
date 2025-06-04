@@ -654,7 +654,6 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   /* ─────────── Layout flex ORIGINAL (para manter largura responsiva) ─────────── */
   flex: 1 1 400px;    /* permite o campo encolher/expandir como antes */
   min-width: 0;       /* garante que, em flexbox, ele não estoure o container pai */
-
   /* ─────────── Estilo visual ─────────── */
   background: var(--c-bg-panel);
   color: var(--c-text-primary);
@@ -1574,10 +1573,7 @@ editDiv.addEventListener('input', save);
 // Ao inserir o elemento na tela:
 row.appendChild(editDiv);
 
-    /* … essas duas linhas abaixo já existiam antes – não duplique! … */
-  });           // ← fecha o forEach((q, idx) => { … })
-}             // ← fecha a função showQuestions
-function atualizaIndicadorOverflow(editDiv) {
+    function atualizaIndicadorOverflow(editDiv) {
   // só faz sentido quando NÃO está expandido
   if (editDiv.classList.contains("expanded")) {
     editDiv.classList.remove("has-overflow");
@@ -1603,6 +1599,9 @@ editDiv.addEventListener("blur", () => {
 // E também, depois de inserir o elemento pela primeira vez,  
 // executa logo de cara para casos em que já haja texto longo:
 atualizaIndicadorOverflow(editDiv);
+    /* … essas duas linhas abaixo já existiam antes – não duplique! … */
+  });           // ← fecha o forEach((q, idx) => { … })
+}             // ← fecha a função showQuestions
 
 /* ================================================================
    6. VISUALIZAÇÃO DE PDF (PDF.js)
