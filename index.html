@@ -688,7 +688,7 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   background: var(--c-bg-panel);
 
   /* 3) espaçamento lateral e tamanho de fonte */
-  padding: 0 4px;
+  padding: 0 6px;
   font-size: 14px;
   line-height: 38px;       /* mesma altura de linha do .comment-edit */
   color: var(--c-text-muted);
@@ -712,15 +712,25 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
 }
 
 /* Links dentro do comentário sem sublinhado, em cor que destaque no fundo escuro */
+/* Variáveis de cor para controle centralizado */
+:root {
+  --link-color: #8a79e6;
+  --link-hover: #b19dfc;
+  --link-focus: #e0ceff;
+}
+
+/* Estilo mínimo do link dentro do comentário */
 .comment-edit a {
+  color: var(--link-color);
   text-decoration: none;
-  color: #8a79e6; /* roxo-claro que contrasta no fundo escuro */
-}
-.comment-edit a:hover {
-  opacity: 0.9;
+  transition: color 0.2s ease;
 }
 
-
+/* Ao passar o dedo (hover) ou focar (teclado), muda só a cor */
+.comment-edit a:hover,
+.comment-edit a:focus {
+  color: var(--link-hover);
+}
 /* =====================================================================================
    MOBILE
    =====================================================================================*/
@@ -1488,132 +1498,139 @@ function showQuestions(disc, sub) {
       refreshStats();
     };
 
-// ------ Editor rico de comentário (COM ELLIPSIS + COLAR SÓ TEXTO PLANO) ------
-const cKey = `comment_${qKey(disc, sub, q.label)}`;
+    // ------ Editor rico de comentário (COM ELLIPSIS + COLAR SÓ TEXTO PLANO) ------
+    const cKey = `comment_${qKey(disc, sub, q.label)}`;
 
-// cria o container editável
-const editDiv = document.createElement('div');
-editDiv.className       = 'comment-edit';
-editDiv.contentEditable = 'true';
-editDiv.dataset.ph      = '';
+    const editDiv = document.createElement('div');
+    editDiv.className       = 'comment-edit';
+    editDiv.contentEditable = 'true';
+    editDiv.dataset.ph      = '';
 
-// carrega qualquer comentário salvo (sem formatação extra)
-editDiv.innerHTML = localStorage.getItem(cKey) || '';
+// ────────────────────────────────────────────────────────────────────────
+// Listener único para “clique esquerdo” que abre links ou expande o campo
+// ────────────────────────────────────────────────────────────────────────
+editDiv.addEventListener('click', function(e) {
+  // 1) Só prossegue se for clique com botão esquerdo
+  if (e.button !== 0) return;
 
-// 1) BLOCO “COLAR SÓ TEXTO PURO” (sem nenhuma formatação)
-editDiv.addEventListener('paste', e => {
-  e.preventDefault();
-  const plain = e.clipboardData.getData('text/plain');
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
-
-  // insere um nó de texto limpo exatamente onde está o cursor
-  const range = sel.getRangeAt(0);
-  range.deleteContents();
-  range.insertNode(document.createTextNode(plain));
-  // coloca o cursor logo após o texto inserido
-  range.collapse(false);
-  sel.removeAllRanges();
-  sel.addRange(range);
-});
-
-// 2) “input”: ao digitar, reajusta altura se estiver expandido
-editDiv.addEventListener('input', () => {
-  if (editDiv.classList.contains('expanded')) {
-    fitHeight(editDiv);
-  }
-});
-
-// 3) “blur”: volta ao estado normal (ellipsis) e, se vazio, limpa de verdade
-editDiv.addEventListener('blur', () => {
-  if (editDiv.textContent.trim() === '') {
-    // se só tiver espaços/br que não contam, limpa pra ativar o placeholder
-    editDiv.innerHTML = '';
-    localStorage.removeItem(cKey);
-  }
-  editDiv.classList.remove('expanded');
-  // fecha o multiline e volta a mostrar somente 1 linha com “...”
-  editDiv.style.maxHeight = '38px';
-  editDiv.style.whiteSpace = 'nowrap';
-  editDiv.style.textOverflow = 'ellipsis';
-  editDiv.style.overflow = 'hidden';
-  editDiv.scrollTop = 0;
-});
-
-// 4) “contextmenu”: abre nosso menu customizado de links
-editDiv.addEventListener('contextmenu', e => {
-  e.preventDefault();
-  openLinkMenu(e, editDiv);
-});
-
-// 5) “click” em <a>: se estiver editando, mostra menu de link; se não, abre em nova aba
-editDiv.addEventListener('click', e => {
-  const a = e.target.closest('a');
-  if (!a) return;
-
-  if (editDiv.matches(':focus')) {
-    // em modo edição: exibe menu “Abrir/Editar/Remover”
-    openLinkMenu(e, editDiv);
-  } else {
-    // fora da edição: simplesmente abre em nova aba
+  // 2) Se o alvo for um <a>, abre em nova aba
+  const anchor = e.target.closest('a');
+  if (anchor) {
     e.preventDefault();
-    window.open(a.href, '_blank', 'noopener');
-  }
-});
-
-// 6) “focus”: expande para multiline e ajusta altura inicial
-editDiv.addEventListener('focus', () => {
-  editDiv.classList.add('expanded');
-  // permite quebrar linha e exibir todo o texto
-  editDiv.style.whiteSpace = 'pre-wrap';
-  editDiv.style.overflowY = 'auto';
-  fitHeight(editDiv);
-});
-
-// 7) SALVAR NO STORAGE a cada input
-const save = () => {
-  localStorage.setItem(cKey, editDiv.innerHTML);
-};
-editDiv.addEventListener('input', save);
-
-// Ao inserir o elemento na tela:
-row.appendChild(editDiv);
-
-    function atualizaIndicadorOverflow(editDiv) {
-  // só faz sentido quando NÃO está expandido
-  if (editDiv.classList.contains("expanded")) {
-    editDiv.classList.remove("has-overflow");
+    window.open(anchor.href, '_blank', 'noopener');
     return;
   }
 
-  // compara largura interna real com a largura visível
-  if (editDiv.scrollWidth > editDiv.clientWidth) {
-    editDiv.classList.add("has-overflow");
-  } else {
-    editDiv.classList.remove("has-overflow");
+  // 3) Caso contrário (não clicou num link), expande/foca o editDiv
+  if (!editDiv.classList.contains('expanded')) {
+    editDiv.focus();
   }
-}
+});
 
-// Exemplo: ao criar cada editDiv (seu campo .comment-edit), 
-// você pode chamar algo como:
-editDiv.addEventListener("blur", () => {
-  // reavalie overflow quando o campo perder o foco
-  atualizaIndicadorOverflow(editDiv);
-  /* restante do código de blur… */
-});
-// no fim de showQuestions (antes de fechar a função), adicione:
-document.querySelectorAll('.comment-edit').forEach(div => {
-  div.blur();
-});
-// Caso ainda reste algum elemento focado, bruta-force:
-if (document.activeElement && document.activeElement.classList.contains('comment-edit')) {
-  document.activeElement.blur();
-}
-// E também, depois de inserir o elemento pela primeira vez,  
-// executa logo de cara para casos em que já haja texto longo:
-atualizaIndicadorOverflow(editDiv);
+    // carrega qualquer comentário salvo (texto puro ou links simples)
+    editDiv.innerHTML = localStorage.getItem(cKey) || '';
+
+    // 1) “paste”: colar somente texto puro
+    editDiv.addEventListener('paste', e => {
+      e.preventDefault();
+      const plain = e.clipboardData.getData('text/plain');
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(plain));
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+
+    // 2) “input”: ao digitar, reajusta altura se estiver expandido
+    editDiv.addEventListener('input', () => {
+      if (editDiv.classList.contains('expanded')) {
+        fitHeight(editDiv);
+      }
+    });
+
+    // 3) “focus”: expande para multiline e ajusta altura inicial
+    editDiv.addEventListener('focus', () => {
+      editDiv.classList.add('expanded');
+      editDiv.style.whiteSpace = 'pre-wrap';
+      editDiv.style.overflowY  = 'auto';
+      fitHeight(editDiv);
+    });
+
+    // 4) “blur”: volta ao estado normal (ellipsis), limpa se vazio e checa overflow
+    editDiv.addEventListener('blur', () => {
+      // limpa storage se só tiver espaços/brancos
+      if (editDiv.textContent.trim() === '') {
+        editDiv.innerHTML = '';
+        localStorage.removeItem(cKey);
+      }
+      // recolhe para uma linha com reticências
+      editDiv.classList.remove('expanded');
+      editDiv.style.maxHeight    = '38px';
+      editDiv.style.whiteSpace   = 'nowrap';
+      editDiv.style.textOverflow = 'ellipsis';
+      editDiv.style.overflow     = 'hidden';
+      editDiv.scrollTop          = 0;
+      // checa se agora há overflow horizontal
+      atualizaIndicadorOverflow(editDiv);
+    });
+
+    // 5) “contextmenu”: abre menu customizado de links
+    editDiv.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      openLinkMenu(e, editDiv);
+    });
+
+    // 6) “click” em <a>: se estiver editando, exibe menu; se não, abre em nova aba
+    editDiv.addEventListener('click', e => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      if (editDiv.matches(':focus')) {
+        openLinkMenu(e, editDiv);
+      } else {
+        e.preventDefault();
+        window.open(a.href, '_blank', 'noopener');
+      }
+    });
+
+    // 7) “input”: salva no localStorage a cada mudança
+    const save = () => {
+      localStorage.setItem(cKey, editDiv.innerHTML);
+    };
+    editDiv.addEventListener('input', save);
+
+    // Insere o elemento na tela
+    row.appendChild(editDiv);
+
+    // Executa logo de cara para detectar overflow inicial (se houver texto longo salvo)
+    atualizaIndicadorOverflow(editDiv);
+
+    // Função para checar overflow horizontal e adicionar/remover a classe “has-overflow”
+    function atualizaIndicadorOverflow(editDiv) {
+      // se estiver expandido, não exibimos indicador
+      if (editDiv.classList.contains('expanded')) {
+        editDiv.classList.remove('has-overflow');
+        return;
+      }
+      // compara largura real do conteúdo com a largura visível
+      if (editDiv.scrollWidth > editDiv.clientWidth) {
+        editDiv.classList.add('has-overflow');
+      } else {
+        editDiv.classList.remove('has-overflow');
+      }
+    }
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
+
+  // ------ No final de showQuestions (depois de gerar todas as questões) ------
+  document.querySelectorAll('.comment-edit').forEach(div => {
+    div.blur();
+  });
+  if (document.activeElement && document.activeElement.classList.contains('comment-edit')) {
+    document.activeElement.blur();
+  }
 }             // ← fecha a função showQuestions
 
 /* ================================================================
@@ -1680,7 +1697,7 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
     return b;
   }
 
-  // API pública ------------------------------------------------------
+    // API pública ------------------------------------------------------
   window.openLinkMenu = function (evt, editDiv) {
     evt.preventDefault();              // remove o menu nativo do navegador
     const sel    = window.getSelection();
@@ -1691,12 +1708,14 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
     // limpa opções anteriores
     menu.innerHTML = '';
 
-    /* ―― 1. “Abrir link” (só se clicou num <a>) ―― */
+    /* ―― 1. “Abrir link” (só se clicou num <a>) ―― */ 
+    /*
     if (anchor) {
       menu.appendChild(buildItem('Abrir link', () => {
         window.open(anchor.href, '_blank', 'noopener');
       }));
     }
+    */
 
     /* ―― 2. “Inserir link” ou “Editar link” ―― */
     if (anchor || hasSel) {
@@ -1718,6 +1737,8 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
             a.rel    = 'noopener';
           }
         }
+        // força salvar alterações no comentário:
+        editDiv.dispatchEvent(new Event('input'));
         editDiv.focus();
       }));
     }
@@ -1730,6 +1751,8 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
           parent.insertBefore(anchor.firstChild, anchor);
         }
         parent.removeChild(anchor);
+        // força salvar alterações no comentário:
+        editDiv.dispatchEvent(new Event('input'));
         editDiv.focus();
       }));
     }
