@@ -315,6 +315,48 @@ function getTotalQuestionsCount() {
     .flatMap(subs => Object.values(subs))
     .reduce((sum, arr) => sum + arr.length, 0);
 }
+
+// ----- Cache de XP total para carregamento mais rápido -----
+const XP_CACHE_KEY = "__totalXP__";
+
+function getCachedTotalXP() {
+  return +localStorage.getItem(XP_CACHE_KEY) || 0;
+}
+
+function setCachedTotalXP(val) {
+  localStorage.setItem(XP_CACHE_KEY, val);
+}
+
+function recomputeTotalXP() {
+  const total = getTotalXPCount();
+  setCachedTotalXP(total);
+  return total;
+}
+
+function refreshXpHoje(async = false) {
+  const el = document.getElementById('xp-hoje');
+  if (!el) return;
+
+  const cached = getCachedTotalXP();
+  const pct = Math.round(cached / getTotalQuestionsCount() * 100);
+  el.textContent = `🔮 Hoje: +${getTodaySolvedCount()}XP | Total: ${cached}XP | ${pct}%`;
+
+  if (async) {
+    setTimeout(() => {
+      const total = recomputeTotalXP();
+      const pct2 = Math.round(total / getTotalQuestionsCount() * 100);
+      if (document.getElementById('xp-hoje') === el) {
+        el.textContent = `🔮 Hoje: +${getTodaySolvedCount()}XP | Total: ${total}XP | ${pct2}%`;
+      }
+    });
+  }
+}
+
+function adjustCachedTotalXP(diff) {
+  const updated = getCachedTotalXP() + diff;
+  setCachedTotalXP(updated);
+  return updated;
+}
 if (sessionStorage.getItem("__exportReady__") === "yes") {
   exportData();            // cai direto no ramo que baixa o arquivo
 }
@@ -337,11 +379,7 @@ function showMenu () {
     <div class="intro-block">
       <div class="intro-left">
         <img src="Arcano_Newtonius.jpg" alt="Arcano Newtonius" class="intro-img">
-        <div id="xp-hoje">
-          🔮 Hoje: +${getTodaySolvedCount()}XP |
-          Total: ${getTotalXPCount()}XP |
-          ${Math.round(getTotalXPCount() / getTotalQuestionsCount() * 100)}%
-        </div>
+        <div id="xp-hoje"></div>
       </div>
       <div class="intro-text">
         <p>Seja bem-vindo(a), jovem aprendiz do conhecimento!</p><br/>
@@ -351,10 +389,13 @@ function showMenu () {
       </div>
     </div>`);
 
-  /* 4 ▸ reinstala o listener no botão "🔮 Hoje" recém-criado           */
+  /* 4 ▸ atualiza contagem de XP imediatamente e em segundo plano */
+  refreshXpHoje(true);
+
+  /* 5 ▸ reinstala o listener no botão "🔮 Hoje" recém-criado           */
   window.bindXpTrigger();
 
-  /* 5 ▸ Lista de disciplinas (código original)                          */
+  /* 6 ▸ Lista de disciplinas (código original)                          */
   const lines = app.appendChild(Object.assign(
     document.createElement("div"), { className: "metacog-lines" }));
 
@@ -587,6 +628,7 @@ function showQuestions(disc, sub) {
     };
     paint();
     box.onclick = () => {
+      const prev = st;
       st = (st + 1) % 3;
       localStorage.setItem(key, st);
 
@@ -599,6 +641,13 @@ function showQuestions(disc, sub) {
       } else {
         // voltou pra “não marcado” → remove o log
         localStorage.removeItem(logKey);
+      }
+
+      const countedBefore = (prev === 1 || prev === 2);
+      const countedAfter  = (st === 1 || st === 2);
+      if (countedBefore !== countedAfter) {
+        adjustCachedTotalXP(countedAfter ? 1 : -1);
+        refreshXpHoje();
       }
 
       paint();
