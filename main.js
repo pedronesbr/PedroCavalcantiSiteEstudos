@@ -103,7 +103,6 @@ const headerTitle  = document.getElementById("headerTitle");
 const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
 const summaryContainer = document.getElementById("summaryContainer");
-const summaryFrame     = document.getElementById("summaryFrame");
 
 const settingsBtn   = document.getElementById("settingsBtn");
 const settingsMenu  = document.getElementById("settingsMenu");
@@ -190,22 +189,10 @@ function doExport() {
 
 /** Faz backup do progresso (estrelas + status + comentários). */
 function exportData() {
-
-  /* 1 ▸ força o iframe a descarregar para salvar o resumo */
-  if (summaryContainer.style.display !== "none") {
-    summaryFrame.src = "about:blank";      // dispara o unload do editor
+  if (summaryContainer.style.display !== "none" && window.editorSaveNow) {
+    window.editorSaveNow();                // garante salvamento do resumo
   }
-
-  /* 2 ▸ já estamos de volta do reload? */
-  if (sessionStorage.getItem("__exportReady__") === "yes") {
-    sessionStorage.removeItem("__exportReady__");
-    doExport();                            // faz o download
-    return;
-  }
-
-  /* 3 ▸ primeira chamada: marca a flag, recarrega a página */
-  sessionStorage.setItem("__exportReady__","yes");
-  location.reload();                       // equivale ao F5
+  doExport();
 }
 
   /* ================================================================
@@ -314,9 +301,6 @@ function getTotalQuestionsCount() {
   return Object.values(questoesData)
     .flatMap(subs => Object.values(subs))
     .reduce((sum, arr) => sum + arr.length, 0);
-}
-if (sessionStorage.getItem("__exportReady__") === "yes") {
-  exportData();            // cai direto no ramo que baixa o arquivo
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
 function showMenu () {
@@ -769,9 +753,9 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
 closeBtn.onclick = () => (pdfContainer.style.display = "none");
 
 function openSummary(){                      // usa a disciplina/assunto atuais
-  const d = encodeURIComponent(currentDisc);
-  const s = encodeURIComponent(currentSub);
-  summaryFrame.src = `Editor_de_Texto.html?disc=${d}&sub=${s}`;   // carrega o resumo certo
+  if (window.editorSetContext) {
+    editorSetContext(currentDisc, currentSub);
+  }
   summaryContainer.style.display = "flex";
 }
 function closeSummary(){ summaryContainer.style.display = "none"; }

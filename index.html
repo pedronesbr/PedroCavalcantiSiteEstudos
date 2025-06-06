@@ -32,6 +32,7 @@
        CSS INLINE
        ===================================================================== -->
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="editor.css" />
 
   <!-- CSS EXTERNO OPCIONAL (sobrepõe ou complementa o inline) -->
   <link rel="stylesheet" href="home-style-update.css" />
@@ -96,7 +97,30 @@
      RESUMO (overlay com o editor de texto)
      ===================================================================== -->
   <div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
-    <iframe id="summaryFrame" style="border:none;width:100%;height:100%;"></iframe>
+    <div id="toolbar">
+      <button id="summaryBackBtn" title="Voltar"><i class="fas fa-arrow-left"></i></button>
+      <button id="undoBtn" title="Desfazer (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+      <button id="redoBtn" title="Refazer (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+
+      <button id="boldBtn" title="Negrito (Ctrl+B)"><b>B</b></button>
+      <button id="italicBtn" title="Itálico (Ctrl+I)"><i>I</i></button>
+      <button id="underlineBtn" title="Sublinhado (Ctrl+U)"><u>U</u></button>
+      <button id="colorBtn" title="Cor do texto">🎨</button>
+      <div id="palette"></div>
+
+      <button id="hideBtn">🤫 Ocultar Texto</button>
+      <button id="clearBtn">🧹 Limpar Formatação</button>
+      <button id="insertImgBtn">📷 Inserir Imagem</button>
+      <input type="file" id="fileInput" accept="image/*" hidden />
+
+      <button id="insertBtn">◼️ Ocultar Imagem (Tarja)</button>
+      <button id="concluirBtn" style="display:none">Concluir</button>
+      <button id="deleteTarjaBtn" style="display:none">Apagar Tarja</button>
+
+      <span id="message"></span>
+    </div>
+
+    <div id="editor" contenteditable="true"><p></p></div>
   </div>
   <!-- =====================================================================
        MODAL DE XP (gráfico semanal)
@@ -116,6 +140,8 @@
        - Arquivo gerado externamente contendo listaQuestoes[] (JSON)
        ===================================================================== -->
   <script src="data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  <script src="editor.js"></script>
 
   <!-- =====================================================================
        JAVASCRIPT PRINCIPAL
