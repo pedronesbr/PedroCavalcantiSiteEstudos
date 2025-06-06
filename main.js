@@ -336,7 +336,7 @@ function showMenu () {
   app.insertAdjacentHTML("beforeend", `
     <div class="intro-block">
       <div class="intro-left">
-        <img src="arcano_newtonius.png" alt="Arcano Newtonius" class="intro-img">
+        <img src="Arcano_Newtonius.jpg" alt="Arcano Newtonius" class="intro-img">
         <div id="xp-hoje">
           🔮 Hoje: +${getTodaySolvedCount()}XP |
           Total: ${getTotalXPCount()}XP |
