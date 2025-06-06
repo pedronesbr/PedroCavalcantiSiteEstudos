@@ -520,7 +520,7 @@ function showQuestions(disc, sub) {
   currentSub  = sub;
   leaveHome();            // volta ao visual normal fora da Home
   toggleSettingsVisibility(false);  // esconde engrenagem
-  updateHeader(true, `${disc} – ${getFriendlyName(disc, sub)}`);
+  updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
   clear();
   window.scrollTo(0, 0);
 
