@@ -349,6 +349,7 @@ function showMenu () {
   currentDisc = currentSub = null;
   enterHome();            // aplica o visual preto + ajustes
   updateHeader(true);
+  document.getElementById('headerStats').style.visibility='visible';
   clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
 
   /* 3 ▸ Introdução */
@@ -524,16 +525,27 @@ function renderTrailDay(day,expand){
     data[key].forEach((s,idx)=>{
       const item=document.createElement('div');
       item.className='trail-item';
-      const labelText=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
+
+      const label=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
       const qcount=countDailySolved(dayStr,s.disc,s.sub);
-      const link=document.createElement('button');
-      link.className='small-btn';
-      link.textContent=labelText+` (${qcount})`;
-      link.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+
+      const subj=document.createElement('button');
+      subj.className=`trail-subject ${discClasses[s.disc]}`;
+      subj.textContent=label;
+      subj.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+
+      const count=document.createElement('span');
+      count.className='trail-count';
+      count.textContent=qcount;
+
       const rm=document.createElement('button');
-      rm.textContent='x';
+      rm.className='trail-remove';
+      rm.textContent='×';
       rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
-      item.appendChild(link); item.appendChild(rm);
+
+      item.appendChild(subj);
+      item.appendChild(count);
+      item.appendChild(rm);
       sec.appendChild(item);
     });
     return sec;
@@ -556,7 +568,9 @@ function showTrail(expandDay){
   leaveHome();
   toggleSettingsVisibility(false);
   updateHeader(true,'Trilha Estratégica');
-  document.getElementById('headerStats').style.display='none';
+  const stats=document.getElementById('headerStats');
+  stats.style.display='block';
+  stats.style.visibility='hidden';
   clear();
   window.scrollTo(0,0);
   const start=new Date();
@@ -573,6 +587,7 @@ function showSubjects(disc) {
 
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
+  document.getElementById('headerStats').style.visibility='visible';
 
   // 2) Anexa ao título da disciplina o toggle de ordenação
   headerTitle.style.cursor = 'pointer';
@@ -666,6 +681,7 @@ function showQuestions(disc, sub) {
   leaveHome();            // volta ao visual normal fora da Home
   toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
+  document.getElementById('headerStats').style.visibility='visible';
   clear();
   window.scrollTo(0, 0);
 
