@@ -1,4 +1,9 @@
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+} else {
+  console.warn("pdf.js não carregado – PDFs indisponíveis");
+}
 /* ================================================================
    1. CONSTANTES & CONFIGURAÇÕES GLOBAIS
    ----------------------------------------------------------------
@@ -207,15 +212,18 @@ function exportData() {
   }
 
   /* 2 ▸ já estamos de volta do reload? */
-  if (sessionStorage.getItem("__exportReady__") === "yes") {
+  if (typeof sessionStorage !== 'undefined' &&
+      sessionStorage.getItem("__exportReady__") === "yes") {
     sessionStorage.removeItem("__exportReady__");
     doExport();                            // faz o download
     return;
   }
 
   /* 3 ▸ primeira chamada: marca a flag, recarrega a página */
-  sessionStorage.setItem("__exportReady__","yes");
-  location.reload();                       // equivale ao F5
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem("__exportReady__","yes");
+    location.reload();                     // equivale ao F5
+  }
 }
 
   /* ================================================================
@@ -325,7 +333,8 @@ function getTotalQuestionsCount() {
     .flatMap(subs => Object.values(subs))
     .reduce((sum, arr) => sum + arr.length, 0);
 }
-if (sessionStorage.getItem("__exportReady__") === "yes") {
+if (typeof sessionStorage !== 'undefined' &&
+    sessionStorage.getItem("__exportReady__") === "yes") {
   exportData();            // cai direto no ramo que baixa o arquivo
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
@@ -883,6 +892,10 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
   pdfContainer.style.display = "flex";
   pdfContainer.querySelectorAll("canvas").forEach(c=>c.remove());
 
+  if (!window.pdfjsLib) {
+    alert('Visualização de PDF indisponível.');
+    return;
+  }
   const pdf   = await pdfjsLib.getDocument(`PDFs/${pdfName}`).promise;
   const dpr   = window.devicePixelRatio || 1;
   const scale = quality * dpr * zoom;
@@ -1018,7 +1031,9 @@ importFile.addEventListener("change", ({ target }) => {
   const reader = new FileReader();
   reader.onload = (e) => {
     // guarda o JSON bruto em sessionStorage
-    sessionStorage.setItem("__pendingImport__", e.target.result);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem("__pendingImport__", e.target.result);
+    }
 
     // libera espaço no localStorage para a próxima carga
     localStorage.clear();
@@ -1031,7 +1046,9 @@ importFile.addEventListener("change", ({ target }) => {
 
 /* 2 ───── Restauração automática logo no início do JS principal ───── */
 (() => {
-  const raw = sessionStorage.getItem("__pendingImport__");
+  const raw = (typeof sessionStorage !== 'undefined')
+    ? sessionStorage.getItem("__pendingImport__")
+    : null;
   if (!raw) return;                           // nada pendente
 
   try {
@@ -1042,7 +1059,9 @@ importFile.addEventListener("change", ({ target }) => {
     console.error("Falha ao processar backup:", err);
     alert("Importação cancelada (arquivo corrompido).");
   } finally {
-    sessionStorage.removeItem("__pendingImport__"); // limpa a flag
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem("__pendingImport__"); // limpa a flag
+    }
   }
 })();
 
@@ -1343,6 +1362,11 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
   let chart = null;
   function drawChart(labels, counts){
     if (chart) chart.destroy();
+
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js não carregado – gráfico indisponível');
+      return;
+    }
 
     chart = new Chart(xpChartElm, {
       type: 'bar',
