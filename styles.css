@@ -590,6 +590,56 @@ button:hover { filter: brightness(1.2); }
   opacity:.45;
   cursor:default;
 }
+/* === Trilha Estratégica === */
+.day-btn {
+  width: 100%;
+  max-width: 820px;
+  margin-bottom: 6px;
+}
+.day-content {
+  width: 100%;
+  max-width: 820px;
+  background: var(--c-bg-panel);
+  padding: 8px;
+  margin-bottom: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.day-btn.open + .day-content { display: flex; }
+.trail-section {
+  border: 1px solid var(--c-border-muted);
+  padding: 6px;
+}
+.trail-section-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.trail-section-header button { padding: 2px 6px; }
+.trail-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 2px 0;
+}
+#subjectPickerModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+#subjectPickerModal .modal-content {
+  background: var(--c-bg-panel);
+  color: var(--c-text-primary);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+#subjectPickerModal select { margin: 0 4px; }
+#subjectPickerModal .picker-actions { margin-top: 10px; }
 /* ───────────── HOME LOOK ───────────── */
 body.home #header          { background: var(--c-bg-app); }   /* barra preta */
 

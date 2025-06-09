@@ -90,6 +90,9 @@ const discClasses = {
   Matemática: "matematica",
 };
 
+// Data prevista do exame (ajuste conforme necessário)
+const EXAM_DATE = new Date('2025-11-09');
+
 /* ================================================================
    2. REFERÊNCIAS FIXAS DA INTERFACE (cache de seletores)
    ----------------------------------------------------------------
@@ -109,6 +112,12 @@ const settingsBtn   = document.getElementById("settingsBtn");
 const settingsMenu  = document.getElementById("settingsMenu");
 const exportBtn     = document.getElementById("exportBtn");
 const importBtn     = document.getElementById("importBtn");
+const trilhaBtn     = document.getElementById("trilhaBtn");
+const pickerModal   = document.getElementById("subjectPickerModal");
+const pickerDisc    = document.getElementById("pickerDisc");
+const pickerSub     = document.getElementById("pickerSub");
+const pickerAdd     = document.getElementById("pickerAdd");
+const pickerCancel  = document.getElementById("pickerCancel");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -116,6 +125,7 @@ const importBtn     = document.getElementById("importBtn");
 let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
 let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
+let trailReturn  = null;  // data da trilha para voltar após questões
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -419,6 +429,130 @@ importBtn.onclick = () => {
 document.getElementById("simuladoBtn").onclick =
 document.getElementById("erradasBtn").onclick  = () =>
   alert("Funcionalidade em desenvolvimento 🙂");
+
+/* ---------------- TRILHA ESTRATÉGICA ---------------- */
+trilhaBtn.onclick = () => {
+  settingsMenu.style.display = 'none';
+  showTrail();
+};
+
+function loadTrail(dayStr){
+  const raw = localStorage.getItem(`trail_${dayStr}`);
+  return raw ? JSON.parse(raw) : { novo: [], revisao: [] };
+}
+function saveTrail(dayStr,data){
+  localStorage.setItem(`trail_${dayStr}`, JSON.stringify(data));
+}
+function countDailySolved(dateStr, disc, sub){
+  const prefix = `log_${dateStr}_${disc}_${sub}_`;
+  let c = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k.startsWith(prefix)) c++;
+  }
+  return c;
+}
+
+function openPicker(callback){
+  pickerDisc.innerHTML = '';
+  pickerSub.innerHTML  = '';
+  for(const d of Object.keys(SUBJECT_NAMES)){
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d;
+    pickerDisc.appendChild(opt);
+  }
+  pickerDisc.onchange = () => {
+    pickerSub.innerHTML = '';
+    SUBJECT_NAMES[pickerDisc.value].forEach((n,i)=>{
+      const o=document.createElement('option');
+      o.value=String(i+1).padStart(2,'0');
+      o.textContent=n;
+      pickerSub.appendChild(o);
+    });
+  };
+  pickerDisc.onchange();
+  pickerAdd.onclick = () => {
+    callback({disc: pickerDisc.value, sub: pickerSub.value});
+    pickerModal.style.display='none';
+  };
+  pickerCancel.onclick = () => pickerModal.style.display='none';
+  pickerModal.style.display='flex';
+}
+
+function renderTrailDay(day,expand){
+  const dayStr = day.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'});
+  const diffDays = Math.ceil((EXAM_DATE - day)/(86400000));
+  const btn = document.createElement('button');
+  const weekDay = day.toLocaleDateString('pt-BR',{weekday:'long'});
+  const dateFmt = day.toLocaleDateString('pt-BR');
+  btn.className='day-btn';
+  btn.textContent=`${weekDay} - ${dateFmt} - ${diffDays} dias`;
+
+  const content=document.createElement('div');
+  content.className='day-content';
+  if(expand) btn.classList.add('open'), content.style.display='flex';
+
+  const data=loadTrail(dayStr);
+  const makeSection=(label,key)=>{
+    const sec=document.createElement('div');
+    sec.className='trail-section';
+    const head=document.createElement('div');
+    head.className='trail-section-header';
+    head.innerHTML=`<span>${label}</span>`;
+    const add=document.createElement('button');
+    add.textContent='+';
+    add.onclick=()=>{
+      openPicker(sel=>{
+        data[key].push(sel);
+        saveTrail(dayStr,data);
+        showTrail(dayStr); // re-render
+      });
+    };
+    head.appendChild(add);
+    sec.appendChild(head);
+    data[key].forEach((s,idx)=>{
+      const item=document.createElement('div');
+      item.className='trail-item';
+      const labelText=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
+      const qcount=countDailySolved(dayStr,s.disc,s.sub);
+      const link=document.createElement('button');
+      link.className='small-btn';
+      link.textContent=labelText+` (${qcount})`;
+      link.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+      const rm=document.createElement('button');
+      rm.textContent='x';
+      rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
+      item.appendChild(link); item.appendChild(rm);
+      sec.appendChild(item);
+    });
+    return sec;
+  };
+  content.appendChild(makeSection('Novo','novo'));
+  content.appendChild(makeSection('Revisão','revisao'));
+
+  btn.onclick=()=>{
+    const open=btn.classList.toggle('open');
+    content.style.display=open?'flex':'none';
+  };
+
+  app.appendChild(btn);
+  app.appendChild(content);
+}
+
+function showTrail(expandDay){
+  currentDisc=currentSub=null;
+  trailReturn=null;
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true,'Trilha Estratégica');
+  clear();
+  window.scrollTo(0,0);
+  const start=new Date();
+  for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
+    renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
+  }
+}
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
   currentDisc = disc;
@@ -913,8 +1047,18 @@ importFile.addEventListener("change", ({ target }) => {
 })();
 
 
-/* Botão Voltar → decide se volta à lista de assuntos ou ao menu */
-backBtn.onclick = () => currentSub ? showSubjects(currentDisc) : showMenu();
+/* Botão Voltar → decide se volta à lista de assuntos, trilha ou menu */
+backBtn.onclick = () => {
+  if(trailReturn){
+    const d = trailReturn;
+    trailReturn = null;
+    showTrail(d);
+  }else if(currentSub){
+    showSubjects(currentDisc);
+  }else{
+    showMenu();
+  }
+};
 
 // ─────────────────────────────────────────────────────────────────
 // POMODORO RESILIENTE A RELOAD (COM CORREÇÃO DE LABEL PAUSE/RESUME)
