@@ -496,7 +496,8 @@ function renderTrailDay(day,expand){
   const weekDay = day.toLocaleDateString('pt-BR',{weekday:'long'});
   const dateFmt = day.toLocaleDateString('pt-BR');
   btn.className='day-btn';
-  btn.textContent=`${weekDay} - ${dateFmt} - ${diffDays} dias`;
+  btn.innerHTML=`<span class="day-label">${weekDay} - ${dateFmt} - ${diffDays} dias</span>`+
+    `<i class="day-arrow fas fa-chevron-down"></i>`;
 
   const content=document.createElement('div');
   content.className='day-content';
@@ -555,6 +556,7 @@ function showTrail(expandDay){
   leaveHome();
   toggleSettingsVisibility(false);
   updateHeader(true,'Trilha Estratégica');
+  document.getElementById('headerStats').style.display='none';
   clear();
   window.scrollTo(0,0);
   const start=new Date();
