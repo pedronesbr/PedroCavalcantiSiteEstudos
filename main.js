@@ -508,20 +508,19 @@ function renderTrailDay(day,expand){
   const makeSection=(label,key)=>{
     const sec=document.createElement('div');
     sec.className='trail-section';
-    const head=document.createElement('div');
-    head.className='trail-section-header';
-    head.innerHTML=`<span>${label}</span>`;
-    const add=document.createElement('button');
-    add.textContent='+';
-    add.onclick=()=>{
+    const wrap=document.createElement('div');
+    wrap.className='trail-section-header';
+    const btnAdd=document.createElement('button');
+    btnAdd.textContent=label;
+    btnAdd.onclick=()=>{
       openPicker(sel=>{
         data[key].push(sel);
         saveTrail(dayStr,data);
         showTrail(dayStr); // re-render
       });
     };
-    head.appendChild(add);
-    sec.appendChild(head);
+    wrap.appendChild(btnAdd);
+    sec.appendChild(wrap);
     data[key].forEach((s,idx)=>{
       const item=document.createElement('div');
       item.className='trail-item';
