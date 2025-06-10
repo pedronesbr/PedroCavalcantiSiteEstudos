@@ -435,11 +435,6 @@ importBtn.onclick = () => {
   importFile.click();
 };
 
-// Placeholders — por enquanto só avisam
-document.getElementById("simuladoBtn").onclick =
-document.getElementById("erradasBtn").onclick  = () =>
-  alert("Funcionalidade em desenvolvimento 🙂");
-
 /* ---------------- TRILHA ESTRATÉGICA ---------------- */
 trilhaBtn.onclick = () => {
   settingsMenu.style.display = 'none';
