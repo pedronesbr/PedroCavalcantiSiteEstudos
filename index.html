@@ -52,19 +52,18 @@
   <div id="header">
     <button id="backBtn">
       <i class="fas fa-arrow-left"></i>
-      <!-- Botão engrenagem -->
-      <button id="settingsBtn" aria-label="Configurações">
-        <i class="fas fa-cog"></i>
-      </button>
-
-      <!-- Menu flutuante das configurações -->
-      <div id="settingsMenu">
-        <button id="simuladoBtn" disabled>Simulado Personalizado</button>
-        <button id="erradasBtn"  disabled>Erradas da Semana</button>
-        <button id="importBtn">Importar</button>
-        <button id="exportBtn">Exportar</button>
-      </div>
     </button>
+    <!-- Botão engrenagem -->
+    <button id="settingsBtn" aria-label="Configurações">
+      <i class="fas fa-cog"></i>
+    </button>
+
+    <!-- Menu flutuante das configurações -->
+    <div id="settingsMenu">
+      <button id="trilhaBtn">Trilha Estratégica</button>
+      <button id="importBtn">Importar</button>
+      <button id="exportBtn">Exportar</button>
+    </div>
     <div class="header-top">
       <span id="headerTitle">Título Dinâmico</span>
     </div>
@@ -138,6 +137,20 @@
       <div id="pomodoroControls" style="display:none;">
         <button id="pauseResumeBtn">Pausar</button>
         <button id="stopBtn">Sair</button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal de seleção de assunto para a Trilha -->
+  <div id="subjectPickerModal">
+    <div class="modal-content">
+      <h3>Selecionar Assunto</h3>
+      <div class="picker-row">
+        <select id="pickerDisc"></select>
+        <select id="pickerSub"></select>
+      </div>
+      <div class="picker-actions">
+        <button id="pickerAdd">Adicionar</button>
+        <button id="pickerCancel">Cancelar</button>
       </div>
     </div>
   </div>

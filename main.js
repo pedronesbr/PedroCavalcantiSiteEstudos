@@ -1,4 +1,9 @@
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+} else {
+  console.warn("pdf.js não carregado – PDFs indisponíveis");
+}
 /* ================================================================
    1. CONSTANTES & CONFIGURAÇÕES GLOBAIS
    ----------------------------------------------------------------
@@ -90,6 +95,9 @@ const discClasses = {
   Matemática: "matematica",
 };
 
+// Data prevista do exame (ajuste conforme necessário)
+const EXAM_DATE = new Date('2025-11-09');
+
 /* ================================================================
    2. REFERÊNCIAS FIXAS DA INTERFACE (cache de seletores)
    ----------------------------------------------------------------
@@ -109,6 +117,12 @@ const settingsBtn   = document.getElementById("settingsBtn");
 const settingsMenu  = document.getElementById("settingsMenu");
 const exportBtn     = document.getElementById("exportBtn");
 const importBtn     = document.getElementById("importBtn");
+const trilhaBtn     = document.getElementById("trilhaBtn");
+const pickerModal   = document.getElementById("subjectPickerModal");
+const pickerDisc    = document.getElementById("pickerDisc");
+const pickerSub     = document.getElementById("pickerSub");
+const pickerAdd     = document.getElementById("pickerAdd");
+const pickerCancel  = document.getElementById("pickerCancel");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -116,6 +130,7 @@ const importBtn     = document.getElementById("importBtn");
 let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
 let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
+let trailReturn  = null;  // data da trilha para voltar após questões
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -197,15 +212,18 @@ function exportData() {
   }
 
   /* 2 ▸ já estamos de volta do reload? */
-  if (sessionStorage.getItem("__exportReady__") === "yes") {
+  if (typeof sessionStorage !== 'undefined' &&
+      sessionStorage.getItem("__exportReady__") === "yes") {
     sessionStorage.removeItem("__exportReady__");
     doExport();                            // faz o download
     return;
   }
 
   /* 3 ▸ primeira chamada: marca a flag, recarrega a página */
-  sessionStorage.setItem("__exportReady__","yes");
-  location.reload();                       // equivale ao F5
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem("__exportReady__","yes");
+    location.reload();                     // equivale ao F5
+  }
 }
 
   /* ================================================================
@@ -315,7 +333,8 @@ function getTotalQuestionsCount() {
     .flatMap(subs => Object.values(subs))
     .reduce((sum, arr) => sum + arr.length, 0);
 }
-if (sessionStorage.getItem("__exportReady__") === "yes") {
+if (typeof sessionStorage !== 'undefined' &&
+    sessionStorage.getItem("__exportReady__") === "yes") {
   exportData();            // cai direto no ramo que baixa o arquivo
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
@@ -330,6 +349,7 @@ function showMenu () {
   currentDisc = currentSub = null;
   enterHome();            // aplica o visual preto + ajustes
   updateHeader(true);
+  document.getElementById('headerStats').style.visibility='visible';
   clear();                   // <- apaga o conteúdo de #app sem afetar xpModal
 
   /* 3 ▸ Introdução */
@@ -419,6 +439,144 @@ importBtn.onclick = () => {
 document.getElementById("simuladoBtn").onclick =
 document.getElementById("erradasBtn").onclick  = () =>
   alert("Funcionalidade em desenvolvimento 🙂");
+
+/* ---------------- TRILHA ESTRATÉGICA ---------------- */
+trilhaBtn.onclick = () => {
+  settingsMenu.style.display = 'none';
+  showTrail();
+};
+
+function loadTrail(dayStr){
+  const raw = localStorage.getItem(`trail_${dayStr}`);
+  return raw ? JSON.parse(raw) : { novo: [], revisao: [] };
+}
+function saveTrail(dayStr,data){
+  localStorage.setItem(`trail_${dayStr}`, JSON.stringify(data));
+}
+function countDailySolved(dateStr, disc, sub){
+  const prefix = `log_${dateStr}_${disc}_${sub}_`;
+  let c = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k.startsWith(prefix)) c++;
+  }
+  return c;
+}
+
+function openPicker(callback){
+  pickerDisc.innerHTML = '';
+  pickerSub.innerHTML  = '';
+  for(const d of Object.keys(SUBJECT_NAMES)){
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d;
+    pickerDisc.appendChild(opt);
+  }
+  pickerDisc.onchange = () => {
+    pickerSub.innerHTML = '';
+    SUBJECT_NAMES[pickerDisc.value].forEach((n,i)=>{
+      const o=document.createElement('option');
+      o.value=String(i+1).padStart(2,'0');
+      o.textContent=n;
+      pickerSub.appendChild(o);
+    });
+  };
+  pickerDisc.onchange();
+  pickerAdd.onclick = () => {
+    callback({disc: pickerDisc.value, sub: pickerSub.value});
+    pickerModal.style.display='none';
+  };
+  pickerCancel.onclick = () => pickerModal.style.display='none';
+  pickerModal.style.display='flex';
+}
+
+function renderTrailDay(day,expand){
+  const dayStr = day.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'});
+  const diffDays = Math.ceil((EXAM_DATE - day)/(86400000));
+  const btn = document.createElement('button');
+  const weekDay = day.toLocaleDateString('pt-BR',{weekday:'long'});
+  const dateFmt = day.toLocaleDateString('pt-BR');
+  btn.className='day-btn';
+  btn.innerHTML=`<span class="day-label">${weekDay} - ${dateFmt} - ${diffDays} dias</span>`+
+    `<i class="day-arrow fas fa-chevron-down"></i>`;
+
+  const content=document.createElement('div');
+  content.className='day-content';
+  if(expand) btn.classList.add('open'), content.style.display='flex';
+
+  const data=loadTrail(dayStr);
+  const makeSection=(label,key)=>{
+    const sec=document.createElement('div');
+    sec.className='trail-section';
+    const wrap=document.createElement('div');
+    wrap.className='trail-section-header';
+    const btnAdd=document.createElement('button');
+    btnAdd.textContent=label;
+    btnAdd.onclick=()=>{
+      openPicker(sel=>{
+        data[key].push(sel);
+        saveTrail(dayStr,data);
+        showTrail(dayStr); // re-render
+      });
+    };
+    wrap.appendChild(btnAdd);
+    sec.appendChild(wrap);
+    data[key].forEach((s,idx)=>{
+      const item=document.createElement('div');
+      item.className='trail-item';
+
+      const label=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
+      const qcount=countDailySolved(dayStr,s.disc,s.sub);
+
+      const subj=document.createElement('button');
+      subj.className=`trail-subject ${discClasses[s.disc]}`;
+      subj.textContent=label;
+      subj.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+
+      const count=document.createElement('span');
+      count.className='trail-count';
+      count.textContent=qcount;
+
+      const rm=document.createElement('button');
+      rm.className='trail-remove';
+      rm.textContent='×';
+      rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
+
+      item.appendChild(subj);
+      item.appendChild(count);
+      item.appendChild(rm);
+      sec.appendChild(item);
+    });
+    return sec;
+  };
+  content.appendChild(makeSection('Novo','novo'));
+  content.appendChild(makeSection('Revisão','revisao'));
+
+  btn.onclick=()=>{
+    const open=btn.classList.toggle('open');
+    content.style.display=open?'flex':'none';
+  };
+
+  app.appendChild(btn);
+  app.appendChild(content);
+}
+
+function showTrail(expandDay){
+  currentDisc=currentSub=null;
+  trailReturn=null;
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true,'Trilha Estratégica');
+  const stats=document.getElementById('headerStats');
+  stats.style.display='block';
+  stats.style.visibility='hidden';
+  clear();
+  window.scrollTo(0,0);
+  const start=new Date();
+  for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
+    renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
+  }
+}
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
   currentDisc = disc;
@@ -428,6 +586,7 @@ function showSubjects(disc) {
 
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
+  document.getElementById('headerStats').style.visibility='visible';
 
   // 2) Anexa ao título da disciplina o toggle de ordenação
   headerTitle.style.cursor = 'pointer';
@@ -521,6 +680,7 @@ function showQuestions(disc, sub) {
   leaveHome();            // volta ao visual normal fora da Home
   toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
+  document.getElementById('headerStats').style.visibility='visible';
   clear();
   window.scrollTo(0, 0);
 
@@ -749,6 +909,10 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
   pdfContainer.style.display = "flex";
   pdfContainer.querySelectorAll("canvas").forEach(c=>c.remove());
 
+  if (!window.pdfjsLib) {
+    alert('Visualização de PDF indisponível.');
+    return;
+  }
   const pdf   = await pdfjsLib.getDocument(`PDFs/${pdfName}`).promise;
   const dpr   = window.devicePixelRatio || 1;
   const scale = quality * dpr * zoom;
@@ -884,7 +1048,9 @@ importFile.addEventListener("change", ({ target }) => {
   const reader = new FileReader();
   reader.onload = (e) => {
     // guarda o JSON bruto em sessionStorage
-    sessionStorage.setItem("__pendingImport__", e.target.result);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem("__pendingImport__", e.target.result);
+    }
 
     // libera espaço no localStorage para a próxima carga
     localStorage.clear();
@@ -897,7 +1063,9 @@ importFile.addEventListener("change", ({ target }) => {
 
 /* 2 ───── Restauração automática logo no início do JS principal ───── */
 (() => {
-  const raw = sessionStorage.getItem("__pendingImport__");
+  const raw = (typeof sessionStorage !== 'undefined')
+    ? sessionStorage.getItem("__pendingImport__")
+    : null;
   if (!raw) return;                           // nada pendente
 
   try {
@@ -908,13 +1076,25 @@ importFile.addEventListener("change", ({ target }) => {
     console.error("Falha ao processar backup:", err);
     alert("Importação cancelada (arquivo corrompido).");
   } finally {
-    sessionStorage.removeItem("__pendingImport__"); // limpa a flag
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem("__pendingImport__"); // limpa a flag
+    }
   }
 })();
 
 
-/* Botão Voltar → decide se volta à lista de assuntos ou ao menu */
-backBtn.onclick = () => currentSub ? showSubjects(currentDisc) : showMenu();
+/* Botão Voltar → decide se volta à lista de assuntos, trilha ou menu */
+backBtn.onclick = () => {
+  if(trailReturn){
+    const d = trailReturn;
+    trailReturn = null;
+    showTrail(d);
+  }else if(currentSub){
+    showSubjects(currentDisc);
+  }else{
+    showMenu();
+  }
+};
 
 // ─────────────────────────────────────────────────────────────────
 // POMODORO RESILIENTE A RELOAD (COM CORREÇÃO DE LABEL PAUSE/RESUME)
@@ -1199,6 +1379,11 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
   let chart = null;
   function drawChart(labels, counts){
     if (chart) chart.destroy();
+
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js não carregado – gráfico indisponível');
+      return;
+    }
 
     chart = new Chart(xpChartElm, {
       type: 'bar',
