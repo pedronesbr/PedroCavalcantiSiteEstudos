@@ -328,6 +328,21 @@ function shuffle(arr) {
   }
   return arr;
 }
+
+// Verifica overflow horizontal no campo de comentário
+function atualizaIndicadorOverflow(editDiv) {
+  // se estiver expandido, não exibimos indicador
+  if (editDiv.classList.contains('expanded')) {
+    editDiv.classList.remove('has-overflow');
+    return;
+  }
+  // compara largura real do conteúdo com a largura visível
+  if (editDiv.scrollWidth > editDiv.clientWidth) {
+    editDiv.classList.add('has-overflow');
+  } else {
+    editDiv.classList.remove('has-overflow');
+  }
+}
 function getTodayStr() {
   return new Date().toLocaleDateString('en-CA', {
     timeZone: 'America/Fortaleza'
@@ -970,20 +985,6 @@ editDiv.addEventListener('click', function(e) {
     // Executa logo de cara para detectar overflow inicial (se houver texto longo salvo)
     atualizaIndicadorOverflow(editDiv);
 
-    // Função para checar overflow horizontal e adicionar/remover a classe “has-overflow”
-    function atualizaIndicadorOverflow(editDiv) {
-      // se estiver expandido, não exibimos indicador
-      if (editDiv.classList.contains('expanded')) {
-        editDiv.classList.remove('has-overflow');
-        return;
-      }
-      // compara largura real do conteúdo com a largura visível
-      if (editDiv.scrollWidth > editDiv.clientWidth) {
-        editDiv.classList.add('has-overflow');
-      } else {
-        editDiv.classList.remove('has-overflow');
-      }
-    }
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
 
