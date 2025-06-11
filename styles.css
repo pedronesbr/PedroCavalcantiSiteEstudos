@@ -67,8 +67,26 @@ button:hover { filter: brightness(1.2); }
 }
 
 .question-btn{
-  width:240px;   
+  width:240px;
   max-width:none; /* remove eventuais limites             */
+}
+
+.two-line-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1.2;
+  padding:16px 20px;
+}
+
+.ms-topic{
+  font-weight:bold;
+  display:block;
+  font-size:12px;
+}
+
+.ms-label{
+  display:block;
 }
 
 .subject-btn {             /* botões de assunto */
@@ -690,6 +708,21 @@ button:hover { filter: brightness(1.2); }
   font-size: 14px;
   text-align: center;
   margin-left: auto;
+}
+
+
+#examSummary {
+  margin-top: 20px;
+}
+
+.exam-row {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+.exam-label {
+  flex: 0 0 150px;
+  font-weight: bold;
 }
 
 /* Items */

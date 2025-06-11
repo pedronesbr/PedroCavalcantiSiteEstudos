@@ -125,6 +125,7 @@ const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
 const pickerAdd     = document.getElementById("pickerAdd");
+const pickerMicro   = document.getElementById("pickerMicro");
 const pickerCancel  = document.getElementById("pickerCancel");
 
 /* ================================================================
@@ -301,6 +302,70 @@ function updateStar(el, state) {
   }
   img.src = `Stars/${PNG}`;
 }
+
+// Calcula automaticamente a estrela de um assunto
+function calcStarState(disc, sub) {
+  const qs = questoesData[disc][sub] || [];
+  let correct = 0, answered = 0;
+  qs.forEach(q => {
+    const st = +localStorage.getItem(qKey(disc, sub, q.label)) || 0;
+    if (st === 1) correct++;
+    if (st === 1 || st === 2) answered++;
+  });
+  const total = qs.length;
+  if (answered < 10 && answered / total < 0.75) return 0; // ainda sem dados suficientes
+  const pct = answered ? correct / answered : 0;
+  return pct >= 0.9 ? 4
+       : pct >= 0.8 ? 3
+       : pct >= 0.6 ? 2
+       : 1;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Seleciona 10 assuntos de Matemática com questões não feitas e
+// retorna a primeira questão pendente de cada um
+function generateMicroQuestions(){
+  const subs = Object.keys(questoesData['Matemática']);
+  const available = subs.filter(sub =>
+    questoesData['Matemática'][sub].some(q => {
+      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
+      return st === 0;
+    })
+  );
+  shuffle(available);
+  const chosen = available.slice(0,10);
+  const qs = [];
+  chosen.forEach(sub => {
+    const q = questoesData['Matemática'][sub].find(q => {
+      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
+      return st === 0;
+    });
+    if(q) qs.push({sub, label:q.label});
+  });
+  return qs;
+}
+
+// Verifica overflow horizontal no campo de comentário
+function atualizaIndicadorOverflow(editDiv) {
+  // se estiver expandido, não exibimos indicador
+  if (editDiv.classList.contains('expanded')) {
+    editDiv.classList.remove('has-overflow');
+    return;
+  }
+  // compara largura real do conteúdo com a largura visível
+  if (editDiv.scrollWidth > editDiv.clientWidth) {
+    editDiv.classList.add('has-overflow');
+  } else {
+    editDiv.classList.remove('has-overflow');
+  }
+}
 function getTodayStr() {
   return new Date().toLocaleDateString('en-CA', {
     timeZone: 'America/Fortaleza'
@@ -401,13 +466,10 @@ function showMenu () {
       const star = stars.appendChild(Object.assign(
         document.createElement("span"), { className: "star" }));
       star.innerHTML = `<span class="star-index">${sub}</span>`;
-      const key = `star_${disc}_${sub}`;
-      let st = +localStorage.getItem(key) || 0;
+      const st = calcStarState(disc, sub);
       updateStar(star, st);
       star.onclick = () => {
-        st = (st + 1) % 5;
-        localStorage.setItem(key, st);
-        updateStar(star, st);
+        showQuestions(disc, sub);
       };
     }
   }
@@ -457,13 +519,26 @@ function saveTrail(dayStr,data){
   localStorage.setItem(`trail_${dayStr}`, JSON.stringify(data));
 }
 function countDailySolved(dateStr, disc, sub){
-  const prefix = `log_${dateStr}_${disc}_${sub}_`;
+  const prefix = sub==='micro'
+    ? `logmicro_${dateStr}_${disc}_`
+    : `log_${dateStr}_${disc}_${sub}_`;
   let c = 0;
   for(let i=0;i<localStorage.length;i++){
     const k = localStorage.key(i);
     if(k.startsWith(prefix)) c++;
   }
   return c;
+}
+
+// Conta quantas questões de um micro simulado já foram respondidas
+function countMicroProgress(entry){
+  if(!entry || !Array.isArray(entry.qs)) return 0;
+  let a=0;
+  entry.qs.forEach(({sub,label})=>{
+    const st = +localStorage.getItem(qKey('Matemática', sub, label)) || 0;
+    if(st===1 || st===2) a++;
+  });
+  return a;
 }
 
 function openPicker(callback){
@@ -483,10 +558,17 @@ function openPicker(callback){
       o.textContent=n;
       pickerSub.appendChild(o);
     });
+    pickerMicro.style.display =
+      pickerDisc.value==='Matemática'? 'inline-block' : 'none';
   };
   pickerDisc.onchange();
   pickerAdd.onclick = () => {
     callback({disc: pickerDisc.value, sub: pickerSub.value});
+    pickerModal.style.display='none';
+  };
+  pickerMicro.onclick = () => {
+    const qs = generateMicroQuestions();
+    callback({disc:'Matemática', sub:'micro', qs});
     pickerModal.style.display='none';
   };
   pickerCancel.onclick = () => pickerModal.style.display='none';
@@ -528,13 +610,18 @@ function renderTrailDay(day,expand){
       const item=document.createElement('div');
       item.className='trail-item';
 
-      const label=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
-      const qcount=countDailySolved(dayStr,s.disc,s.sub);
+      const isMicro = s.sub==='micro';
+      const label = isMicro
+        ? 'Micro Simulado de Matemática'
+        : `${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
+      const qcount = isMicro
+        ? countMicroProgress(s)
+        : countDailySolved(dayStr,s.disc,s.sub);
 
       const subj=document.createElement('button');
       subj.className=`trail-subject ${discClasses[s.disc]}`;
       subj.textContent=label;
-      subj.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+      subj.onclick=()=>{ trailReturn=dayStr; isMicro? showMicroSim(s) : showQuestions(s.disc,s.sub); };
 
       const count=document.createElement('span');
       count.className='trail-count';
@@ -579,6 +666,56 @@ function showTrail(expandDay){
   for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
     renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
   }
+  renderExamSummary();
+}
+
+function computeExamStats(){
+  const exams={};
+  for(const disc in questoesData){
+    for(const sub in questoesData[disc]){
+      questoesData[disc][sub].forEach(q=>{
+        const m=q.label.match(/^(.*)-Q-(\d+)/);
+        if(!m) return;
+        const exam=m[1];
+        const num=parseInt(m[2],10);
+        const cat=num>=91&&num<=135?'Nat':num>=136&&num<=180?'Mat':null;
+        if(!cat) return;
+        exams[exam] ||= {Nat:{c:0,a:0,t:0}, Mat:{c:0,a:0,t:0}};
+        const st=+localStorage.getItem(qKey(disc,sub,q.label))||0;
+        const e=exams[exam][cat];
+        e.t++; if(st===1) e.c++; if(st===1||st===2) e.a++;
+      });
+    }
+  }
+  return exams;
+}
+
+function renderExamSummary(){
+  const exams=computeExamStats();
+  const container=document.createElement('div');
+  container.id='examSummary';
+  container.innerHTML='<h3>Resumo por Simulado</h3>';
+  for(const [exam,data] of Object.entries(exams)){
+    const nat=data.Nat; const mat=data.Mat;
+    const row=document.createElement('div');
+    row.className='exam-row';
+    const label=document.createElement('span');
+    label.className='exam-label';
+    label.textContent=exam;
+    row.appendChild(label);
+    if(nat.t){
+      const s=document.createElement('span');
+      s.textContent=`Nat: ${nat.c}/${nat.a} de ${nat.t}`;
+      row.appendChild(s);
+    }
+    if(mat.t){
+      const s=document.createElement('span');
+      s.textContent=`Mat: ${mat.c}/${mat.a} de ${mat.t}`;
+      row.appendChild(s);
+    }
+    container.appendChild(row);
+  }
+  app.appendChild(container);
 }
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 function showSubjects(disc) {
@@ -885,20 +1022,6 @@ editDiv.addEventListener('click', function(e) {
     // Executa logo de cara para detectar overflow inicial (se houver texto longo salvo)
     atualizaIndicadorOverflow(editDiv);
 
-    // Função para checar overflow horizontal e adicionar/remover a classe “has-overflow”
-    function atualizaIndicadorOverflow(editDiv) {
-      // se estiver expandido, não exibimos indicador
-      if (editDiv.classList.contains('expanded')) {
-        editDiv.classList.remove('has-overflow');
-        return;
-      }
-      // compara largura real do conteúdo com a largura visível
-      if (editDiv.scrollWidth > editDiv.clientWidth) {
-        editDiv.classList.add('has-overflow');
-      } else {
-        editDiv.classList.remove('has-overflow');
-      }
-    }
     /* … essas duas linhas abaixo já existiam antes – não duplique! … */
   });           // ← fecha o forEach((q, idx) => { … })
 
@@ -960,6 +1083,140 @@ if (imgContainer) {
   imgContainer.addEventListener('click', e => {
     if (e.target === imgContainer) closeImage();
   });
+}
+
+// --- Micro Simulado de Matemática (10 questões de assuntos aleatórios) ---
+function showMicroSim(entry) {
+  currentDisc = 'Matemática';
+  currentSub  = null;
+  // mantém trailReturn para voltar à trilha corretamente
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true, 'Micro Simulado de Matemática');
+  document.getElementById('headerStats').style.visibility='visible';
+  clear();
+  window.scrollTo(0,0);
+
+  let micro = [];
+  if(entry && Array.isArray(entry.qs)) micro = entry.qs;
+  else micro = generateMicroQuestions();
+  if(micro.length===0){
+    app.textContent = 'Todas as questões de Matemática foram concluídas.';
+    return;
+  }
+  const questions = micro.map(({sub,label}) => {
+    const q = questoesData['Matemática'][sub].find(x => x.label===label);
+    return q? {disc:'Matemática', sub, q}: null;
+  }).filter(Boolean);
+
+  const statDiv = document.getElementById('headerStats');
+  function refreshStats(){
+    let c=0,a=0;
+    questions.forEach(({disc,sub,q})=>{
+      const st = +localStorage.getItem(qKey(disc,sub,q.label)) || 0;
+      if(st===1) c++;
+      if(st===1||st===2) a++;
+    });
+    const pct = a? (c/a*100):0;
+    statDiv.textContent=`Desempenho: ${c}/${a} (${pct.toFixed(1)}%) | Total: ${questions.length}`;
+    statDiv.className = a===0 ? 'stat neutral'
+      : pct>=90? 'stat blue'
+      : pct>=80? 'stat green'
+      : pct>=60? 'stat orange'
+      : 'stat red';
+  }
+  refreshStats();
+
+  questions.forEach(({disc,sub,q})=>{
+    const row = app.appendChild(Object.assign(
+      document.createElement('div'),{className:'question-row'}));
+    const qBtn = document.createElement('button');
+    qBtn.innerHTML = `
+      <span class="ms-topic">${getFriendlyName(disc,sub)}</span><br>
+      <span class="ms-label">${q.label}</span>`;
+    qBtn.classList.add('btn','question-btn','two-line-btn');
+    const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
+    if(m){
+      const exam = m[0].toLowerCase();
+      qBtn.classList.add(`exam-${exam}`);
+    }
+    qBtn.onclick = () => openPdf(q.QPDFName, q.page);
+    row.appendChild(qBtn);
+
+    row.appendChild(Object.assign(
+      document.createElement('button'),{textContent:'Gabarito',className:'small-btn',
+      onclick:()=>openPdf(q.GPDFName,q.gabaritoPage)}));
+
+    const key = qKey(disc,sub,q.label);
+    let st = +localStorage.getItem(key)||0;
+    const box = row.appendChild(Object.assign(
+      document.createElement('span'),{className:'state-box'}));
+    const paint=()=>{
+      box.textContent=st===1?'✓':st===2?'✗':'';
+      box.style.color=st===1?'#32cd32':st===2?'#ff0000':'#f0f0f0';
+    };
+    paint();
+    box.onclick=()=>{
+      st=(st+1)%3;
+      localStorage.setItem(key,st);
+      const today=getTodayStr();
+      const logKey=`log_${today}_${key}`;
+      const msKey=`logmicro_${today}_${key}`;
+      if(st===1||st===2){
+        localStorage.setItem(logKey,'1');
+        localStorage.setItem(msKey,'1');
+      } else {
+        localStorage.removeItem(logKey);
+        localStorage.removeItem(msKey);
+      }
+      paint();
+      refreshStats();
+    };
+
+    const cKey = `comment_${key}`;
+    const editDiv=document.createElement('div');
+    editDiv.className='comment-edit';
+    editDiv.contentEditable='true';
+    editDiv.dataset.ph='';
+    editDiv.addEventListener('click',function(e){
+      if(e.button!==0) return;
+      const anchor=e.target.closest('a');
+      if(anchor){
+        e.preventDefault();
+        if(isImageUrl(anchor.href)) openImage(anchor.href);
+        else window.open(anchor.href,'_blank','noopener');
+        return;
+      }
+      if(!editDiv.classList.contains('expanded')){
+        editDiv.focus();
+      }
+    });
+    editDiv.innerHTML=localStorage.getItem(cKey)||'';
+    editDiv.addEventListener('paste',e=>{
+      e.preventDefault();
+      const plain=e.clipboardData.getData('text/plain');
+      const sel=window.getSelection();
+      if(!sel.rangeCount) return;
+      const range=sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(plain));
+      range.collapse(false); sel.removeAllRanges(); sel.addRange(range);
+    });
+    editDiv.addEventListener('input',()=>{ if(editDiv.classList.contains('expanded')) fitHeight(editDiv); });
+    editDiv.addEventListener('focus',()=>{ editDiv.classList.add('expanded'); editDiv.style.whiteSpace='pre-wrap'; editDiv.style.overflowY='auto'; fitHeight(editDiv); });
+    editDiv.addEventListener('blur',()=>{ if(editDiv.textContent.trim()===''){ editDiv.innerHTML=''; localStorage.removeItem(cKey); } editDiv.classList.remove('expanded'); editDiv.style.maxHeight='38px'; editDiv.style.whiteSpace='nowrap'; editDiv.style.textOverflow='ellipsis'; editDiv.style.overflow='hidden'; editDiv.scrollTop=0; atualizaIndicadorOverflow(editDiv); });
+    editDiv.addEventListener('contextmenu',e=>{ e.preventDefault(); openLinkMenu(e,editDiv); });
+    editDiv.addEventListener('click',e=>{ const a=e.target.closest('a'); if(!a) return; if(editDiv.matches(':focus')){ openLinkMenu(e,editDiv); }else{ e.preventDefault(); if(isImageUrl(a.href)) openImage(a.href); else window.open(a.href,'_blank','noopener'); } });
+    const save=()=>{ localStorage.setItem(cKey,editDiv.innerHTML); };
+    editDiv.addEventListener('input',save);
+    row.appendChild(editDiv);
+    atualizaIndicadorOverflow(editDiv);
+  });
+
+  document.querySelectorAll('.comment-edit').forEach(div=>div.blur());
+  if(document.activeElement && document.activeElement.classList.contains('comment-edit')){
+    document.activeElement.blur();
+  }
 }
 
 function openSummary(){                      // usa a disciplina/assunto atuais
