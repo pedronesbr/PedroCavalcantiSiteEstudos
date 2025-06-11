@@ -353,6 +353,47 @@ button:hover { filter: brightness(1.2); }
   background: rgba(30, 30, 30, .90);
   transform: scale(1.1);
 }
+
+/* =====================================================================
+   VISUALIZAÇÃO DE IMAGEM (LIGHTBOX)
+   ===================================================================== */
+#imgPreviewContainer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+#imgPreviewContainer img {
+  max-width: 90%;
+  max-height: 90%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .5);
+}
+#closeImgBtn {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #ffffff33;
+  background: rgba(30, 30, 30, .75);
+  backdrop-filter: blur(6px);
+  font-size: 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .25s, transform .25s;
+  z-index: 2000;
+}
+#closeImgBtn:hover {
+  background: rgba(30, 30, 30, .90);
+  transform: scale(1.1);
+}
 /* ───────── Botão stripe ───────── */
 .btn {
   position: relative;

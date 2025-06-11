@@ -110,6 +110,9 @@ const header       = document.getElementById("header");
 const headerTitle  = document.getElementById("headerTitle");
 const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
+const imgContainer = document.getElementById("imgPreviewContainer");
+const closeImgBtn  = document.getElementById("closeImgBtn");
+const previewImg   = document.getElementById("imgPreview");
 const summaryContainer = document.getElementById("summaryContainer");
 const summaryFrame     = document.getElementById("summaryFrame");
 
@@ -243,6 +246,11 @@ function parseLinks(text) {
     return 'Link';           // sempre a mesma palavra
   });
   return { aliased: alias, links: urls };
+}
+
+function isImageUrl(url) {
+  return (/\.(jpe?g|png|gif|bmp|webp)$/i.test(url) ||
+          /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/.+\?alt=media.*$/i.test(url));
 }
 
 /* ================================================================
@@ -779,7 +787,11 @@ editDiv.addEventListener('click', function(e) {
   const anchor = e.target.closest('a');
   if (anchor) {
     e.preventDefault();
-    window.open(anchor.href, '_blank', 'noopener');
+    if (isImageUrl(anchor.href)) {
+      openImage(anchor.href);
+    } else {
+      window.open(anchor.href, '_blank', 'noopener');
+    }
     return;
   }
 
@@ -853,7 +865,11 @@ editDiv.addEventListener('click', function(e) {
         openLinkMenu(e, editDiv);
       } else {
         e.preventDefault();
-        window.open(a.href, '_blank', 'noopener');
+        if (isImageUrl(a.href)) {
+          openImage(a.href);
+        } else {
+          window.open(a.href, '_blank', 'noopener');
+        }
       }
     });
 
@@ -926,6 +942,25 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
   }
 }
 closeBtn.onclick = () => (pdfContainer.style.display = "none");
+
+function openImage(url) {
+  if (!previewImg) {
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
+  previewImg.src = url;
+  imgContainer.style.display = 'flex';
+}
+function closeImage(){
+  imgContainer.style.display = 'none';
+  if (previewImg) previewImg.src = '';
+}
+if (closeImgBtn) closeImgBtn.onclick = closeImage;
+if (imgContainer) {
+  imgContainer.addEventListener('click', e => {
+    if (e.target === imgContainer) closeImage();
+  });
+}
 
 function openSummary(){                      // usa a disciplina/assunto atuais
   const d = encodeURIComponent(currentDisc);

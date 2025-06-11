@@ -92,6 +92,16 @@
     <canvas id="pdfCanvas"></canvas>
   </div>
   <!-- =====================================================================
+       MODAL DE IMAGEM
+       - Previsualiza links de imagens externos (Firebase, etc.)
+       ===================================================================== -->
+  <div id="imgPreviewContainer">
+    <button id="closeImgBtn" aria-label="Fechar Imagem">
+      <i class="fas fa-times"></i>
+    </button>
+    <img id="imgPreview" alt="imagem" />
+  </div>
+  <!-- =====================================================================
      RESUMO (overlay com o editor de texto)
      ===================================================================== -->
   <div id="summaryContainer" style="position:fixed;inset:0;background:#121212;display:none;flex-direction:column;z-index:2000;">
