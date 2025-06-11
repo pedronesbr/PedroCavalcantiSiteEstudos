@@ -135,6 +135,7 @@ let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
 let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
 let trailReturn  = null;  // data da trilha para voltar após questões
+let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -469,7 +470,7 @@ function showMenu () {
       const st = calcStarState(disc, sub);
       updateStar(star, st);
       star.onclick = () => {
-        showQuestions(disc, sub);
+        showQuestions(disc, sub, true); // se veio da estrela, volta para Home
       };
     }
   }
@@ -814,7 +815,8 @@ function showSubjects(disc) {
 }
 
 /* ---------------- LISTA DE QUESTÕES ---------------- */
-function showQuestions(disc, sub) {
+function showQuestions(disc, sub, fromStar = false) {
+  starReturn = fromStar;   // registra se veio direto da Home pela estrela
   currentDisc = disc;
   currentSub  = sub;
   leaveHome();            // volta ao visual normal fora da Home
@@ -1376,6 +1378,9 @@ backBtn.onclick = () => {
     const d = trailReturn;
     trailReturn = null;
     showTrail(d);
+  }else if(starReturn){
+    starReturn = false;
+    showMenu();
   }else if(currentSub){
     showSubjects(currentDisc);
   }else{
