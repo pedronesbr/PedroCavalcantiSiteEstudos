@@ -497,7 +497,7 @@ function saveTrail(dayStr,data){
 }
 function countDailySolved(dateStr, disc, sub){
   const prefix = sub==='micro'
-    ? `log_${dateStr}_${disc}_`
+    ? `logmicro_${dateStr}_${disc}_`
     : `log_${dateStr}_${disc}_${sub}_`;
   let c = 0;
   for(let i=0;i<localStorage.length;i++){
@@ -1109,7 +1109,7 @@ function showMicroSim() {
     qBtn.innerHTML = `
       <span class="ms-topic">${getFriendlyName(disc,sub)}</span><br>
       <span class="ms-label">${q.label}</span>`;
-    qBtn.classList.add('btn','question-btn');
+    qBtn.classList.add('btn','question-btn','two-line-btn');
     const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
     if(m){
       const exam = m[0].toLowerCase();
@@ -1136,8 +1136,14 @@ function showMicroSim() {
       localStorage.setItem(key,st);
       const today=getTodayStr();
       const logKey=`log_${today}_${key}`;
-      if(st===1||st===2) localStorage.setItem(logKey,'1');
-      else localStorage.removeItem(logKey);
+      const msKey=`logmicro_${today}_${key}`;
+      if(st===1||st===2){
+        localStorage.setItem(logKey,'1');
+        localStorage.setItem(msKey,'1');
+      } else {
+        localStorage.removeItem(logKey);
+        localStorage.removeItem(msKey);
+      }
       paint();
       refreshStats();
     };
