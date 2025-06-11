@@ -496,7 +496,9 @@ function saveTrail(dayStr,data){
   localStorage.setItem(`trail_${dayStr}`, JSON.stringify(data));
 }
 function countDailySolved(dateStr, disc, sub){
-  const prefix = `log_${dateStr}_${disc}_${sub}_`;
+  const prefix = sub==='micro'
+    ? `log_${dateStr}_${disc}_`
+    : `log_${dateStr}_${disc}_${sub}_`;
   let c = 0;
   for(let i=0;i<localStorage.length;i++){
     const k = localStorage.key(i);
@@ -578,7 +580,7 @@ function renderTrailDay(day,expand){
         ? 'Micro Simulado Matemática'
         : `${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
       const qcount = isMicro
-        ? ''
+        ? countDailySolved(dayStr,'Matemática','micro')
         : countDailySolved(dayStr,s.disc,s.sub);
 
       const subj=document.createElement('button');
@@ -1052,7 +1054,7 @@ if (imgContainer) {
 function showMicroSim() {
   currentDisc = 'Matemática';
   currentSub  = null;
-  trailReturn = '';
+  // mantém trailReturn para voltar à trilha corretamente
   leaveHome();
   toggleSettingsVisibility(false);
   updateHeader(true, 'Micro Simulado de Matemática');
@@ -1104,8 +1106,10 @@ function showMicroSim() {
     const row = app.appendChild(Object.assign(
       document.createElement('div'),{className:'question-row'}));
     const qBtn = document.createElement('button');
-    qBtn.textContent = `${q.label} (${getFriendlyName(disc,sub)})`;
-    qBtn.classList.add('btn');
+    qBtn.innerHTML = `
+      <span class="ms-topic">${getFriendlyName(disc,sub)}</span><br>
+      <span class="ms-label">${q.label}</span>`;
+    qBtn.classList.add('btn','question-btn');
     const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
     if(m){
       const exam = m[0].toLowerCase();
