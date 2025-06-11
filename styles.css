@@ -82,6 +82,7 @@ button:hover { filter: brightness(1.2); }
 .ms-topic{
   font-weight:bold;
   display:block;
+  font-size:12px;
 }
 
 .ms-label{

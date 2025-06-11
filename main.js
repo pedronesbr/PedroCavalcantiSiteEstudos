@@ -329,6 +329,29 @@ function shuffle(arr) {
   return arr;
 }
 
+// Seleciona 10 assuntos de Matemática com questões não feitas e
+// retorna a primeira questão pendente de cada um
+function generateMicroQuestions(){
+  const subs = Object.keys(questoesData['Matemática']);
+  const available = subs.filter(sub =>
+    questoesData['Matemática'][sub].some(q => {
+      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
+      return st === 0;
+    })
+  );
+  shuffle(available);
+  const chosen = available.slice(0,10);
+  const qs = [];
+  chosen.forEach(sub => {
+    const q = questoesData['Matemática'][sub].find(q => {
+      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
+      return st === 0;
+    });
+    if(q) qs.push({sub, label:q.label});
+  });
+  return qs;
+}
+
 // Verifica overflow horizontal no campo de comentário
 function atualizaIndicadorOverflow(editDiv) {
   // se estiver expandido, não exibimos indicador
@@ -533,7 +556,8 @@ function openPicker(callback){
     pickerModal.style.display='none';
   };
   pickerMicro.onclick = () => {
-    callback({disc:'Matemática', sub:'micro'});
+    const qs = generateMicroQuestions();
+    callback({disc:'Matemática', sub:'micro', qs});
     pickerModal.style.display='none';
   };
   pickerCancel.onclick = () => pickerModal.style.display='none';
@@ -586,7 +610,7 @@ function renderTrailDay(day,expand){
       const subj=document.createElement('button');
       subj.className=`trail-subject ${discClasses[s.disc]}`;
       subj.textContent=label;
-      subj.onclick=()=>{ trailReturn=dayStr; isMicro? showMicroSim() : showQuestions(s.disc,s.sub); };
+      subj.onclick=()=>{ trailReturn=dayStr; isMicro? showMicroSim(s) : showQuestions(s.disc,s.sub); };
 
       const count=document.createElement('span');
       count.className='trail-count';
@@ -1051,7 +1075,7 @@ if (imgContainer) {
 }
 
 // --- Micro Simulado de Matemática (10 questões de assuntos aleatórios) ---
-function showMicroSim() {
+function showMicroSim(entry) {
   currentDisc = 'Matemática';
   currentSub  = null;
   // mantém trailReturn para voltar à trilha corretamente
@@ -1062,27 +1086,17 @@ function showMicroSim() {
   clear();
   window.scrollTo(0,0);
 
-  const subs = Object.keys(questoesData['Matemática']);
-  const available = subs.filter(sub =>
-    questoesData['Matemática'][sub].some(q => {
-      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
-      return st === 0;
-    })
-  );
-  if (available.length === 0) {
+  let micro = [];
+  if(entry && Array.isArray(entry.qs)) micro = entry.qs;
+  else micro = generateMicroQuestions();
+  if(micro.length===0){
     app.textContent = 'Todas as questões de Matemática foram concluídas.';
     return;
   }
-  shuffle(available);
-  const chosen = available.slice(0,10);
-  const questions = [];
-  chosen.forEach(sub => {
-    const q = questoesData['Matemática'][sub].find(q => {
-      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
-      return st === 0;
-    });
-    if (q) questions.push({disc:'Matemática', sub, q});
-  });
+  const questions = micro.map(({sub,label}) => {
+    const q = questoesData['Matemática'][sub].find(x => x.label===label);
+    return q? {disc:'Matemática', sub, q}: null;
+  }).filter(Boolean);
 
   const statDiv = document.getElementById('headerStats');
   function refreshStats(){
