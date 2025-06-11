@@ -692,6 +692,31 @@ button:hover { filter: brightness(1.2); }
   margin-left: auto;
 }
 
+#microSimBtn {
+  margin: 12px 0;
+  padding: 8px 16px;
+  background: var(--c-mat);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#examSummary {
+  margin-top: 20px;
+}
+
+.exam-row {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+.exam-label {
+  flex: 0 0 150px;
+  font-weight: bold;
+}
+
 /* Items */
 .trail-item {
   display: flex;
