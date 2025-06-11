@@ -530,6 +530,17 @@ function countDailySolved(dateStr, disc, sub){
   return c;
 }
 
+// Conta quantas questões de um micro simulado já foram respondidas
+function countMicroProgress(entry){
+  if(!entry || !Array.isArray(entry.qs)) return 0;
+  let a=0;
+  entry.qs.forEach(({sub,label})=>{
+    const st = +localStorage.getItem(qKey('Matemática', sub, label)) || 0;
+    if(st===1 || st===2) a++;
+  });
+  return a;
+}
+
 function openPicker(callback){
   pickerDisc.innerHTML = '';
   pickerSub.innerHTML  = '';
@@ -601,10 +612,10 @@ function renderTrailDay(day,expand){
 
       const isMicro = s.sub==='micro';
       const label = isMicro
-        ? 'Micro Simulado Matemática'
+        ? 'Micro Simulado de Matemática'
         : `${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
       const qcount = isMicro
-        ? countDailySolved(dayStr,'Matemática','micro')
+        ? countMicroProgress(s)
         : countDailySolved(dayStr,s.disc,s.sub);
 
       const subj=document.createElement('button');
