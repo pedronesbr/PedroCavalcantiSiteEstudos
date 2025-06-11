@@ -125,6 +125,7 @@ const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
 const pickerAdd     = document.getElementById("pickerAdd");
+const pickerMicro   = document.getElementById("pickerMicro");
 const pickerCancel  = document.getElementById("pickerCancel");
 
 /* ================================================================
@@ -506,10 +507,16 @@ function openPicker(callback){
       o.textContent=n;
       pickerSub.appendChild(o);
     });
+    pickerMicro.style.display =
+      pickerDisc.value==='Matemática'? 'inline-block' : 'none';
   };
   pickerDisc.onchange();
   pickerAdd.onclick = () => {
     callback({disc: pickerDisc.value, sub: pickerSub.value});
+    pickerModal.style.display='none';
+  };
+  pickerMicro.onclick = () => {
+    callback({disc:'Matemática', sub:'micro'});
     pickerModal.style.display='none';
   };
   pickerCancel.onclick = () => pickerModal.style.display='none';
@@ -551,13 +558,18 @@ function renderTrailDay(day,expand){
       const item=document.createElement('div');
       item.className='trail-item';
 
-      const label=`${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
-      const qcount=countDailySolved(dayStr,s.disc,s.sub);
+      const isMicro = s.sub==='micro';
+      const label = isMicro
+        ? 'Micro Simulado Matemática'
+        : `${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
+      const qcount = isMicro
+        ? ''
+        : countDailySolved(dayStr,s.disc,s.sub);
 
       const subj=document.createElement('button');
       subj.className=`trail-subject ${discClasses[s.disc]}`;
       subj.textContent=label;
-      subj.onclick=()=>{ trailReturn=dayStr; showQuestions(s.disc,s.sub); };
+      subj.onclick=()=>{ trailReturn=dayStr; isMicro? showMicroSim() : showQuestions(s.disc,s.sub); };
 
       const count=document.createElement('span');
       count.className='trail-count';
@@ -598,11 +610,6 @@ function showTrail(expandDay){
   stats.style.visibility='hidden';
   clear();
   window.scrollTo(0,0);
-  const microBtn=document.createElement('button');
-  microBtn.id='microSimBtn';
-  microBtn.textContent='Micro Simulado Matemática';
-  microBtn.onclick=()=>showMicroSim();
-  app.appendChild(microBtn);
   const start=new Date();
   for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
     renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
