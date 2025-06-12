@@ -151,8 +151,35 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   margin:0 2px;
   border:1px dashed var(--accent);
 }
-.fraction{display:inline-flex;align-items:center;}
-.root{display:inline-flex;align-items:center;}
+sup,sub{font-size:0.75em;}
+.fraction{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1;
+}
+.fraction>.placeholder{
+  display:block;
+  padding:2px 4px;
+  min-width:20px;
+  text-align:center;
+}
+.fraction>.numerator{border-bottom:1px solid currentColor;}
+.root{
+  display:inline-flex;
+  align-items:flex-start;
+}
+.root>.index{
+  font-size:0.6em;
+  margin-right:2px;
+  align-self:flex-start;
+}
+.root>.radicand{
+  border-top:1px solid currentColor;
+  padding-left:4px;
+  margin-left:2px;
+  min-width:20px;
+}
 </style>
 </head>
 <body>
@@ -298,13 +325,12 @@ function insertFraction(){
   const span=document.createElement('span');
   span.className='fraction';
   const num=document.createElement('span');
-  num.className='placeholder';
+  num.className='placeholder numerator';
   num.contentEditable='true';
   const den=document.createElement('span');
-  den.className='placeholder';
+  den.className='placeholder denominator';
   den.contentEditable='true';
   span.appendChild(num);
-  span.appendChild(document.createTextNode('/'));
   span.appendChild(den);
   range.deleteContents();
   range.insertNode(span);
@@ -321,10 +347,14 @@ function insertRoot(){
   const range=sel.getRangeAt(0);
   const span=document.createElement('span');
   span.className='root';
-  span.textContent='√';
+  const idx=document.createElement('span');
+  idx.className='placeholder index';
+  idx.contentEditable='true';
   const rad=document.createElement('span');
-  rad.className='placeholder';
+  rad.className='placeholder radicand';
   rad.contentEditable='true';
+  span.appendChild(idx);
+  span.appendChild(document.createTextNode('√'));
   span.appendChild(rad);
   range.deleteContents();
   range.insertNode(span);
