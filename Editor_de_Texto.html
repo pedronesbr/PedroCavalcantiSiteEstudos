@@ -142,44 +142,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   opacity:0;
 }
 #mathMenu.show{visibility:visible;opacity:1;}
-
-.placeholder{
-  display:inline-block;
-  min-width:20px;
-  min-height:1em;
-  padding:2px;
-  margin:0 2px;
-  border:1px dashed var(--accent);
-}
-sup,sub{font-size:0.75em;}
-.fraction{
-  display:inline-flex;
-  flex-direction:column;
-  align-items:center;
-  line-height:1;
-}
-.fraction>.placeholder{
-  display:block;
-  padding:2px 4px;
-  min-width:20px;
-  text-align:center;
-}
-.fraction>.numerator{border-bottom:1px solid currentColor;}
-.root{
-  display:inline-flex;
-  align-items:flex-start;
-}
-.root>.index{
-  font-size:0.6em;
-  margin-right:2px;
-  align-self:flex-start;
-}
-.root>.radicand{
-  border-top:1px solid currentColor;
-  padding-left:4px;
-  margin-left:2px;
-  min-width:20px;
-}
+sup,sub{font-size:0.6em;}
 </style>
 </head>
 <body>
@@ -195,12 +158,10 @@ sup,sub{font-size:0.75em;}
   <button id="colorBtn" title="Cor do texto">🎨</button>
   <div id="palette"></div>
 
-  <button id="mathBtn">📐 Matemática</button>
+  <button id="mathBtn">🧮</button>
   <div id="mathMenu">
     <button id="supBtn" disabled>Elevado</button>
     <button id="subBtn" disabled>Sub-índice</button>
-    <button id="fracBtn">Fração</button>
-    <button id="rootBtn">Raiz</button>
   </div>
 
   <button id="hideBtn">🤫 Ocultar Texto</button>
@@ -288,8 +249,6 @@ const mathMenu=document.getElementById('mathMenu');
 const mathBtn=document.getElementById('mathBtn');
 const supBtn=document.getElementById('supBtn');
 const subBtn=document.getElementById('subBtn');
-const fracBtn=document.getElementById('fracBtn');
-const rootBtn=document.getElementById('rootBtn');
 
 function updateMathBtns(){
   const sel=window.getSelection();
@@ -315,55 +274,7 @@ document.addEventListener('click',e=>{if(!mathMenu.contains(e.target)&&e.target!
 
 supBtn.onclick=()=>{restoreSel();exec('superscript');mathMenu.classList.remove('show');};
 subBtn.onclick=()=>{restoreSel();exec('subscript');mathMenu.classList.remove('show');};
-fracBtn.onclick=()=>{restoreSel();insertFraction();mathMenu.classList.remove('show');};
-rootBtn.onclick=()=>{restoreSel();insertRoot();mathMenu.classList.remove('show');};
 
-function insertFraction(){
-  const sel=window.getSelection();
-  if(!sel.rangeCount)return;
-  const range=sel.getRangeAt(0);
-  const span=document.createElement('span');
-  span.className='fraction';
-  const num=document.createElement('span');
-  num.className='placeholder numerator';
-  num.contentEditable='true';
-  const den=document.createElement('span');
-  den.className='placeholder denominator';
-  den.contentEditable='true';
-  span.appendChild(num);
-  span.appendChild(den);
-  range.deleteContents();
-  range.insertNode(span);
-  const r=document.createRange();
-  r.setStart(num,0);
-  r.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(r);
-}
-
-function insertRoot(){
-  const sel=window.getSelection();
-  if(!sel.rangeCount)return;
-  const range=sel.getRangeAt(0);
-  const span=document.createElement('span');
-  span.className='root';
-  const idx=document.createElement('span');
-  idx.className='placeholder index';
-  idx.contentEditable='true';
-  const rad=document.createElement('span');
-  rad.className='placeholder radicand';
-  rad.contentEditable='true';
-  span.appendChild(idx);
-  span.appendChild(document.createTextNode('√'));
-  span.appendChild(rad);
-  range.deleteContents();
-  range.insertNode(span);
-  const r=document.createRange();
-  r.setStart(rad,0);
-  r.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(r);
-}
 
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
