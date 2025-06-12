@@ -79,6 +79,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 }
 
 #editor p{margin:2px 0;line-height:1.3;}
+#editor sup,#editor sub{font-size:0.6em;}
 /* ---------- TARJA DE TEXTO ---------- */
 .hidden-text {
   display: inline-block;      /* para que margin vertical funcione */
@@ -319,7 +320,12 @@ function closeLatex(){
   latexInput.value='';
   latexPreview.innerHTML='';
 }
-latexInsert.onclick=()=>{restoreSel();exec('insertHTML',latexPreview.innerHTML);closeLatex();};
+latexInsert.onclick=()=>{
+  restoreSel();
+  const html = katex.renderToString(latexInput.value, {throwOnError:false});
+  exec('insertHTML', html);
+  closeLatex();
+};
 latexCancel.onclick=closeLatex;
 document.addEventListener('click',e=>{if(latexDialog.classList.contains('show')&&!latexDialog.contains(e.target)&&e.target!==latexBtn)closeLatex();});
 
