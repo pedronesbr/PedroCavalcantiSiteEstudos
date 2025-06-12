@@ -126,7 +126,33 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 }
 #palette.show{visibility:visible;opacity:1;}
 .swatch{width:24px;height:24px;border:2px solid var(--surface);border-radius:var(--radius);cursor:pointer;user-select:none;}
-.swatch:hover{border-color:var(--text);}  
+.swatch:hover{border-color:var(--text);}
+
+/* ---------- MENU MATEMÁTICO ---------- */
+#mathMenu{
+  position:fixed;
+  display:flex;
+  flex-direction:row;
+  gap:4px;
+  background:var(--surface);
+  border:1px solid var(--accent);
+  padding:6px;
+  border-radius:var(--radius);
+  visibility:hidden;
+  opacity:0;
+}
+#mathMenu.show{visibility:visible;opacity:1;}
+
+.placeholder{
+  display:inline-block;
+  min-width:20px;
+  min-height:1em;
+  padding:2px;
+  margin:0 2px;
+  border:1px dashed var(--accent);
+}
+.fraction{display:inline-flex;align-items:center;}
+.root{display:inline-flex;align-items:center;}
 </style>
 </head>
 <body>
@@ -141,6 +167,14 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   <button id="underlineBtn" title="Sublinhado (Ctrl+U)"><u>U</u></button>
   <button id="colorBtn" title="Cor do texto">🎨</button>
   <div id="palette"></div>
+
+  <button id="mathBtn">📐 Matemática</button>
+  <div id="mathMenu">
+    <button id="supBtn" disabled>Elevado</button>
+    <button id="subBtn" disabled>Sub-índice</button>
+    <button id="fracBtn">Fração</button>
+    <button id="rootBtn">Raiz</button>
+  </div>
 
   <button id="hideBtn">🤫 Ocultar Texto</button>
   <button id="clearBtn">🧹 Limpar Formatação</button>
@@ -221,6 +255,85 @@ colorBtn.onclick = () => {
   }
 };
 document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!==colorBtn)palette.classList.remove('show');});
+
+/* ---------- MENU MATEMÁTICO ---------- */
+const mathMenu=document.getElementById('mathMenu');
+const mathBtn=document.getElementById('mathBtn');
+const supBtn=document.getElementById('supBtn');
+const subBtn=document.getElementById('subBtn');
+const fracBtn=document.getElementById('fracBtn');
+const rootBtn=document.getElementById('rootBtn');
+
+function updateMathBtns(){
+  const sel=window.getSelection();
+  const ok=sel && !sel.isCollapsed && editor.contains(sel.anchorNode);
+  supBtn.disabled=!ok;
+  subBtn.disabled=!ok;
+}
+document.addEventListener('selectionchange',updateMathBtns);
+
+mathBtn.onclick=()=>{
+  if(mathMenu.classList.contains('show')){
+    mathMenu.classList.remove('show');
+  }else{
+    saveSel();
+    const {left,bottom}=mathBtn.getBoundingClientRect();
+    mathMenu.style.left=`${left}px`;
+    mathMenu.style.top=`${bottom}px`;
+    updateMathBtns();
+    mathMenu.classList.add('show');
+  }
+};
+document.addEventListener('click',e=>{if(!mathMenu.contains(e.target)&&e.target!==mathBtn)mathMenu.classList.remove('show');});
+
+supBtn.onclick=()=>{restoreSel();exec('superscript');mathMenu.classList.remove('show');};
+subBtn.onclick=()=>{restoreSel();exec('subscript');mathMenu.classList.remove('show');};
+fracBtn.onclick=()=>{restoreSel();insertFraction();mathMenu.classList.remove('show');};
+rootBtn.onclick=()=>{restoreSel();insertRoot();mathMenu.classList.remove('show');};
+
+function insertFraction(){
+  const sel=window.getSelection();
+  if(!sel.rangeCount)return;
+  const range=sel.getRangeAt(0);
+  const span=document.createElement('span');
+  span.className='fraction';
+  const num=document.createElement('span');
+  num.className='placeholder';
+  num.contentEditable='true';
+  const den=document.createElement('span');
+  den.className='placeholder';
+  den.contentEditable='true';
+  span.appendChild(num);
+  span.appendChild(document.createTextNode('/'));
+  span.appendChild(den);
+  range.deleteContents();
+  range.insertNode(span);
+  const r=document.createRange();
+  r.setStart(num,0);
+  r.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
+
+function insertRoot(){
+  const sel=window.getSelection();
+  if(!sel.rangeCount)return;
+  const range=sel.getRangeAt(0);
+  const span=document.createElement('span');
+  span.className='root';
+  span.textContent='√';
+  const rad=document.createElement('span');
+  rad.className='placeholder';
+  rad.contentEditable='true';
+  span.appendChild(rad);
+  range.deleteContents();
+  range.insertNode(span);
+  const r=document.createRange();
+  r.setStart(rad,0);
+  r.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
 
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
