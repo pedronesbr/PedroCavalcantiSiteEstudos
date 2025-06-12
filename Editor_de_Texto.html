@@ -8,6 +8,8 @@
 <!-- Font Awesome -->
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
 <style>
 :root{
@@ -126,7 +128,43 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 }
 #palette.show{visibility:visible;opacity:1;}
 .swatch{width:24px;height:24px;border:2px solid var(--surface);border-radius:var(--radius);cursor:pointer;user-select:none;}
-.swatch:hover{border-color:var(--text);}  
+.swatch:hover{border-color:var(--text);}
+/* ---------- MENU MATEMÁTICO ---------- */
+#mathMenu{
+  position:fixed;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  background:var(--surface);
+  border:1px solid var(--accent);
+  padding:6px;
+  border-radius:var(--radius);
+  visibility:hidden;
+  opacity:0;
+}
+#mathMenu.show{visibility:visible;opacity:1;}
+
+/* ---------- DIALOGO LATEX ---------- */
+#latexDialog{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--surface);
+  border:1px solid var(--accent);
+  border-radius:var(--radius);
+  padding:10px;
+  display:none;
+  flex-direction:column;
+  gap:8px;
+  z-index:500;
+}
+#latexDialog.show{display:flex;}
+#latexPreview{
+  min-height:40px;
+  border:1px dashed var(--accent);
+  padding:4px;
+}
 </style>
 </head>
 <body>
@@ -141,6 +179,12 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   <button id="underlineBtn" title="Sublinhado (Ctrl+U)"><u>U</u></button>
   <button id="colorBtn" title="Cor do texto">🎨</button>
   <div id="palette"></div>
+  <button id="mathBtn">𝑓x</button>
+  <div id="mathMenu">
+    <button id="supBtn">Super-índice</button>
+    <button id="subBtn">Sub-índice</button>
+    <button id="latexBtn">LaTeX</button>
+  </div>
 
   <button id="hideBtn">🤫 Ocultar Texto</button>
   <button id="clearBtn">🧹 Limpar Formatação</button>
@@ -155,6 +199,14 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 </div>
 
 <div id="editor" contenteditable="true"><p></p></div>
+<div id="latexDialog">
+  <textarea id="latexInput" placeholder="LaTeX"></textarea>
+  <div id="latexPreview"></div>
+  <div>
+    <button id="latexInsert">Inserir</button>
+    <button id="latexCancel">Cancelar</button>
+  </div>
+</div>
 
 <!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
@@ -221,6 +273,55 @@ colorBtn.onclick = () => {
   }
 };
 document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!==colorBtn)palette.classList.remove('show');});
+
+/* ---------- MENU MATEMÁTICO ---------- */
+const mathBtn   = document.getElementById('mathBtn');
+const mathMenu  = document.getElementById('mathMenu');
+const supBtn    = document.getElementById('supBtn');
+const subBtn    = document.getElementById('subBtn');
+const latexBtn  = document.getElementById('latexBtn');
+const latexDialog  = document.getElementById('latexDialog');
+const latexInput   = document.getElementById('latexInput');
+const latexPreview = document.getElementById('latexPreview');
+const latexInsert  = document.getElementById('latexInsert');
+const latexCancel  = document.getElementById('latexCancel');
+
+mathBtn.onclick = ()=>{
+  if(mathMenu.classList.contains('show')){
+    mathMenu.classList.remove('show');
+  }else{
+    saveSel();
+    const {left,bottom}=mathBtn.getBoundingClientRect();
+    mathMenu.style.left=`${left}px`;
+    mathMenu.style.top =`${bottom}px`;
+    mathMenu.classList.add('show');
+  }
+};
+document.addEventListener('click',e=>{if(!mathMenu.contains(e.target)&&e.target!==mathBtn)mathMenu.classList.remove('show');});
+
+supBtn.onclick = ()=>{restoreSel();exec('superscript');mathMenu.classList.remove('show');};
+subBtn.onclick = ()=>{restoreSel();exec('subscript');mathMenu.classList.remove('show');};
+
+latexBtn.onclick = ()=>{
+  saveSel();
+  mathMenu.classList.remove('show');
+  latexDialog.classList.add('show');
+  latexInput.focus();
+};
+
+latexInput.addEventListener('input',()=>{
+  try{ katex.render(latexInput.value, latexPreview, {throwOnError:false}); }
+  catch(e){ latexPreview.textContent = e.message; }
+});
+
+function closeLatex(){
+  latexDialog.classList.remove('show');
+  latexInput.value='';
+  latexPreview.innerHTML='';
+}
+latexInsert.onclick=()=>{restoreSel();exec('insertHTML',latexPreview.innerHTML);closeLatex();};
+latexCancel.onclick=closeLatex;
+document.addEventListener('click',e=>{if(latexDialog.classList.contains('show')&&!latexDialog.contains(e.target)&&e.target!==latexBtn)closeLatex();});
 
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
