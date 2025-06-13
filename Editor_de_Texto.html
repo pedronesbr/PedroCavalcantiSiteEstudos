@@ -79,7 +79,14 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 }
 
 #editor p{margin:2px 0;line-height:1.3;}
-#editor sup,#editor sub{font-size:0.6em;}
+#editor sup,#editor sub{font-size:0.5em;}
+
+/* ensure KaTeX keeps its own styling */
+#editor .katex, #editor .katex *{
+  font-family:"KaTeX_Main","Times New Roman",serif !important;
+  font-size:1em !important;
+  white-space:normal !important;
+}
 /* ---------- TARJA DE TEXTO ---------- */
 .hidden-text {
   display: inline-block;      /* para que margin vertical funcione */
