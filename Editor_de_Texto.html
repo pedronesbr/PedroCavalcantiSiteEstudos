@@ -69,10 +69,8 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   white-space:pre-wrap;
 }
 
-/* aplica a MESMA fonte/tamanho a qualquer elemento dentro do editor */
+/* aplica white-space/quebras uniformes a qualquer elemento do editor */
 #editor *,#editor *::before,#editor *::after{
-  font-family:inherit !important;
-  font-size:inherit  !important;
   white-space:pre-wrap !important;
   overflow-wrap:break-word !important;
   word-break:break-word   !important;
@@ -81,11 +79,13 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #editor p{margin:2px 0;line-height:1.3;}
 #editor sup,#editor sub{font-size:0.5em;}
 
-/* ensure KaTeX keeps its own styling */
-#editor .katex, #editor .katex *{
-  font-family:"KaTeX_Main","Times New Roman",serif !important;
-  font-size:1em !important;
-  white-space:normal !important;
+/* preserva o estilo das formulas KaTeX */
+#editor .katex,#editor .katex *{
+  all: revert;
+}
+#editor .katex-wrapper{
+  display:inline-block;
+  vertical-align:middle;
 }
 /* ---------- TARJA DE TEXTO ---------- */
 .hidden-text {
@@ -329,7 +329,8 @@ function closeLatex(){
 }
 latexInsert.onclick=()=>{
   restoreSel();
-  const html = katex.renderToString(latexInput.value, {throwOnError:false});
+  const formula = katex.renderToString(latexInput.value, {throwOnError:false});
+  const html = `<span class="katex-wrapper">${formula}</span>`;
   exec('insertHTML', html);
   closeLatex();
 };
