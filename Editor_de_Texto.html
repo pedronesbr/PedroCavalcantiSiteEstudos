@@ -8,6 +8,8 @@
 <!-- Font Awesome -->
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-g7c+FDAVq9lhN7S0pzpItwhynm5vG+8dxjLXTv9AJawRdL5sZq2df75+nhh8hZ+3" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-Ek3pGtTaV1yeQzN3oP8wgn2+Q7fPrT+dqTrNoPmG+70H6LkJ//pT8UgzjHiG6lZL" crossorigin="anonymous"></script>
 
 <style>
 :root{
@@ -21,10 +23,10 @@
   --reveal-bg:rgba(255,255,255,0.2);
 }
 *{box-sizing:border-box;margin:0;}
-body{padding:72px 20px 24px;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;}
+body{padding:0 20px 24px;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;}
 /* ---------- TOOLBAR ---------- */
 #toolbar{
-  position:fixed;top:0;left:0;right:0;z-index:100;
+  position:sticky;top:0;left:0;right:0;z-index:100;
   display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   padding:2px 2px;
   background:linear-gradient(180deg,var(--surface-light),transparent);
@@ -74,6 +76,9 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   white-space:pre-wrap !important;
   overflow-wrap:break-word !important;
   word-break:break-word   !important;
+}
+#editor sup,#editor sub{
+  font-size:0.7em !important;
 }
 
 #editor p{margin:2px 0;line-height:1.3;}
@@ -126,7 +131,30 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 }
 #palette.show{visibility:visible;opacity:1;}
 .swatch{width:24px;height:24px;border:2px solid var(--surface);border-radius:var(--radius);cursor:pointer;user-select:none;}
-.swatch:hover{border-color:var(--text);}  
+.swatch:hover{border-color:var(--text);}
+
+/* ---------- MENU MATEMÁTICO ---------- */
+#mathMenu {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  padding: 6px;
+  border-radius: var(--radius);
+  visibility: hidden;
+  opacity: 0;
+}
+#mathMenu.show{visibility:visible;opacity:1;}
+#mathMenu button{background:var(--surface);color:var(--text);border:none;border-radius:var(--radius);padding:var(--pad);cursor:pointer;}
+#mathMenu button:hover{background:var(--accent);}
+
+/* ---------- DIALOGO LATEX ---------- */
+#latexDialog{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:1000;}
+#latexDialog .box{background:var(--surface);padding:10px;border-radius:var(--radius);min-width:260px;}
+#latexDialog textarea{width:100%;min-height:60px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:var(--radius);padding:6px;}
+#latexPreview{margin:6px 0;}
 </style>
 </head>
 <body>
@@ -141,6 +169,12 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   <button id="underlineBtn" title="Sublinhado (Ctrl+U)"><u>U</u></button>
   <button id="colorBtn" title="Cor do texto">🎨</button>
   <div id="palette"></div>
+  <button id="mathBtn" title="Funções Matemáticas">🧮</button>
+  <div id="mathMenu">
+    <button id="supBtn">Superscript</button>
+    <button id="subBtn">Subscript</button>
+    <button id="latexBtn">LaTeX</button>
+  </div>
 
   <button id="hideBtn">🤫 Ocultar Texto</button>
   <button id="clearBtn">🧹 Limpar Formatação</button>
@@ -155,6 +189,16 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 </div>
 
 <div id="editor" contenteditable="true"><p></p></div>
+<div id="latexDialog">
+  <div class="box">
+    <textarea id="latexInput" placeholder="Digite LaTeX..."></textarea>
+    <div id="latexPreview"></div>
+    <div style="text-align:right;margin-top:4px;">
+      <button id="latexCancel">Cancelar</button>
+      <button id="latexInsert">Inserir</button>
+    </div>
+  </div>
+</div>
 
 <!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
@@ -221,6 +265,59 @@ colorBtn.onclick = () => {
   }
 };
 document.addEventListener('click',e=>{if(!palette.contains(e.target)&&e.target!==colorBtn)palette.classList.remove('show');});
+
+/* ---------- MENU MATEMÁTICO ---------- */
+const mathMenu = document.getElementById('mathMenu');
+const mathBtn  = document.getElementById('mathBtn');
+const supBtn   = document.getElementById('supBtn');
+const subBtn   = document.getElementById('subBtn');
+const latexBtn = document.getElementById('latexBtn');
+const latexDialog = document.getElementById('latexDialog');
+const latexInput  = document.getElementById('latexInput');
+const latexPreview= document.getElementById('latexPreview');
+const latexInsert = document.getElementById('latexInsert');
+const latexCancel = document.getElementById('latexCancel');
+
+mathBtn.onclick=()=>{
+  if(mathMenu.classList.contains('show')){mathMenu.classList.remove('show');}
+  else{
+    saveSel();
+    const{left,bottom}=mathBtn.getBoundingClientRect();
+    mathMenu.style.left=`${left}px`;
+    mathMenu.style.top=`${bottom}px`;
+    mathMenu.classList.add('show');
+  }
+};
+document.addEventListener('click',e=>{if(!mathMenu.contains(e.target)&&e.target!==mathBtn)mathMenu.classList.remove('show');});
+supBtn.onclick=()=>{restoreSel();exec('superscript');mathMenu.classList.remove('show');};
+subBtn.onclick=()=>{restoreSel();exec('subscript');mathMenu.classList.remove('show');};
+latexBtn.onclick=()=>{
+  mathMenu.classList.remove('show');
+  restoreSel();
+  latexInput.value='';
+  latexPreview.innerHTML='';
+  latexDialog.style.display='flex';
+  latexInput.focus();
+};
+latexInput.addEventListener('input',()=>{
+  if(window.katex){
+    try{
+      latexPreview.innerHTML=katex.renderToString(latexInput.value,{throwOnError:false});
+    }catch(e){latexPreview.textContent='Erro';}
+  }else{
+    latexPreview.textContent='KaTeX não carregado';
+  }
+});
+latexCancel.onclick=()=>{latexDialog.style.display='none';};
+latexInsert.onclick=()=>{
+  if(!window.katex){alert('KaTeX não carregado');return;}
+  try{
+    const span=document.createElement('span');
+    katex.render(latexInput.value,span,{throwOnError:false});
+    insertNode(span);
+    latexDialog.style.display='none';
+  }catch(e){alert('Expressão inválida');}
+};
 
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
@@ -357,6 +454,14 @@ function insertImg(src){
     const br=document.createElement('br');img.after(br);
     range.setStartAfter(br);range.collapse(true);sel.removeAllRanges();sel.addRange(range);
   }else{editor.appendChild(img);const p=document.createElement('p');p.innerHTML='<br>';editor.appendChild(p);}
+}
+
+function insertNode(node){
+  const sel=window.getSelection();
+  if(sel.rangeCount){
+    const range=sel.getRangeAt(0);range.deleteContents();range.insertNode(node);
+    range.setStartAfter(node);sel.removeAllRanges();sel.addRange(range);
+  }else editor.appendChild(node);
 }
 
 /* ---------- TARJAS ---------- */
