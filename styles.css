@@ -237,6 +237,11 @@ button:hover { filter: brightness(1.2); }
   height: 45px;
   display: block;
   pointer-events: none;     /* clique atinge o <span> */
+  transition: transform .1s, filter .2s;
+}
+.star:hover img {
+  transform: scale(1.1);
+  filter: brightness(1.1);
 }
 .star-index {               /* n√∫mero centralizado dentro da estrela */
   position: absolute;
@@ -903,6 +908,7 @@ body.home #headerStats      { display: none !important; }      /* esconde estat√
 .comment-edit a:hover,
 .comment-edit a:focus {
   color: var(--link-hover);
+  cursor: pointer;
 }
 /* =====================================================================================
    MOBILE
