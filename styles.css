@@ -42,6 +42,11 @@ body {
   line-height: 1.5;
 }
 
+/* Smaller typography for superscript and subscript */
+sup, sub {
+  font-size: 0.6em;
+}
+
 /* =====================================================================================
    COMPONENTE: BOTÃO GENÉRICO
    =====================================================================================*/
