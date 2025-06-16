@@ -70,7 +70,6 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   white-space:pre-wrap;
 }
 
-/* aplica a MESMA fonte/tamanho a qualquer elemento dentro do editor */
 /* aplica fonte/tamanho padronizados, mas preserva estilos do KaTeX */
 #editor *,#editor *::before,#editor *::after{
   font-family:inherit;
@@ -80,10 +79,13 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   word-break:break-word   !important;
 }
 
-/* restaura as definições de fonte do KaTeX */
+/* restaura estilos essenciais do KaTeX */
 #editor .katex, #editor .katex * {
   font-family:revert !important;
   font-size:revert !important;
+  white-space:normal !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
 }
 
 #editor p{margin:2px 0;line-height:1.3;}
