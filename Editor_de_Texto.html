@@ -153,7 +153,10 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #latexDialog .box{background:var(--surface);padding:10px;border-radius:var(--radius);min-width:260px;}
 #latexDialog textarea{width:100%;min-height:60px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:var(--radius);padding:6px;}
 #latexPreview{margin:6px 0;}
-.latex-box{display:inline-block;vertical-align:middle;background:var(--surface-light);border:1px solid var(--accent);border-radius:4px;padding:2px 4px;cursor:pointer;}
+#latexActions{display:flex;justify-content:flex-end;gap:6px;margin-top:4px;}
+#latexActions button{padding:6px 10px;font-size:14px;}
+.latex-box{display:inline-block;vertical-align:middle;border:1px solid transparent;border-radius:4px;padding:2px 4px;cursor:pointer;}
+.latex-box:hover{background:var(--surface-light);border-color:var(--accent);}
 .latex-formula{pointer-events:none;}
 </style>
 </head>
@@ -193,7 +196,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   <div class="box">
     <textarea id="latexInput" placeholder="Digite LaTeX..."></textarea>
     <div id="latexPreview"></div>
-    <div style="text-align:right;margin-top:4px;">
+    <div id="latexActions">
       <button id="latexInsert">Inserir</button>
       <button id="latexCancel">Cancelar</button>
       <button id="latexRemove" style="display:none">Remover</button>
