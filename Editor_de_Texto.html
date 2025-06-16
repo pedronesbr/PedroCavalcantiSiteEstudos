@@ -153,9 +153,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #latexDialog .box{background:var(--surface);padding:10px;border-radius:var(--radius);min-width:260px;}
 #latexDialog textarea{width:100%;min-height:60px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:var(--radius);padding:6px;}
 #latexPreview{margin:6px 0;}
-.latex-box{display:inline-block;vertical-align:middle;background:var(--surface-light);border:1px solid var(--accent);border-radius:4px;padding:2px 4px;position:relative;cursor:pointer;}
-.latex-box .remove{position:absolute;top:-6px;right:-6px;width:12px;height:12px;line-height:12px;text-align:center;background:var(--accent);color:var(--text);font-size:10px;border-radius:50%;display:none;}
-.latex-box:hover .remove{display:block;}
+.latex-box{display:inline-block;vertical-align:middle;background:var(--surface-light);border:1px solid var(--accent);border-radius:4px;padding:2px 4px;cursor:pointer;}
 .latex-formula{pointer-events:none;}
 </style>
 </head>
@@ -196,8 +194,9 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
     <textarea id="latexInput" placeholder="Digite LaTeX..."></textarea>
     <div id="latexPreview"></div>
     <div style="text-align:right;margin-top:4px;">
-      <button id="latexCancel">Cancelar</button>
       <button id="latexInsert">Inserir</button>
+      <button id="latexCancel">Cancelar</button>
+      <button id="latexRemove" style="display:none">Remover</button>
     </div>
   </div>
 </div>
@@ -291,6 +290,7 @@ const latexInput  = document.getElementById('latexInput');
 const latexPreview= document.getElementById('latexPreview');
 const latexInsert = document.getElementById('latexInsert');
 const latexCancel = document.getElementById('latexCancel');
+const latexRemove = document.getElementById('latexRemove');
 let latexTarget=null;
 
 mathBtn.onclick=()=>{
@@ -328,6 +328,7 @@ latexBtn.onclick=()=>{
   mathMenu.classList.remove('show');
   restoreSel();
   latexTarget=null;
+  latexRemove.style.display='none';
   latexInput.value='';
   latexPreview.innerHTML='';
   latexDialog.style.display='flex';
@@ -342,9 +343,15 @@ latexInput.addEventListener("input",()=>{
     latexPreview.textContent="KaTeX não carregado";
   }
 });
-latexCancel.onclick=()=>{latexDialog.style.display="none";latexTarget=null;};
+latexCancel.onclick=()=>{latexDialog.style.display="none";latexTarget=null;latexRemove.style.display='none';};
+latexRemove.onclick=()=>{
+  if(latexTarget){latexTarget.remove();}
+  latexDialog.style.display='none';
+  latexTarget=null;
+  latexRemove.style.display='none';
+};
 latexInsert.onclick=()=>{
-  restoreSel();
+  if(!latexTarget) restoreSel();
   if(!window.katex){alert("KaTeX não carregado");return;}
   try{
     if(latexTarget){
@@ -358,15 +365,11 @@ latexInsert.onclick=()=>{
       const formula=document.createElement("span");
       formula.className="latex-formula";
       katex.render(latexInput.value,formula,{throwOnError:false});
-      const remove=document.createElement('span');
-      remove.className='remove';
-      remove.textContent='×';
-      remove.onclick=e=>{e.stopPropagation();box.remove();};
       box.appendChild(formula);
-      box.appendChild(remove);
       insertNode(box);
     }
     latexDialog.style.display="none";
+    latexRemove.style.display='none';
     latexTarget=null;
   }catch(e){alert("Expressão inválida");}
 }
@@ -374,6 +377,7 @@ editor.addEventListener("dblclick",e=>{
   const box=e.target.closest(".latex-box");
   if(!box)return;
   latexTarget=box;
+  latexRemove.style.display='inline-block';
   latexInput.value=box.dataset.latex||"";
   if(window.katex){
     try{latexPreview.innerHTML=katex.renderToString(latexInput.value,{throwOnError:false});}
@@ -708,14 +712,10 @@ window.addEventListener('DOMContentLoaded',()=>{
     const wrapper=document.createElement('span');
     wrapper.className='latex-box';
     wrapper.dataset.latex=form.dataset.latex||'';
-    const remove=document.createElement('span');
-    remove.className='remove';
-    remove.textContent='×';
-    remove.onclick=e=>{e.stopPropagation();wrapper.remove();};
     form.replaceWith(wrapper);
     wrapper.appendChild(form);
-    wrapper.appendChild(remove);
   });
+  document.querySelectorAll('#editor .latex-box .remove').forEach(r=>r.remove());
 });
 /* ---------- FIM DO SCRIPT ---------- */
 </script>
