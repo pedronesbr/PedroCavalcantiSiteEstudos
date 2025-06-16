@@ -8,9 +8,9 @@
 <!-- Font Awesome -->
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 
 <style>
 :root{
@@ -153,7 +153,8 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #latexDialog .box{background:var(--surface);padding:10px;border-radius:var(--radius);min-width:260px;}
 #latexDialog textarea{width:100%;min-height:60px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:var(--radius);padding:6px;}
 #latexPreview{margin:6px 0;}
-.latex-formula{display:inline-block;cursor:pointer;vertical-align:middle;}
+.latex-box{display:inline-block;vertical-align:middle;background:var(--surface-light);border:1px solid var(--accent);border-radius:4px;padding:2px 4px;cursor:pointer;}
+.latex-formula{pointer-events:none;}
 </style>
 </head>
 <body>
@@ -193,8 +194,9 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
     <textarea id="latexInput" placeholder="Digite LaTeX..."></textarea>
     <div id="latexPreview"></div>
     <div style="text-align:right;margin-top:4px;">
-      <button id="latexCancel">Cancelar</button>
       <button id="latexInsert">Inserir</button>
+      <button id="latexCancel">Cancelar</button>
+      <button id="latexRemove" style="display:none">Remover</button>
     </div>
   </div>
 </div>
@@ -288,6 +290,7 @@ const latexInput  = document.getElementById('latexInput');
 const latexPreview= document.getElementById('latexPreview');
 const latexInsert = document.getElementById('latexInsert');
 const latexCancel = document.getElementById('latexCancel');
+const latexRemove = document.getElementById('latexRemove');
 let latexTarget=null;
 
 mathBtn.onclick=()=>{
@@ -325,6 +328,7 @@ latexBtn.onclick=()=>{
   mathMenu.classList.remove('show');
   restoreSel();
   latexTarget=null;
+  latexRemove.style.display='none';
   latexInput.value='';
   latexPreview.innerHTML='';
   latexDialog.style.display='flex';
@@ -339,29 +343,42 @@ latexInput.addEventListener("input",()=>{
     latexPreview.textContent="KaTeX não carregado";
   }
 });
-latexCancel.onclick=()=>{latexDialog.style.display="none";latexTarget=null;};
+latexCancel.onclick=()=>{latexDialog.style.display="none";latexTarget=null;latexRemove.style.display='none';};
+latexRemove.onclick=()=>{
+  if(latexTarget){latexTarget.remove();}
+  latexDialog.style.display='none';
+  latexTarget=null;
+  latexRemove.style.display='none';
+};
 latexInsert.onclick=()=>{
+  if(!latexTarget) restoreSel();
   if(!window.katex){alert("KaTeX não carregado");return;}
   try{
     if(latexTarget){
-      katex.render(latexInput.value, latexTarget,{throwOnError:false});
+      const formula = latexTarget.querySelector('.latex-formula');
+      katex.render(latexInput.value, formula,{throwOnError:false});
       latexTarget.dataset.latex=latexInput.value;
     }else{
-      const span=document.createElement("span");
-      span.className="latex-formula";
-      span.dataset.latex=latexInput.value;
-      katex.render(latexInput.value,span,{throwOnError:false});
-      insertNode(span);
+      const box=document.createElement("span");
+      box.className="latex-box";
+      box.dataset.latex=latexInput.value;
+      const formula=document.createElement("span");
+      formula.className="latex-formula";
+      katex.render(latexInput.value,formula,{throwOnError:false});
+      box.appendChild(formula);
+      insertNode(box);
     }
     latexDialog.style.display="none";
+    latexRemove.style.display='none';
     latexTarget=null;
   }catch(e){alert("Expressão inválida");}
 }
 editor.addEventListener("dblclick",e=>{
-  const el=e.target.closest(".latex-formula");
-  if(!el)return;
-  latexTarget=el;
-  latexInput.value=el.dataset.latex||"";
+  const box=e.target.closest(".latex-box");
+  if(!box)return;
+  latexTarget=box;
+  latexRemove.style.display='inline-block';
+  latexInput.value=box.dataset.latex||"";
   if(window.katex){
     try{latexPreview.innerHTML=katex.renderToString(latexInput.value,{throwOnError:false});}
     catch(err){latexPreview.textContent="Erro";}
@@ -690,6 +707,15 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   document.querySelectorAll('.tarja').forEach(t=>t.style.backgroundColor='rgba(0,0,0,.95)');
   document.querySelectorAll('#editor img').forEach(makeResizable);
+  document.querySelectorAll('#editor .latex-formula').forEach(form=>{
+    if(form.closest('.latex-box')) return;
+    const wrapper=document.createElement('span');
+    wrapper.className='latex-box';
+    wrapper.dataset.latex=form.dataset.latex||'';
+    form.replaceWith(wrapper);
+    wrapper.appendChild(form);
+  });
+  document.querySelectorAll('#editor .latex-box .remove').forEach(r=>r.remove());
 });
 /* ---------- FIM DO SCRIPT ---------- */
 </script>
