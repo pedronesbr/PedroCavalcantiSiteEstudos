@@ -8,8 +8,9 @@
 <!-- Font Awesome -->
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-g7c+FDAVq9lhN7S0pzpItwhynm5vG+8dxjLXTv9AJawRdL5sZq2df75+nhh8hZ+3" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-Ek3pGtTaV1yeQzN3oP8wgn2+Q7fPrT+dqTrNoPmG+70H6LkJ//pT8UgzjHiG6lZL" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 
 <style>
 :root{
@@ -152,6 +153,7 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
 #latexDialog .box{background:var(--surface);padding:10px;border-radius:var(--radius);min-width:260px;}
 #latexDialog textarea{width:100%;min-height:60px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:var(--radius);padding:6px;}
 #latexPreview{margin:6px 0;}
+.latex-formula{display:inline-block;cursor:pointer;vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -168,8 +170,8 @@ button:hover{background:var(--accent);}button:active{transform:scale(.96);}#mess
   <div id="palette"></div>
   <button id="mathBtn" title="Funções Matemáticas">🧮</button>
   <div id="mathMenu">
-    <button id="supBtn">Superscript</button>
-    <button id="subBtn">Subscript</button>
+    <button id="supBtn">Sobrescrito</button>
+    <button id="subBtn">Subscrito</button>
     <button id="latexBtn">LaTeX</button>
   </div>
 
@@ -238,6 +240,18 @@ const saveSel = ()=>{const s=window.getSelection();if(s.rangeCount)savedRange=s.
 const restoreSel=()=>{if(!savedRange)return;const s=window.getSelection();s.removeAllRanges();s.addRange(savedRange);} ;
 let savedRange=null;
 
+// Mapas de caracteres Unicode para sobrescrito/subscrito
+const SUPER_MAP = {
+  '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
+  '+':'⁺','-':'⁻','=':'⁼','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ',
+  'a':'ᵃ','b':'ᵇ','c':'ᶜ','d':'ᵈ','e':'ᵉ','f':'ᶠ','g':'ᵍ','h':'ʰ','j':'ʲ','k':'ᵏ','l':'ˡ','m':'ᵐ','o':'ᵒ','p':'ᵖ','r':'ʳ','s':'ˢ','t':'ᵗ','u':'ᵘ','v':'ᵛ','w':'ʷ','x':'ˣ','y':'ʸ','z':'ᶻ'
+};
+const SUB_MAP = {
+  '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉',
+  '+':'₊','-':'₋','=':'₌','(':'₍',')':'₎',
+  'a':'ₐ','e':'ₑ','o':'ₒ','x':'ₓ','h':'ₕ','k':'ₖ','l':'ₗ','m':'ₘ','n':'ₙ','p':'ₚ','s':'ₛ','t':'ₜ'
+};
+
 defaultColors.forEach(c=>{
   const sw=document.createElement('div');
   sw.className='swatch';sw.style.background=c;sw.dataset.color=c;
@@ -274,6 +288,7 @@ const latexInput  = document.getElementById('latexInput');
 const latexPreview= document.getElementById('latexPreview');
 const latexInsert = document.getElementById('latexInsert');
 const latexCancel = document.getElementById('latexCancel');
+let latexTarget=null;
 
 mathBtn.onclick=()=>{
   if(mathMenu.classList.contains('show')){mathMenu.classList.remove('show');}
@@ -286,36 +301,76 @@ mathBtn.onclick=()=>{
   }
 };
 document.addEventListener('click',e=>{if(!mathMenu.contains(e.target)&&e.target!==mathBtn)mathMenu.classList.remove('show');});
-supBtn.onclick=()=>{restoreSel();exec('superscript');mathMenu.classList.remove('show');};
-subBtn.onclick=()=>{restoreSel();exec('subscript');mathMenu.classList.remove('show');};
+function convertSelection(map,tipo){
+  restoreSel();
+  const sel=window.getSelection();
+  if(!sel.rangeCount||sel.isCollapsed){mathMenu.classList.remove("show");return;}
+  const txt=sel.toString();
+  let out="";
+  for(const ch of txt){
+    if(map[ch]) out+=map[ch];
+    else {alert(`Caractere '${ch}' não suportado para ${tipo}.`);return;}
+  }
+  const range=sel.getRangeAt(0);
+  range.deleteContents();
+  range.insertNode(document.createTextNode(out));
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  mathMenu.classList.remove("show");
+}
+supBtn.onclick=()=>convertSelection(SUPER_MAP,"sobrescrito");
+subBtn.onclick=()=>convertSelection(SUB_MAP,"subscrito");
 latexBtn.onclick=()=>{
   mathMenu.classList.remove('show');
   restoreSel();
+  latexTarget=null;
   latexInput.value='';
   latexPreview.innerHTML='';
   latexDialog.style.display='flex';
   latexInput.focus();
-};
-latexInput.addEventListener('input',()=>{
+}
+latexInput.addEventListener("input",()=>{
   if(window.katex){
     try{
       latexPreview.innerHTML=katex.renderToString(latexInput.value,{throwOnError:false});
-    }catch(e){latexPreview.textContent='Erro';}
+    }catch(e){latexPreview.textContent="Erro";}
   }else{
-    latexPreview.textContent='KaTeX não carregado';
+    latexPreview.textContent="KaTeX não carregado";
   }
 });
-latexCancel.onclick=()=>{latexDialog.style.display='none';};
+latexCancel.onclick=()=>{latexDialog.style.display="none";latexTarget=null;};
 latexInsert.onclick=()=>{
-  if(!window.katex){alert('KaTeX não carregado');return;}
+  if(!window.katex){alert("KaTeX não carregado");return;}
   try{
-    const span=document.createElement('span');
-    katex.render(latexInput.value,span,{throwOnError:false});
-    insertNode(span);
-    latexDialog.style.display='none';
-  }catch(e){alert('Expressão inválida');}
-};
-
+    if(latexTarget){
+      katex.render(latexInput.value, latexTarget,{throwOnError:false});
+      latexTarget.dataset.latex=latexInput.value;
+    }else{
+      const span=document.createElement("span");
+      span.className="latex-formula";
+      span.dataset.latex=latexInput.value;
+      katex.render(latexInput.value,span,{throwOnError:false});
+      insertNode(span);
+    }
+    latexDialog.style.display="none";
+    latexTarget=null;
+  }catch(e){alert("Expressão inválida");}
+}
+editor.addEventListener("dblclick",e=>{
+  const el=e.target.closest(".latex-formula");
+  if(!el)return;
+  latexTarget=el;
+  latexInput.value=el.dataset.latex||"";
+  if(window.katex){
+    try{latexPreview.innerHTML=katex.renderToString(latexInput.value,{throwOnError:false});}
+    catch(err){latexPreview.textContent="Erro";}
+  }else{
+    latexPreview.textContent="KaTeX não carregado";
+  }
+  latexDialog.style.display="flex";
+  setTimeout(()=>latexInput.focus(),0);
+});
 /* ---------- OCULTAR / REVELAR TEXTO ---------- */
 hideBtn.onclick = () => {
   const sel = window.getSelection();
