@@ -1,10 +1,10 @@
 /* data.js */
 /* ENEM:      2017-2024 - Natureza: 786 [21 Repetidas] = 765 Questões = 17 Simulados */
-/* SAS:       2021-2025 [1, 2] -       Natureza - 1170 Questões = 26 Simulados */
-/* Bernoulli: 2024-2025 [0, 1, 2, 3] - Natureza - 630 Questões = 14 Simulados */
-/* Natureza (Total): 2565 Questões [+21 Repetidas] = 57 Simulados */
+/* SAS:       2021-2025 [1, 2, 3] -       Natureza - 1215 Questões = 27 Simulados */
+/* Bernoulli: 2024-2025 [0, 1, 2, 3, 4] - Natureza - 675 Questões = 15 Simulados */
+/* Natureza (Total): 2655 Questões [+21 Repetidas] = 59 Simulados */
 /* Matemática (Total): 625 Questões (Importado de Lumbergeek, não checado)  */
-/* Total: 3190 [+21] */
+/* Total: 3280 [+21] */
 window.listaQuestoes = [
   {"Disciplina": "Química", "Assunto": "02", "label": "ENEM-2017-REG-Q-91", "QPDFName": "ENEM_2017_REG_Nat.pdf", "page": [1], "GPDFName": "ENEM_2017_REG_Nat.pdf", "gabaritoPage": [15]},
   {"Disciplina": "Biologia", "Assunto": "11", "label": "ENEM-2017-REG-Q-92", "QPDFName": "ENEM_2017_REG_Nat.pdf", "page": [1], "GPDFName": "ENEM_2017_REG_Nat.pdf", "gabaritoPage": [15]},
