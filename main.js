@@ -300,8 +300,7 @@ function isImageUrl(url) {
 function fitHeight(div, maxPx = 240){
   // zera para recalcular; precisa do setTimeout para pegar o scrollHeight correto
   div.style.maxHeight = 'auto';
-  const lh = parseFloat(getComputedStyle(div).lineHeight) || 16;
-  const needed = Math.min(div.scrollHeight + lh, maxPx); // sempre deixa 1 linha extra
+  const needed = Math.min(div.scrollHeight + 2, maxPx); // +2 evita corte de borda
   div.style.maxHeight = needed + 'px';
 }
 /* Remove todo o conteúdo renderizado. */
