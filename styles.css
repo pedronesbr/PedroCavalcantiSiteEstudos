@@ -71,6 +71,12 @@ button:hover { filter: brightness(1.2); }
   max-width:none; /* remove eventuais limites             */
 }
 
+/* Botões de simulados na tela "Provas e Simulados" */
+.exam-btn{
+  width:240px;
+  max-width:none;
+}
+
 .two-line-btn{
   display:flex;
   flex-direction:column;
