@@ -28,8 +28,8 @@ Essa estrutura torna o processo de revisão muito mais eficaz, permitindo que o 
 
 💾 Backup Inteligente
 Exporte e importe seus dados de progresso, comentários e marcações com facilidade.
-Quando logado com o Google, o progresso é salvo automaticamente no Firestore sempre que algo muda e também ao sair do site.
-Ao clicar em "Sair", o backup é gravado antes de encerrar a sessão.
+Quando logado com o Google, o progresso é salvo automaticamente tanto no Firestore quanto no Realtime Database sempre que algo muda e também ao sair do site.
+Ao clicar em "Sair", o backup é gravado antes de encerrar a sessão em ambas as bases.
 
 ⚠️ Para usar o login via Google é necessário abrir o site por um servidor local.
 Recomendamos executar `npx serve` ou `python3 -m http.server` e acessar

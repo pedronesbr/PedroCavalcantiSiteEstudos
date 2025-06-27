@@ -306,18 +306,23 @@ function salvarProgresso(uid) {
     const k = localStorage.key(i);
     dados[k] = localStorage.getItem(k);
   }
-  return firebase.firestore().collection('progresso').doc(uid)
+  const fs = firebase.firestore().collection('progresso').doc(uid)
     .set(dados, { merge: true })
-    .catch(err => console.error('Falha ao salvar:', err));
+    .catch(err => console.error('Firestore:', err));
+  const rt = firebase.database().ref('progresso/' + uid)
+    .update(dados)
+    .catch(err => console.error('Realtime DB:', err));
+  return Promise.all([fs, rt]);
 }
 
 function restaurarProgresso(uid) {
   if (!window.firebase) return Promise.resolve(false);
   return firebase.firestore().collection('progresso').doc(uid).get()
-    .then(doc => {
-      if (doc.exists) {
+    .then(doc => doc.exists ? doc.data() : firebase.database().ref('progresso/' + uid).get().then(snap => snap.exists() ? snap.val() : null))
+    .then(data => {
+      if (data) {
         syncDisabled = true;
-        Object.entries(doc.data()).forEach(([k,v]) => localStorage.setItem(k,v));
+        Object.entries(data).forEach(([k,v]) => localStorage.setItem(k,v));
         syncDisabled = false;
         return true;
       }
