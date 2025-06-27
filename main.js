@@ -209,7 +209,7 @@ function buildExamMap(list){
   }
   return { map: exams, order };
 }
-function doExport() {
+async function doExport() {
   /* 1 ▸ lê tudo do localStorage e joga num array  [key,value] */
   const pares = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -253,36 +253,37 @@ function doExport() {
                 `_${dateMap.hour}_${dateMap.minute}`;
   const filename = `Newtonius_${stamp}.json`;
 
-  /* 6 ▸ se disponível, usa File System Access para escolher pasta */
+  /* 6 ▸ tenta usar File System Access. Se falhar, baixa direto */
+  let saved = false;
   if (window.showSaveFilePicker) {
-    (async () => {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: filename,
-          types: [{
-            description: "JSON",
-            accept: { "application/json": [".json"] }
-          }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(data);
-        await writable.close();
-      } catch (err) {
-        console.error("Export falhou", err);
-      }
-    })();
-    return;
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: "JSON",
+          accept: { "application/json": [".json"] }
+        }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(data);
+      await writable.close();
+      saved = true;
+    } catch (err) {
+      console.error("Export falhou", err);
+    }
   }
 
-  const blob = new Blob([data], { type: "application/json" });
+  if (!saved) {
+    const blob = new Blob([data], { type: "application/json" });
 
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
 }
 
 

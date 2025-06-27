@@ -28,7 +28,7 @@ Essa estrutura torna o processo de revisão muito mais eficaz, permitindo que o 
 
 💾 Backup Inteligente
 Exporte e importe seus dados de progresso, comentários e marcações com facilidade. Ideal para trocar de dispositivo ou manter seus dados sempre seguros.
-* Os arquivos de backup agora são nomeados como `Newtonius_AAAA_MM_DD_HH_mm.json` e, quando o navegador permite, é possível escolher onde salvá-los.
+* Os arquivos de backup agora são nomeados como `Newtonius_AAAA_MM_DD_HH_mm.json`. Se o navegador não permitir a escolha da pasta, o download é feito normalmente.
 
 🛠️ Atualizações Futuras
 ...
