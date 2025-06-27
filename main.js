@@ -300,25 +300,30 @@ function isImageUrl(url) {
 
 // === Firebase Sync ===
 function salvarProgresso(uid) {
-  if (!window.firebase) return;
+  if (!window.firebase) return Promise.resolve();
   const dados = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     dados[k] = localStorage.getItem(k);
   }
-  firebase.firestore().collection('progresso').doc(uid).set(dados);
+  return firebase.firestore().collection('progresso').doc(uid)
+    .set(dados)
+    .catch(err => console.error(err));
 }
 
 function restaurarProgresso(uid) {
-  if (!window.firebase) return;
-  firebase.firestore().collection('progresso').doc(uid).get()
+  if (!window.firebase) return Promise.resolve(false);
+  return firebase.firestore().collection('progresso').doc(uid).get()
     .then(doc => {
       if (doc.exists) {
         syncDisabled = true;
         Object.entries(doc.data()).forEach(([k,v]) => localStorage.setItem(k,v));
         syncDisabled = false;
+        return true;
       }
-    });
+      return false;
+    })
+    .catch(err => { console.error(err); return false; });
 }
 
 function scheduleBackup() {
@@ -2023,7 +2028,9 @@ if (window.firebase) {
     if (user) {
       loginBtn.style.display = 'none';
       logoutBtn.style.display = 'block';
-      restaurarProgresso(user.uid);
+      restaurarProgresso(user.uid).then(found => {
+        if (!found) salvarProgresso(user.uid);
+      });
     } else {
       loginBtn.style.display = 'block';
       logoutBtn.style.display = 'none';
@@ -2041,5 +2048,12 @@ if (window.firebase) {
         alert('Erro: ' + err.message);
       });
   };
-  logoutBtn.onclick = () => firebase.auth().signOut();
+  logoutBtn.onclick = () => {
+    if (currentUser) salvarProgresso(currentUser.uid);
+    firebase.auth().signOut();
+  };
+
+  window.addEventListener('pagehide', () => {
+    if (currentUser) salvarProgresso(currentUser.uid);
+  });
 }

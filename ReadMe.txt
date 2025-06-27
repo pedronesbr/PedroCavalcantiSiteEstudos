@@ -27,7 +27,8 @@ Ao selecionar um assunto, o estudante tem acesso a um banco de questões em cons
 Essa estrutura torna o processo de revisão muito mais eficaz, permitindo que o estudante retorne facilmente às questões já resolvidas e concentre seu esforço naquelas que errou. A integração com PDF.js possibilita a visualização direta dos arquivos dentro da interface do site, com carregamento sob demanda das páginas específicas, o que otimiza significativamente o desempenho. A resolução é ajustada automaticamente à qualidade da tela do dispositivo, e a navegação conta com recursos como zoom, rolagem e um botão de fechamento, garantindo uma experiência leve e fluida.
 
 💾 Backup Inteligente
-Exporte e importe seus dados de progresso, comentários e marcações com facilidade. Ideal para trocar de dispositivo ou manter seus dados sempre seguros.
+Exporte e importe seus dados de progresso, comentários e marcações com facilidade.
+Quando logado com o Google, o progresso é salvo automaticamente no Firestore sempre que algo muda e também ao sair do site.
 
 ⚠️ Para usar o login via Google é necessário abrir o site por um servidor local.
 Recomendamos executar `npx serve` ou `python3 -m http.server` e acessar
