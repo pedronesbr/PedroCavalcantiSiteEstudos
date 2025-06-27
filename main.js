@@ -823,7 +823,7 @@ function showExamList(){
   examOrder.forEach(ex=>{
     const btn=document.createElement('button');
     btn.textContent=ex;
-    btn.className='btn';
+    btn.className='btn exam-btn';
     const m=ex.match(/ENEM|SAS|BERNOULLI/i);
     if(m) btn.classList.add(`exam-${m[0].toLowerCase()}`);
     btn.onclick=()=>showExam(ex);
