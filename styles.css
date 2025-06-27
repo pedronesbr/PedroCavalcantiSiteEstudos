@@ -73,7 +73,7 @@ button:hover { filter: brightness(1.2); }
 
 /* Botões de simulados na tela "Provas e Simulados" */
 .exam-btn{
-  width:240px;
+  width:480px;
   max-width:none;
 }
 
