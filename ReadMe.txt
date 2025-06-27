@@ -29,5 +29,9 @@ Essa estrutura torna o processo de revisão muito mais eficaz, permitindo que o 
 💾 Backup Inteligente
 Exporte e importe seus dados de progresso, comentários e marcações com facilidade. Ideal para trocar de dispositivo ou manter seus dados sempre seguros.
 
+⚠️ Para usar o login via Google é necessário abrir o site por um servidor local.
+Recomendamos executar `npx serve` ou `python3 -m http.server` e acessar
+`http://localhost:3000` (ou a porta que o comando indicar).
+
 🛠️ Atualizações Futuras
 ...

@@ -2031,7 +2031,15 @@ if (window.firebase) {
   });
 
   loginBtn.onclick = () => {
-    firebase.auth().signInWithPopup(provider).catch(err => alert('Erro: ' + err.message));
+    if (location.protocol === 'file:') {
+      alert('Execute o site em http://localhost (ex.: npx serve) para usar o login com Google.');
+      return;
+    }
+    firebase.auth().signInWithPopup(provider)
+      .catch(err => {
+        console.error(err);
+        alert('Erro: ' + err.message);
+      });
   };
   logoutBtn.onclick = () => firebase.auth().signOut();
 }
