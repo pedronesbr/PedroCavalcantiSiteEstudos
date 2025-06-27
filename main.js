@@ -123,6 +123,14 @@ const exportBtn     = document.getElementById("exportBtn");
 const importBtn     = document.getElementById("importBtn");
 const trilhaBtn     = document.getElementById("trilhaBtn");
 const examsBtn     = document.getElementById("examsBtn");
+const loginBtn     = document.getElementById("loginBtn");
+const logoutBtn    = document.getElementById("logoutBtn");
+const loginModal   = document.getElementById("loginModal");
+const loginEmail   = document.getElementById("loginEmail");
+const loginPassword= document.getElementById("loginPassword");
+const loginSubmit  = document.getElementById("loginSubmit");
+const registerSubmit = document.getElementById("registerSubmit");
+const loginCancel  = document.getElementById("loginCancel");
 const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
@@ -140,6 +148,9 @@ let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 let examListOpen = false; // menu Provas e Simulados aberto
 let currentExam  = null; // nome do exame em exibicao
+let currentUser  = null; // usuário autenticado (Firebase)
+let backupTimer  = null;
+let syncDisabled = false;
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -292,6 +303,51 @@ function isImageUrl(url) {
   return (/\.(jpe?g|png|gif|bmp|webp)$/i.test(url) ||
           /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/.+\?alt=media.*$/i.test(url));
 }
+
+// === Firebase Sync ===
+function salvarProgresso(uid) {
+  if (!window.firebase) return;
+  const dados = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    dados[k] = localStorage.getItem(k);
+  }
+  firebase.firestore().collection('progresso').doc(uid).set(dados);
+}
+
+function restaurarProgresso(uid) {
+  if (!window.firebase) return;
+  firebase.firestore().collection('progresso').doc(uid).get()
+    .then(doc => {
+      if (doc.exists) {
+        syncDisabled = true;
+        Object.entries(doc.data()).forEach(([k,v]) => localStorage.setItem(k,v));
+        syncDisabled = false;
+      }
+    });
+}
+
+function scheduleBackup() {
+  if (!currentUser || !window.firebase || syncDisabled) return;
+  clearTimeout(backupTimer);
+  backupTimer = setTimeout(() => salvarProgresso(currentUser.uid), 1000);
+}
+
+const _setItem = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(k,v){
+  _setItem(k,v);
+  if(!syncDisabled) scheduleBackup();
+};
+const _removeItem = localStorage.removeItem.bind(localStorage);
+localStorage.removeItem = function(k){
+  _removeItem(k);
+  if(!syncDisabled) scheduleBackup();
+};
+const _clear = localStorage.clear.bind(localStorage);
+localStorage.clear = function(){
+  _clear();
+  if(!syncDisabled) scheduleBackup();
+};
 
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
@@ -1963,3 +2019,31 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
    8. BOOT (primeira renderização)
    ============================================================== */
 showMenu(); // Render inicial da aplicação
+
+/* === Login Firebase === */
+if (window.firebase) {
+  firebase.auth().onAuthStateChanged(user => {
+    currentUser = user;
+    if (user) {
+      loginModal.style.display = 'none';
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'block';
+      restaurarProgresso(user.uid);
+    } else {
+      loginBtn.style.display = 'block';
+      logoutBtn.style.display = 'none';
+    }
+  });
+
+  loginBtn.onclick = () => { loginModal.style.display = 'flex'; };
+  loginCancel.onclick = () => { loginModal.style.display = 'none'; };
+  logoutBtn.onclick = () => firebase.auth().signOut();
+  loginSubmit.onclick = () => {
+    firebase.auth().signInWithEmailAndPassword(loginEmail.value, loginPassword.value)
+      .catch(err => alert('Erro: ' + err.message));
+  };
+  registerSubmit.onclick = () => {
+    firebase.auth().createUserWithEmailAndPassword(loginEmail.value, loginPassword.value)
+      .catch(err => alert('Erro: ' + err.message));
+  };
+}

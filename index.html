@@ -27,6 +27,21 @@
      ===================================================================== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- =====================================================================
+       Firebase – Autenticação e Firestore
+       ===================================================================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeg-hLnJQe7u4MYy2RW4v0Zhx3np6fdIg",
+      authDomain: "newtonius.firebaseapp.com",
+      projectId: "newtonius"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
 
   <!-- =====================================================================
        CSS INLINE
@@ -64,6 +79,8 @@
       <button id="examsBtn">Provas e Simulados</button>
       <button id="importBtn">Importar</button>
       <button id="exportBtn">Exportar</button>
+      <button id="loginBtn">Entrar</button>
+      <button id="logoutBtn" style="display:none;">Sair</button>
     </div>
     <div class="header-top">
       <span id="headerTitle">Título Dinâmico</span>
@@ -163,6 +180,20 @@
         <button id="pickerAdd">Adicionar</button>
         <button id="pickerMicro" style="display:none;">Micro Simulado</button>
         <button id="pickerCancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Login -->
+  <div id="loginModal">
+    <div class="modal-content">
+      <h3>Login</h3>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Senha" />
+      <div class="picker-actions">
+        <button id="loginSubmit">Entrar</button>
+        <button id="registerSubmit">Registrar</button>
+        <button id="loginCancel">Cancelar</button>
       </div>
     </div>
   </div>
