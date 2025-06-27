@@ -94,6 +94,7 @@ const discClasses = {
   Física:     "fisica",
   Matemática: "matematica",
 };
+const discColors = { Biologia:"var(--c-bio)", Química:"var(--c-qui)", Física:"var(--c-fis)", Matemática:"var(--c-mat)" };
 
 // Data prevista do exame (ajuste conforme necessário)
 const EXAM_DATE = new Date('2025-11-09');
@@ -121,6 +122,7 @@ const settingsMenu  = document.getElementById("settingsMenu");
 const exportBtn     = document.getElementById("exportBtn");
 const importBtn     = document.getElementById("importBtn");
 const trilhaBtn     = document.getElementById("trilhaBtn");
+const examsBtn     = document.getElementById("examsBtn");
 const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
@@ -136,9 +138,12 @@ let currentSub  = null;   // Código do assunto selecionado
 let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
 let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
+let examListOpen = false; // menu Provas e Simulados aberto
+let currentExam  = null; // nome do exame em exibicao
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
+const examsData = buildExamMap(questoesData);
 
 /* ================================================================
    4. FUNÇÕES UTILITÁRIAS (não tocam no DOM)
@@ -171,6 +176,27 @@ function buildBancoQuestoes(listaFlat) {
   return banco;
 }
 
+function buildExamMap(data){
+  const exams={};
+  for(const disc in data){
+    for(const sub in data[disc]){
+      data[disc][sub].forEach(q=>{
+        const m=q.label.match(/^(.*)-Q-(\d+)/);
+        if(!m) return;
+        const exam=m[1];
+        (exams[exam] ||= []).push({disc,sub,q});
+      });
+    }
+  }
+  for(const e in exams){
+    exams[e].sort((a,b)=>{
+      const na=parseInt(a.q.label.match(/Q-(\d+)/)[1],10);
+      const nb=parseInt(b.q.label.match(/Q-(\d+)/)[1],10);
+      return na-nb;
+    });
+  }
+  return exams;
+}
 function doExport() {
   /* 1 ▸ lê tudo do localStorage e joga num array  [key,value] */
   const pares = [];
@@ -413,6 +439,8 @@ if (typeof sessionStorage !== 'undefined' &&
 }
 /* ---------------- MENU PRINCIPAL ---------------- */
 function showMenu () {
+  examListOpen=false;
+  currentExam=null;
   /* 1 ▸ devolve o xpModal para <body> antes que clear() o remova        */
   const xpModalEl = document.getElementById('xpModal');
   if (xpModalEl && xpModalEl.parentElement !== document.body) {
@@ -511,6 +539,12 @@ trilhaBtn.onclick = () => {
   settingsMenu.style.display = 'none';
   showTrail();
 };
+
+examsBtn.onclick = () => {
+  settingsMenu.style.display = "none";
+  showExamList();
+};
+
 
 function loadTrail(dayStr){
   const raw = localStorage.getItem(`trail_${dayStr}`);
@@ -653,6 +687,8 @@ function renderTrailDay(day,expand){
 }
 
 function showTrail(expandDay){
+  examListOpen=false;
+  currentExam=null;
   currentDisc=currentSub=null;
   trailReturn=null;
   leaveHome();
@@ -719,6 +755,90 @@ function renderExamSummary(){
   app.appendChild(container);
 }
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
+/* ---------------- PROVAS E SIMULADOS ---------------- */
+function showExamList(){
+  currentDisc=currentSub=null;
+  currentExam=null;
+  examListOpen=true;
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true,'Provas e Simulados');
+  const stats=document.getElementById('headerStats');
+  stats.style.display='none';
+  clear();
+  window.scrollTo(0,0);
+  Object.keys(examsData).sort().forEach(ex=>{
+    const btn=document.createElement('button');
+    btn.textContent=ex;
+    btn.className='btn';
+    const m=ex.match(/ENEM|SAS|BERNOULLI/i);
+    if(m) btn.classList.add(`exam-${m[0].toLowerCase()}`);
+    btn.onclick=()=>showExam(ex);
+    app.appendChild(btn);
+  });
+}
+
+function showExam(exam){
+  examListOpen=false;
+  currentExam=exam;
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true, exam);
+  document.getElementById('headerStats').style.visibility='visible';
+  clear();
+  window.scrollTo(0,0);
+  const questions=examsData[exam]||[];
+  const statDiv=document.getElementById('headerStats');
+  function refresh(){
+    let c=0,a=0;
+    questions.forEach(({disc,sub,q})=>{
+      const st=+localStorage.getItem(qKey(disc,sub,q.label))||0;
+      if(st===1) c++;
+      if(st===1||st===2) a++;
+    });
+    const pct=a?(c/a*100):0;
+    statDiv.textContent=`Desempenho: ${c}/${a} (${pct.toFixed(1)}%) | Total: ${questions.length}`;
+    statDiv.className=a===0?'stat neutral'
+      : pct>=90?'stat blue'
+      : pct>=80?'stat green'
+      : pct>=60?'stat orange'
+      :'stat red';
+  }
+  refresh();
+  questions.forEach(({disc,sub,q})=>{
+    const row=app.appendChild(Object.assign(document.createElement('div'),{className:'question-row'}));
+    const qBtn=document.createElement('button');
+    qBtn.innerHTML=`<span class="ms-topic">${getFriendlyName(disc,sub)}</span><br><span class="ms-label">${q.label}</span>`;
+    qBtn.classList.add('btn','question-btn','two-line-btn');
+    qBtn.querySelector('.ms-topic').style.color=discColors[disc];
+    const m=q.label.match(/ENEM|SAS|BERNOULLI/i);
+    if(m) qBtn.classList.add(`exam-${m[0].toLowerCase()}`);
+    qBtn.onclick=()=>openPdf(q.QPDFName,q.page);
+    row.appendChild(qBtn);
+    row.appendChild(Object.assign(document.createElement('button'),{textContent:'Gabarito',className:'small-btn',onclick:()=>openPdf(q.GPDFName,q.gabaritoPage)}));
+    const key=qKey(disc,sub,q.label);
+    let st=+localStorage.getItem(key)||0;
+    const box=row.appendChild(Object.assign(document.createElement('span'),{className:'state-box'}));
+    const paint=()=>{box.textContent=st===1?'\u2713':st===2?'\u2717':'';box.style.color=st===1?'#32cd32':st===2?'#ff0000':'#f0f0f0';};
+    paint();
+    box.onclick=()=>{st=(st+1)%3;localStorage.setItem(key,st);const today=getTodayStr();const logKey=`log_${today}_${key}`;if(st===1||st===2){localStorage.setItem(logKey,'1');}else{localStorage.removeItem(logKey);}paint();refresh();};
+    const cKey=`comment_${key}`;
+    const editDiv=document.createElement('div');
+    editDiv.className='comment-edit';
+    editDiv.contentEditable='true';
+    editDiv.dataset.ph='';
+    editDiv.addEventListener('click',function(e){if(e.button!==0)return;const anchor=e.target.closest('a');if(anchor){e.preventDefault();if(isImageUrl(anchor.href))openImage(anchor.href);else window.open(anchor.href,'_blank','noopener');return;}if(!editDiv.classList.contains('expanded')){editDiv.focus();}});
+    editDiv.innerHTML=localStorage.getItem(cKey)||'';
+    editDiv.addEventListener('paste',e=>{e.preventDefault();const plain=e.clipboardData.getData('text/plain');const sel=window.getSelection();if(!sel.rangeCount)return;const range=sel.getRangeAt(0);range.deleteContents();range.insertNode(document.createTextNode(plain));range.collapse(false);sel.removeAllRanges();sel.addRange(range);});
+    editDiv.addEventListener('input',()=>{if(editDiv.classList.contains('expanded')){fitHeight(editDiv);}});
+    editDiv.addEventListener('focus',()=>{editDiv.classList.add('expanded');editDiv.style.whiteSpace='pre-wrap';editDiv.style.overflowY='auto';fitHeight(editDiv);});
+    editDiv.addEventListener('blur',()=>{if(editDiv.textContent.trim()===''){editDiv.innerHTML='';localStorage.removeItem(cKey);}editDiv.classList.remove('expanded');editDiv.style.maxHeight='38px';editDiv.style.whiteSpace='nowrap';editDiv.style.textOverflow='ellipsis';editDiv.style.overflow='hidden';editDiv.scrollTop=0;atualizaIndicadorOverflow(editDiv);});
+    editDiv.addEventListener('contextmenu',e=>{e.preventDefault();openLinkMenu(e,editDiv);});
+    editDiv.addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;if(editDiv.matches(':focus')){openLinkMenu(e,editDiv);}else{e.preventDefault();if(isImageUrl(a.href)){openImage(a.href);}else{window.open(a.href,'_blank','noopener');}}});
+    editDiv.addEventListener('input',()=>{localStorage.setItem(cKey,editDiv.innerHTML);});
+    row.appendChild(editDiv);
+  });
+}
 function showSubjects(disc) {
   currentDisc = disc;
   currentSub  = null;
@@ -1374,6 +1494,16 @@ importFile.addEventListener("change", ({ target }) => {
 
 /* Botão Voltar → decide se volta à lista de assuntos, trilha ou menu */
 backBtn.onclick = () => {
+  if(currentExam){
+    currentExam=null;
+    showExamList();
+    return;
+  }
+  if(examListOpen){
+    examListOpen=false;
+    showMenu();
+    return;
+  }
   if(trailReturn){
     const d = trailReturn;
     trailReturn = null;
