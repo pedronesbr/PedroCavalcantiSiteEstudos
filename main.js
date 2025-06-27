@@ -209,7 +209,7 @@ function buildExamMap(list){
   }
   return { map: exams, order };
 }
-function doExport() {
+async function doExport() {
   /* 1 ▸ lê tudo do localStorage e joga num array  [key,value] */
   const pares = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -231,18 +231,59 @@ function doExport() {
   const objOrdenado = Object.fromEntries(pares);
 
   /* 4 ▸ salva com indentação bonitinha */
-  const blob = new Blob(
-    [JSON.stringify(objOrdenado, null, 2)],        // <-- indent=2
-    { type: "application/json" }
-  );
+  const data = JSON.stringify(objOrdenado, null, 2);
 
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "backup_newtonius.json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  /* 5 ▸ gera nome Newtonius_AAAA_MM_DD_HH_mm (hora de Brasília) */
+  const opts = {
+    timeZone: 'America/Sao_Paulo',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  const parts = new Intl.DateTimeFormat('en-GB', opts)
+                    .formatToParts(new Date());
+  const dateMap = {};
+  for (const p of parts) {
+    if (p.type !== 'literal') dateMap[p.type] = p.value;
+  }
+  const stamp = `${dateMap.year}_${dateMap.month}_${dateMap.day}` +
+                `_${dateMap.hour}_${dateMap.minute}`;
+  const filename = `Newtonius_${stamp}.json`;
+
+  /* 6 ▸ tenta usar File System Access. Se falhar, baixa direto */
+  let saved = false;
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: "JSON",
+          accept: { "application/json": [".json"] }
+        }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(data);
+      await writable.close();
+      saved = true;
+    } catch (err) {
+      console.error("Export falhou", err);
+    }
+  }
+
+  if (!saved) {
+    const blob = new Blob([data], { type: "application/json" });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
 }
 
 
