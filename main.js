@@ -123,6 +123,8 @@ const exportBtn     = document.getElementById("exportBtn");
 const importBtn     = document.getElementById("importBtn");
 const trilhaBtn     = document.getElementById("trilhaBtn");
 const examsBtn     = document.getElementById("examsBtn");
+const loginBtn     = document.getElementById("loginBtn");
+const logoutBtn    = document.getElementById("logoutBtn");
 const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
@@ -140,6 +142,9 @@ let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 let examListOpen = false; // menu Provas e Simulados aberto
 let currentExam  = null; // nome do exame em exibicao
+let currentUser  = null; // usuário autenticado (Firebase)
+let backupTimer  = null;
+let syncDisabled = false;
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -292,6 +297,63 @@ function isImageUrl(url) {
   return (/\.(jpe?g|png|gif|bmp|webp)$/i.test(url) ||
           /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/.+\?alt=media.*$/i.test(url));
 }
+
+// === Firebase Sync ===
+function salvarProgresso(uid) {
+  if (!window.firebase) return Promise.resolve();
+  const dados = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    dados[k] = localStorage.getItem(k);
+  }
+  const fs = firebase.firestore().collection('progresso').doc(uid)
+    .set(dados, { merge: true })
+    .catch(err => console.error('Firestore:', err));
+  const rt = firebase.database().ref('progresso/' + uid)
+    .update(dados)
+    .catch(err => console.error('Realtime DB:', err));
+  return Promise.all([fs, rt]);
+}
+
+function restaurarProgresso(uid) {
+  if (!window.firebase) return Promise.resolve(false);
+  return firebase.firestore().collection('progresso').doc(uid).get()
+    .then(doc => doc.exists ? doc.data() : firebase.database().ref('progresso/' + uid).get().then(snap => snap.exists() ? snap.val() : null))
+    .then(data => {
+      if (data) {
+        syncDisabled = true;
+        Object.entries(data).forEach(([k,v]) => localStorage.setItem(k,v));
+        syncDisabled = false;
+        return true;
+      }
+      return false;
+    })
+    .catch(err => { console.error(err); return false; });
+}
+
+function scheduleBackup() {
+  if (!currentUser || !window.firebase || syncDisabled) return;
+  clearTimeout(backupTimer);
+  backupTimer = setTimeout(() => salvarProgresso(currentUser.uid), 1000);
+  // tenta salvar imediatamente para evitar perda ao fechar a aba rapidamente
+  salvarProgresso(currentUser.uid);
+}
+
+const _setItem = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(k,v){
+  _setItem(k,v);
+  if(!syncDisabled) scheduleBackup();
+};
+const _removeItem = localStorage.removeItem.bind(localStorage);
+localStorage.removeItem = function(k){
+  _removeItem(k);
+  if(!syncDisabled) scheduleBackup();
+};
+const _clear = localStorage.clear.bind(localStorage);
+localStorage.clear = function(){
+  _clear();
+  if(!syncDisabled) scheduleBackup();
+};
 
 /* ================================================================
    5. FUNÇÕES DE RENDERIZAÇÃO / LAYOUT (manipulam DOM)
@@ -1963,3 +2025,45 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
    8. BOOT (primeira renderização)
    ============================================================== */
 showMenu(); // Render inicial da aplicação
+
+/* === Login Firebase === */
+if (window.firebase) {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  firebase.auth().onAuthStateChanged(user => {
+    currentUser = user;
+    if (user) {
+      loginBtn.style.display = 'none';
+      logoutBtn.style.display = 'block';
+      restaurarProgresso(user.uid).then(found => {
+        if (!found) salvarProgresso(user.uid);
+      });
+    } else {
+      loginBtn.style.display = 'block';
+      logoutBtn.style.display = 'none';
+    }
+  });
+
+  loginBtn.onclick = () => {
+    if (location.protocol === 'file:') {
+      alert('Execute o site em http://localhost (ex.: npx serve) para usar o login com Google.');
+      return;
+    }
+    firebase.auth().signInWithPopup(provider)
+      .catch(err => {
+        console.error(err);
+        alert('Erro: ' + err.message);
+      });
+  };
+  logoutBtn.onclick = () => {
+    if (currentUser) {
+      salvarProgresso(currentUser.uid).finally(() => firebase.auth().signOut());
+    } else {
+      firebase.auth().signOut();
+    }
+  };
+
+  window.addEventListener('beforeunload', () => {
+    if (currentUser) salvarProgresso(currentUser.uid);
+  });
+}

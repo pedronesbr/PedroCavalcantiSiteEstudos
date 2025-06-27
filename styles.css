@@ -808,6 +808,7 @@ button:hover { filter: brightness(1.2); }
 #subjectPickerModal select { margin: 0 4px; }
 #subjectPickerModal .picker-actions { margin-top: 10px; }
 
+
 /* ───────────── HOME LOOK ───────────── */
 body.home #header          { background: var(--c-bg-app); }   /* barra preta */
 

@@ -27,6 +27,26 @@
      ===================================================================== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- =====================================================================
+       Firebase – Autenticação e Firestore
+       ===================================================================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeg-hLnJQe7u4MYy2RW4v0Zhx3np6fdIg",
+      authDomain: "newtonius.firebaseapp.com",
+      databaseURL: "https://newtonius-default-rtdb.firebaseio.com",
+      projectId: "newtonius",
+      storageBucket: "newtonius.appspot.com",
+      messagingSenderId: "23787439183"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(()=>{});
+  </script>
+
 
   <!-- =====================================================================
        CSS INLINE
@@ -64,6 +84,8 @@
       <button id="examsBtn">Provas e Simulados</button>
       <button id="importBtn">Importar</button>
       <button id="exportBtn">Exportar</button>
+      <button id="loginBtn">Entrar</button>
+      <button id="logoutBtn" style="display:none;">Sair</button>
     </div>
     <div class="header-top">
       <span id="headerTitle">Título Dinâmico</span>
@@ -166,6 +188,7 @@
       </div>
     </div>
   </div>
+
   <script src="main.js"></script>
 </body>
 </html>
