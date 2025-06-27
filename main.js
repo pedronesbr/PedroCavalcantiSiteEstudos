@@ -143,7 +143,7 @@ let currentExam  = null; // nome do exame em exibicao
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
-const examsData = buildExamMap(questoesData);
+const { map: examsData, order: examOrder } = buildExamMap(window.listaQuestoes || []);
 
 /* ================================================================
    4. FUNÇÕES UTILITÁRIAS (não tocam no DOM)
@@ -176,26 +176,38 @@ function buildBancoQuestoes(listaFlat) {
   return banco;
 }
 
-function buildExamMap(data){
-  const exams={};
-  for(const disc in data){
-    for(const sub in data[disc]){
-      data[disc][sub].forEach(q=>{
-        const m=q.label.match(/^(.*)-Q-(\d+)/);
-        if(!m) return;
-        const exam=m[1];
-        (exams[exam] ||= []).push({disc,sub,q});
-      });
+function buildExamMap(list){
+  const exams = {};
+  const order = [];
+  list.forEach(item => {
+    if (item.Disciplina === 'Matemática') return; // ignora Matemática
+    const m = item.label.match(/^(.*)-Q-(\d+)/);
+    if (!m) return;
+    const exam = m[1];
+    if (!exams[exam]) {
+      exams[exam] = [];
+      order.push(exam);
     }
-  }
-  for(const e in exams){
-    exams[e].sort((a,b)=>{
-      const na=parseInt(a.q.label.match(/Q-(\d+)/)[1],10);
-      const nb=parseInt(b.q.label.match(/Q-(\d+)/)[1],10);
+    exams[exam].push({
+      disc: item.Disciplina,
+      sub: item.Assunto,
+      q: {
+        label: item.label,
+        QPDFName: item.QPDFName,
+        page: item.page,
+        GPDFName: item.GPDFName,
+        gabaritoPage: item.gabaritoPage
+      }
+    });
+  });
+  for (const ex of order) {
+    exams[ex].sort((a,b)=>{
+      const na = parseInt(a.q.label.match(/Q-(\d+)/)[1],10);
+      const nb = parseInt(b.q.label.match(/Q-(\d+)/)[1],10);
       return na-nb;
     });
   }
-  return exams;
+  return { map: exams, order };
 }
 function doExport() {
   /* 1 ▸ lê tudo do localStorage e joga num array  [key,value] */
@@ -288,7 +300,8 @@ function isImageUrl(url) {
 function fitHeight(div, maxPx = 240){
   // zera para recalcular; precisa do setTimeout para pegar o scrollHeight correto
   div.style.maxHeight = 'auto';
-  const needed = Math.min(div.scrollHeight + 2, maxPx); // +2 evita corte de borda
+  const lh = parseFloat(getComputedStyle(div).lineHeight) || 16;
+  const needed = Math.min(div.scrollHeight + lh, maxPx); // sempre deixa 1 linha extra
   div.style.maxHeight = needed + 'px';
 }
 /* Remove todo o conteúdo renderizado. */
@@ -764,10 +777,10 @@ function showExamList(){
   toggleSettingsVisibility(false);
   updateHeader(true,'Provas e Simulados');
   const stats=document.getElementById('headerStats');
-  stats.style.display='none';
+  stats.style.visibility='hidden';
   clear();
   window.scrollTo(0,0);
-  Object.keys(examsData).sort().forEach(ex=>{
+  examOrder.forEach(ex=>{
     const btn=document.createElement('button');
     btn.textContent=ex;
     btn.className='btn';
