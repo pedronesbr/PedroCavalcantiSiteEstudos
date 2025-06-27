@@ -125,12 +125,6 @@ const trilhaBtn     = document.getElementById("trilhaBtn");
 const examsBtn     = document.getElementById("examsBtn");
 const loginBtn     = document.getElementById("loginBtn");
 const logoutBtn    = document.getElementById("logoutBtn");
-const loginModal   = document.getElementById("loginModal");
-const loginEmail   = document.getElementById("loginEmail");
-const loginPassword= document.getElementById("loginPassword");
-const loginSubmit  = document.getElementById("loginSubmit");
-const registerSubmit = document.getElementById("registerSubmit");
-const loginCancel  = document.getElementById("loginCancel");
 const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
@@ -2022,10 +2016,11 @@ showMenu(); // Render inicial da aplicação
 
 /* === Login Firebase === */
 if (window.firebase) {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     if (user) {
-      loginModal.style.display = 'none';
       loginBtn.style.display = 'none';
       logoutBtn.style.display = 'block';
       restaurarProgresso(user.uid);
@@ -2035,15 +2030,8 @@ if (window.firebase) {
     }
   });
 
-  loginBtn.onclick = () => { loginModal.style.display = 'flex'; };
-  loginCancel.onclick = () => { loginModal.style.display = 'none'; };
+  loginBtn.onclick = () => {
+    firebase.auth().signInWithPopup(provider).catch(err => alert('Erro: ' + err.message));
+  };
   logoutBtn.onclick = () => firebase.auth().signOut();
-  loginSubmit.onclick = () => {
-    firebase.auth().signInWithEmailAndPassword(loginEmail.value, loginPassword.value)
-      .catch(err => alert('Erro: ' + err.message));
-  };
-  registerSubmit.onclick = () => {
-    firebase.auth().createUserWithEmailAndPassword(loginEmail.value, loginPassword.value)
-      .catch(err => alert('Erro: ' + err.message));
-  };
 }

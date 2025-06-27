@@ -808,33 +808,6 @@ button:hover { filter: brightness(1.2); }
 #subjectPickerModal select { margin: 0 4px; }
 #subjectPickerModal .picker-actions { margin-top: 10px; }
 
-/* === Modal de Login === */
-#loginModal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-#loginModal .modal-content {
-  background: var(--c-bg-panel);
-  color: var(--c-text-primary);
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-}
-#loginModal input {
-  width: 240px;
-  margin: 4px 0;
-  padding: 8px;
-  border: 1px solid var(--c-border-muted);
-  border-radius: 4px;
-  background: var(--c-bg-app);
-  color: var(--c-text-primary);
-}
-#loginModal .picker-actions { margin-top: 10px; }
 
 /* ───────────── HOME LOOK ───────────── */
 body.home #header          { background: var(--c-bg-app); }   /* barra preta */
