@@ -307,8 +307,8 @@ function salvarProgresso(uid) {
     dados[k] = localStorage.getItem(k);
   }
   return firebase.firestore().collection('progresso').doc(uid)
-    .set(dados)
-    .catch(err => console.error(err));
+    .set(dados, { merge: true })
+    .catch(err => console.error('Falha ao salvar:', err));
 }
 
 function restaurarProgresso(uid) {
@@ -330,6 +330,8 @@ function scheduleBackup() {
   if (!currentUser || !window.firebase || syncDisabled) return;
   clearTimeout(backupTimer);
   backupTimer = setTimeout(() => salvarProgresso(currentUser.uid), 1000);
+  // tenta salvar imediatamente para evitar perda ao fechar a aba rapidamente
+  salvarProgresso(currentUser.uid);
 }
 
 const _setItem = localStorage.setItem.bind(localStorage);
@@ -2049,11 +2051,14 @@ if (window.firebase) {
       });
   };
   logoutBtn.onclick = () => {
-    if (currentUser) salvarProgresso(currentUser.uid);
-    firebase.auth().signOut();
+    if (currentUser) {
+      salvarProgresso(currentUser.uid).finally(() => firebase.auth().signOut());
+    } else {
+      firebase.auth().signOut();
+    }
   };
 
-  window.addEventListener('pagehide', () => {
+  window.addEventListener('beforeunload', () => {
     if (currentUser) salvarProgresso(currentUser.uid);
   });
 }

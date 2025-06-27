@@ -37,9 +37,12 @@
     const firebaseConfig = {
       apiKey: "AIzaSyAeg-hLnJQe7u4MYy2RW4v0Zhx3np6fdIg",
       authDomain: "newtonius.firebaseapp.com",
-      projectId: "newtonius"
+      projectId: "newtonius",
+      storageBucket: "newtonius.appspot.com",
+      messagingSenderId: "23787439183"
     };
     firebase.initializeApp(firebaseConfig);
+    firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(()=>{});
   </script>
 
 
