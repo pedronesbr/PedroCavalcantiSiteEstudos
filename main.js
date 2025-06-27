@@ -233,9 +233,25 @@ function doExport() {
   /* 4 ▸ salva com indentação bonitinha */
   const data = JSON.stringify(objOrdenado, null, 2);
 
-  /* 5 ▸ gera nome com data e hora */
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const filename = `backup_newtonius_${stamp}.json`;
+  /* 5 ▸ gera nome Newtonius_AAAA_MM_DD_HH_mm (hora de Brasília) */
+  const opts = {
+    timeZone: 'America/Sao_Paulo',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  const parts = new Intl.DateTimeFormat('en-GB', opts)
+                    .formatToParts(new Date());
+  const dateMap = {};
+  for (const p of parts) {
+    if (p.type !== 'literal') dateMap[p.type] = p.value;
+  }
+  const stamp = `${dateMap.year}_${dateMap.month}_${dateMap.day}` +
+                `_${dateMap.hour}_${dateMap.minute}`;
+  const filename = `Newtonius_${stamp}.json`;
 
   /* 6 ▸ se disponível, usa File System Access para escolher pasta */
   if (window.showSaveFilePicker) {
