@@ -455,8 +455,8 @@ button:hover { filter: brightness(1.2); }
 
 /* cada exame injeta a cor da faixa */
 .exam-enem       { --stripe-color: var(--c-exam-enem); }
-.exam-sas        { --stripe-color: var(--c-exam-sas); }
-.exam-bernoulli  { --stripe-color: var(--c-exam-bernoulli); }
+.exam-sas        { --stripe-color: var(--c-exam-sas);    background: var(--c-exam-sas);    color: #fff; width: 260px; }
+.exam-bernoulli  { --stripe-color: var(--c-exam-bernoulli); background: var(--c-exam-bernoulli); color: #fff; width: 260px; }
 
 /* === Botão Pomodoro === */
 #pomodoroBtn {
@@ -920,7 +920,8 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
     text-align: center;
   }
   .intro-img { margin-right: 0; }
-  .comment-input {
+  .comment-input,
+  .comment-edit {
     flex: 1 1 100%;        /* ocupa 100 % da largura em telas menores */
     margin: 8px 0 0 0;
   }
@@ -954,9 +955,16 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   }
 
   /* ---------- Campo de comentário -------- */
-  .comment-input{
+  .comment-input,
+  .comment-edit{
     flex: 1 1 100%;           /* ocupa 100 % da nova linha */
     width: 100%;              /* garante cobertura total   */
     margin: 8px 0 0 0;        /* mantém distanciamento */
+  }
+
+  /* Botões de simulados ocupam toda a largura */
+  .exam-sas,
+  .exam-bernoulli {
+    width: 100%;
   }
 }

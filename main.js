@@ -1230,9 +1230,10 @@ async function openPdf(pdfName, pages, quality=2, zoom=1.75) {
     const page     = await pdf.getPage(num);
     const viewport = page.getViewport({ scale });
     const canvas   = Object.assign(document.createElement("canvas"), {
-      width: viewport.width, height: viewport.height,
+      width: viewport.width,
+      height: viewport.height,
       style: `width:${viewport.width/(quality*dpr)}px;
-              height:${viewport.height/(quality*dpr)}px;
+              height:auto;
               margin:16px 0;max-width:100%`
     });
     pdfContainer.appendChild(canvas);
