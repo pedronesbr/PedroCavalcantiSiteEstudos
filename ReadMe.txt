@@ -28,6 +28,7 @@ Essa estrutura torna o processo de revisão muito mais eficaz, permitindo que o 
 
 💾 Backup Inteligente
 Exporte e importe seus dados de progresso, comentários e marcações com facilidade. Ideal para trocar de dispositivo ou manter seus dados sempre seguros.
+* Os arquivos de backup agora trazem a data e hora no nome e, quando o navegador permite, é possível escolher onde salvá-los.
 
 🛠️ Atualizações Futuras
 ...

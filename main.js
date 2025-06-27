@@ -231,14 +231,38 @@ function doExport() {
   const objOrdenado = Object.fromEntries(pares);
 
   /* 4 ▸ salva com indentação bonitinha */
-  const blob = new Blob(
-    [JSON.stringify(objOrdenado, null, 2)],        // <-- indent=2
-    { type: "application/json" }
-  );
+  const data = JSON.stringify(objOrdenado, null, 2);
+
+  /* 5 ▸ gera nome com data e hora */
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `backup_newtonius_${stamp}.json`;
+
+  /* 6 ▸ se disponível, usa File System Access para escolher pasta */
+  if (window.showSaveFilePicker) {
+    (async () => {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{
+            description: "JSON",
+            accept: { "application/json": [".json"] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(data);
+        await writable.close();
+      } catch (err) {
+        console.error("Export falhou", err);
+      }
+    })();
+    return;
+  }
+
+  const blob = new Blob([data], { type: "application/json" });
 
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "backup_newtonius.json";
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
