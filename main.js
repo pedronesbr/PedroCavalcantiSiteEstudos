@@ -824,7 +824,7 @@ function showExamList(){
     const btn=document.createElement('button');
     btn.textContent=ex;
     btn.className='btn exam-btn';
-    const m=ex.match(/ENEM|SAS|BERNOULLI/i);
+    const m=ex.match(/ENEM|SAS|BERNOULLI|POLIEDRO/i);
     if(m) btn.classList.add(`exam-${m[0].toLowerCase()}`);
     btn.onclick=()=>showExam(ex);
     app.appendChild(btn);
@@ -864,7 +864,7 @@ function showExam(exam){
     qBtn.innerHTML=`<span class="ms-topic">${getFriendlyName(disc,sub)}</span><br><span class="ms-label">${q.label}</span>`;
     qBtn.classList.add('btn','question-btn','two-line-btn');
     qBtn.querySelector('.ms-topic').style.color=discColors[disc];
-    const m=q.label.match(/ENEM|SAS|BERNOULLI/i);
+    const m=q.label.match(/ENEM|SAS|BERNOULLI|POLIEDRO/i);
     if(m) qBtn.classList.add(`exam-${m[0].toLowerCase()}`);
     qBtn.onclick=()=>openPdf(q.QPDFName,q.page);
     row.appendChild(qBtn);
@@ -1036,7 +1036,7 @@ function showQuestions(disc, sub, fromStar = false) {
     qBtn.classList.add("btn");
 
     // detecta ENEM, SAS ou BERNOULLI no label
-    const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
+    const m = q.label.match(/ENEM|SAS|BERNOULLI|POLIEDRO/i);
     if (m) {
       const exam = m[0].toLowerCase();          // "enem", "sas" ou "bernoulli"
       qBtn.classList.add(`exam-${exam}`);       // .exam-enem / .exam-sas / .exam-bernoulli
@@ -1310,7 +1310,7 @@ function showMicroSim(entry) {
       <span class="ms-topic">${getFriendlyName(disc,sub)}</span><br>
       <span class="ms-label">${q.label}</span>`;
     qBtn.classList.add('btn','question-btn','two-line-btn');
-    const m = q.label.match(/ENEM|SAS|BERNOULLI/i);
+    const m = q.label.match(/ENEM|SAS|BERNOULLI|POLIEDRO/i);
     if(m){
       const exam = m[0].toLowerCase();
       qBtn.classList.add(`exam-${exam}`);

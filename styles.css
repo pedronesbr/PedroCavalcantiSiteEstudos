@@ -291,7 +291,7 @@ button:hover { filter: brightness(1.2); }
   border-radius: 4px;
   padding: 8px;
   margin: 8px 0 0 15px;
-  font-size: 14px;
+  font-size: 16px;
 }
 .comment-input::placeholder { color: var(--c-text-muted); }
 
@@ -457,12 +457,14 @@ button:hover { filter: brightness(1.2); }
   --c-exam-enem:       #AC1D22;
   --c-exam-sas:        #3774FF;
   --c-exam-bernoulli:  #00A98F;
+  --c-exam-poliedro:   #F7A407;
 }
 
 /* cada exame injeta a cor da faixa */
 .exam-enem       { --stripe-color: var(--c-exam-enem); }
 .exam-sas        { --stripe-color: var(--c-exam-sas); }
 .exam-bernoulli  { --stripe-color: var(--c-exam-bernoulli); }
+.exam-poliedro   { --stripe-color: var(--c-exam-poliedro); }
 
 /* === Botão Pomodoro === */
 #pomodoroBtn {
@@ -841,7 +843,7 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
   /* ─────────── Estilo visual ─────────── */
   background: var(--c-bg-panel);
   color: var(--c-text-primary);
-  font-size: 14px;
+  font-size: 16px;          /* evita zoom ao focar em dispositivos móveis */
   line-height: 1.4;
   border: 1px solid var(--c-border-muted);
   border-radius: 4px;
@@ -873,7 +875,7 @@ body.home #headerStats      { display: none !important; }      /* esconde estat�
 
   /* 3) espaçamento lateral e tamanho de fonte */
   padding: 0 6px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 38px;       /* mesma altura de linha do .comment-edit */
   color: var(--c-text-muted);
   pointer-events: none;
