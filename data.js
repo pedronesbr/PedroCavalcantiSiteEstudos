@@ -3321,7 +3321,7 @@ window.listaQuestoes = [
 {"Disciplina": "Biologia", "Assunto": "25", "label": "Bernoulli-2025-4-Q-132", "QPDFName": "Bernoulli_2025_4_Nat.pdf", "page": [16], "GPDFName": "Bernoulli_2025_4_Nat_Gabarito.pdf", "gabaritoPage": [22]},
 {"Disciplina": "Química", "Assunto": "11", "label": "Bernoulli-2025-4-Q-133", "QPDFName": "Bernoulli_2025_4_Nat.pdf", "page": [17], "GPDFName": "Bernoulli_2025_4_Nat_Gabarito.pdf", "gabaritoPage": [22]},
 {"Disciplina": "Biologia", "Assunto": "08", "label": "Bernoulli-2025-4-Q-134", "QPDFName": "Bernoulli_2025_4_Nat.pdf", "page": [17], "GPDFName": "Bernoulli_2025_4_Nat_Gabarito.pdf", "gabaritoPage": [22, 23]},
-{"Disciplina": "Química", "Assunto": "17", "label": "Bernoulli-2025-4-Q-135", "QPDFName": "Bernoulli_2025_4_Nat.pdf", "page": [17], "GPDFName": "Bernoulli_2025_4_Nat_Gabarito.pdf", "gabaritoPage": [23, 24]}
+{"Disciplina": "Química", "Assunto": "17", "label": "Bernoulli-2025-4-Q-135", "QPDFName": "Bernoulli_2025_4_Nat.pdf", "page": [17], "GPDFName": "Bernoulli_2025_4_Nat_Gabarito.pdf", "gabaritoPage": [23, 24]},
 
 
 
