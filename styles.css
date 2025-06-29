@@ -216,7 +216,7 @@ button:hover { filter: brightness(1.2); }
   width: 200px;
   height: 33px;
   font-size: 18px;
-  color: #000;
+  color: #fff;
   font-weight: bold;
   display: inline-flex;        /* ativa modelo flex no próprio botão   */
   align-items: center;         /* centra o conteúdo na altura          */
@@ -794,6 +794,15 @@ button:hover { filter: brightness(1.2); }
 .trail-subject.matematica { background: var(--c-mat); }
 .trail-subject.d1         { background: var(--c-d1); }
 
+.trail-comment {
+  flex: 1 1 auto;
+  color: var(--c-text-primary);
+  background: var(--c-bg-panel);
+  border-radius: 4px;
+  padding: 8px 14px;
+  white-space: pre-wrap;
+}
+
 /* Hide the old "+" add button (if still in DOM) */
 .trail-add { display: none !important; }
 
@@ -817,6 +826,7 @@ button:hover { filter: brightness(1.2); }
 }
 
 #subjectPickerModal select { margin: 0 4px; }
+#subjectPickerModal input  { margin: 0 4px; padding: 4px; }
 #subjectPickerModal .picker-actions { margin-top: 10px; }
 
 /* ───────────── HOME LOOK ───────────── */
