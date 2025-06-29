@@ -743,7 +743,7 @@ function renderTrailDay(day,expand){
       openPicker(sel=>{
         data[key].push(sel);
         saveTrail(dayStr,data);
-        showTrail(dayStr); // re-render
+        showTrail(dayStr, true); // re-render preservando scroll
       });
     };
     wrap.appendChild(btnAdd);
@@ -756,10 +756,27 @@ function renderTrailDay(day,expand){
         const subj=document.createElement('span');
         subj.className='trail-comment';
         subj.textContent=s.comment;
+        subj.onclick=()=>{
+          const txt=prompt('Editar comentário:', s.comment);
+          if(txt!==null){
+            const val=txt.trim();
+            if(val){
+              data[key][idx].comment=val;
+            }else{
+              data[key].splice(idx,1);
+            }
+            saveTrail(dayStr,data);
+            showTrail(dayStr, true);
+          }
+        };
         const rm=document.createElement('button');
         rm.className='trail-remove';
         rm.textContent='\u00D7';
-        rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
+        rm.onclick=()=>{
+          data[key].splice(idx,1);
+          saveTrail(dayStr,data);
+          showTrail(dayStr, true);
+        };
         item.appendChild(subj);
         item.appendChild(rm);
         sec.appendChild(item);
@@ -786,7 +803,11 @@ function renderTrailDay(day,expand){
       const rm=document.createElement('button');
       rm.className='trail-remove';
       rm.textContent='×';
-      rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
+      rm.onclick=()=>{
+        data[key].splice(idx,1);
+        saveTrail(dayStr,data);
+        showTrail(dayStr, true);
+      };
 
       item.appendChild(subj);
       item.appendChild(count);
@@ -807,7 +828,7 @@ function renderTrailDay(day,expand){
   app.appendChild(content);
 }
 
-function showTrail(expandDay){
+function showTrail(expandDay, preserveScroll=false){
   examListOpen=false;
   currentExam=null;
   currentDisc=currentSub=null;
@@ -818,13 +839,15 @@ function showTrail(expandDay){
   const stats=document.getElementById('headerStats');
   stats.style.display='block';
   stats.style.visibility='hidden';
+  const prevY = preserveScroll ? window.scrollY : 0;
   clear();
-  window.scrollTo(0,0);
+  if(!preserveScroll) window.scrollTo(0,0);
   const start=new Date();
   for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
     renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
   }
   renderExamSummary();
+  if(preserveScroll) window.scrollTo(0,prevY);
 }
 
 function computeExamStats(){
