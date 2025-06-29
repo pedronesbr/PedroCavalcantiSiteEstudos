@@ -148,6 +148,7 @@ const examsBtn     = document.getElementById("examsBtn");
 const pickerModal   = document.getElementById("subjectPickerModal");
 const pickerDisc    = document.getElementById("pickerDisc");
 const pickerSub     = document.getElementById("pickerSub");
+const pickerComment = document.getElementById("pickerComment");
 const pickerAdd     = document.getElementById("pickerAdd");
 const pickerMicro   = document.getElementById("pickerMicro");
 const pickerCancel  = document.getElementById("pickerCancel");
@@ -673,20 +674,38 @@ function openPicker(callback){
     opt.textContent = d;
     pickerDisc.appendChild(opt);
   }
+  const optComment=document.createElement('option');
+  optComment.value='__comment__';
+  optComment.textContent='Comentário';
+  pickerDisc.appendChild(optComment);
   pickerDisc.onchange = () => {
-    pickerSub.innerHTML = '';
-    SUBJECT_NAMES[pickerDisc.value].forEach((n,i)=>{
-      const o=document.createElement('option');
-      o.value=String(i+1).padStart(2,'0');
-      o.textContent=n;
-      pickerSub.appendChild(o);
-    });
-    pickerMicro.style.display =
-      pickerDisc.value==='Matemática'? 'inline-block' : 'none';
+    if(pickerDisc.value==='__comment__'){
+      pickerSub.style.display='none';
+      pickerComment.style.display='inline-block';
+      pickerMicro.style.display='none';
+    }else{
+      pickerSub.style.display='';
+      pickerComment.style.display='none';
+      pickerSub.innerHTML = '';
+      SUBJECT_NAMES[pickerDisc.value].forEach((n,i)=>{
+        const o=document.createElement('option');
+        o.value=String(i+1).padStart(2,'0');
+        o.textContent=n;
+        pickerSub.appendChild(o);
+      });
+      pickerMicro.style.display =
+        pickerDisc.value==='Matemática'? 'inline-block' : 'none';
+    }
   };
   pickerDisc.onchange();
   pickerAdd.onclick = () => {
-    callback({disc: pickerDisc.value, sub: pickerSub.value});
+    if(pickerDisc.value==='__comment__'){
+      const txt=pickerComment.value.trim();
+      if(txt) callback({comment:txt});
+      pickerComment.value='';
+    }else{
+      callback({disc: pickerDisc.value, sub: pickerSub.value});
+    }
     pickerModal.style.display='none';
   };
   pickerMicro.onclick = () => {
@@ -732,6 +751,20 @@ function renderTrailDay(day,expand){
     data[key].forEach((s,idx)=>{
       const item=document.createElement('div');
       item.className='trail-item';
+
+      if(s.comment){
+        const subj=document.createElement('span');
+        subj.className='trail-comment';
+        subj.textContent=s.comment;
+        const rm=document.createElement('button');
+        rm.className='trail-remove';
+        rm.textContent='\u00D7';
+        rm.onclick=()=>{ data[key].splice(idx,1); saveTrail(dayStr,data); showTrail(dayStr); };
+        item.appendChild(subj);
+        item.appendChild(rm);
+        sec.appendChild(item);
+        return;
+      }
 
       const isMicro = s.sub==='micro';
       const label = isMicro
