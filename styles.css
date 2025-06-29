@@ -26,10 +26,11 @@
   --c-neutral:#666666;   /* sem dados */
 
   /* Cores das disciplinas */
-  --c-bio:  #7ED956;
-  --c-qui:  #0CC1E0;
-  --c-fis:  #8C52FF;
-  --c-mat:  #FFDE59;
+  --c-bio:  #56B36C;
+  --c-qui:  #0093D6;
+  --c-fis:  #904992;
+  --c-mat:  #F5821F;
+  --c-d1:   #00A8B0;
 }
 
 /* =====================================================================================
@@ -225,6 +226,7 @@ button:hover { filter: brightness(1.2); }
 .disc-btn.quimica    { background: var(--c-qui); }
 .disc-btn.fisica     { background: var(--c-fis); }
 .disc-btn.matematica { background: var(--c-mat); }
+.disc-btn.d1         { background: var(--c-d1); }
 
 /* =====================================================================================
    ESTRELAS DE PROGRESSO
@@ -790,6 +792,7 @@ button:hover { filter: brightness(1.2); }
 .trail-subject.quimica    { background: var(--c-qui); }
 .trail-subject.fisica     { background: var(--c-fis); }
 .trail-subject.matematica { background: var(--c-mat); }
+.trail-subject.d1         { background: var(--c-d1); }
 
 /* Hide the old "+" add button (if still in DOM) */
 .trail-add { display: none !important; }
