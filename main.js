@@ -12,7 +12,11 @@ if (window.pdfjsLib) {
 /* Quantidade de assuntos por disciplina (usado para montar estrelas
    vazias mesmo que ainda não existam questões carregadas)           */
 const SUBJECT_TOTALS = {
-  Biologia: 26, Química: 24, Física: 20, Matemática: 22,
+  Biologia: 26,
+  Química: 24,
+  Física: 20,
+  Matemática: 22,
+  D1: 6,
 };
 
 /* Lista “amigável” dos assuntos: índice → nome completo.
@@ -53,6 +57,14 @@ const SUBJECT_NAMES = {
     '15. Paralelogramos', '16. Triângulos', '17. Cículos e Projeção', '18. Prismas e Pirâmides',
     '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'
   ],
+  D1: [
+    '1. Linguagens',
+    '2. História',
+    '3. Geografia',
+    '4. Filosofia',
+    '5. Sociologia',
+    '6. Redação'
+  ],
 };
 
 /* Ranking de incidência (com base no ENEM) para mostrar badge.      */
@@ -84,6 +96,9 @@ const INCIDENCE_RANKINGS = {
     "11": '16º', "12": '14º', "13": '19º', "14": '5º',  "15": '18º',
     "16": '9º',  "17": '4º',  "18": '13º', "19": '10º', "20": '11º',
     "21": '8º',  "22": '21º'
+  },
+  D1: {
+    "01": '1º', "02": '2º', "03": '3º', "04": '4º', "05": '5º', "06": '6º'
   }
 };
 
@@ -93,8 +108,15 @@ const discClasses = {
   Química:    "quimica",
   Física:     "fisica",
   Matemática: "matematica",
+  D1:         "d1",
 };
-const discColors = { Biologia:"var(--c-bio)", Química:"var(--c-qui)", Física:"var(--c-fis)", Matemática:"var(--c-mat)" };
+const discColors = {
+  Biologia: "var(--c-bio)",
+  Química:  "var(--c-qui)",
+  Física:   "var(--c-fis)",
+  Matemática: "var(--c-mat)",
+  D1: "var(--c-d1)"
+};
 
 // Data prevista do exame (ajuste conforme necessário)
 const EXAM_DATE = new Date('2025-11-09');
@@ -533,7 +555,7 @@ function showMenu () {
   const lines = app.appendChild(Object.assign(
     document.createElement("div"), { className: "metacog-lines" }));
 
-  for (const disc of ["Biologia","Química","Física","Matemática"]) {
+  for (const disc of ["Biologia","Química","Física","Matemática","D1"]) {
     const line = lines.appendChild(Object.assign(
       document.createElement("div"), { className: "disc-line" }));
     line.appendChild(Object.assign(
@@ -548,11 +570,24 @@ function showMenu () {
       const star = stars.appendChild(Object.assign(
         document.createElement("span"), { className: "star" }));
       star.innerHTML = `<span class="star-index">${sub}</span>`;
-      const st = calcStarState(disc, sub);
+      let st;
+      if (disc === 'D1') {
+        st = +localStorage.getItem(`d1_star_${sub}`) || 0;
+      } else {
+        st = calcStarState(disc, sub);
+      }
       updateStar(star, st);
-      star.onclick = () => {
-        showQuestions(disc, sub, true); // se veio da estrela, volta para Home
-      };
+      if (disc === 'D1') {
+        star.onclick = () => {
+          st = (st + 1) % 5;
+          localStorage.setItem(`d1_star_${sub}`, st);
+          updateStar(star, st);
+        };
+      } else {
+        star.onclick = () => {
+          showQuestions(disc, sub, true); // se veio da estrela, volta para Home
+        };
+      }
     }
   }
   toggleSettingsVisibility(true);   // mostra engrenagem
