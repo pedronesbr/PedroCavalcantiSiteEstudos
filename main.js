@@ -58,12 +58,12 @@ const SUBJECT_NAMES = {
     '19. Esferas e Cones', '20. Análise Combinatória', '21. Probabilidade', '22. Matriz e Determinante'
   ],
   D1: [
-    '1. Linguagens',
-    '2. História',
-    '3. Geografia',
-    '4. Filosofia',
-    '5. Sociologia',
-    '6. Redação'
+    'Linguagens',
+    'História',
+    'Geografia',
+    'Filosofia',
+    'Sociologia',
+    'Redação'
   ],
 };
 
