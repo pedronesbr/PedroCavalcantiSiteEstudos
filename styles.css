@@ -215,7 +215,7 @@ button:hover { filter: brightness(1.2); }
 .disc-btn {
   width: 200px;
   height: 33px;
-  font-size: 18px;
+  font-size: 16px;
   color: #fff;
   font-weight: bold;
   display: inline-flex;        /* ativa modelo flex no próprio botão   */
