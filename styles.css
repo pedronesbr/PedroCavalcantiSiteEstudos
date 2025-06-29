@@ -800,6 +800,7 @@ button:hover { filter: brightness(1.2); }
   background: var(--c-bg-panel);
   border-radius: 4px;
   padding: 8px 14px;
+  cursor: pointer;
   white-space: pre-wrap;
 }
 
