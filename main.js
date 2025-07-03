@@ -914,6 +914,7 @@ function renderExamSummary(){
 function showExamMenu(){
   currentDisc=currentSub=null;
   currentExam=null;
+  currentExamMode=null;
   examListOpen=true;
   leaveHome();
   toggleSettingsVisibility(false);
@@ -1438,6 +1439,7 @@ function showMicroSim(entry) {
       <span class="ms-topic">${getFriendlyName(disc,sub)}</span><br>
       <span class="ms-label">${q.label}</span>`;
     qBtn.classList.add('btn','question-btn','two-line-btn');
+    qBtn.querySelector('.ms-topic').style.color = discColors[disc];
     const m = q.label.match(/ENEM|SAS|BERNOULLI|POLIEDRO/i);
     if(m){
       const exam = m[0].toLowerCase();
@@ -1681,8 +1683,12 @@ backBtn.onclick = () => {
     return;
   }
   if(examListOpen){
-    examListOpen=false;
-    showMenu();
+    if(currentExamMode){
+      showExamMenu();
+    } else {
+      examListOpen=false;
+      showMenu();
+    }
     return;
   }
   if(trailReturn){
