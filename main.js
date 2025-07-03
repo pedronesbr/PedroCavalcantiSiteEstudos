@@ -118,8 +118,8 @@ const discColors = {
   D1: "var(--c-d1)"
 };
 
-// Data prevista do exame (ajuste conforme necessário)
-const EXAM_DATE = new Date('2025-11-09');
+// Data prevista do exame no fuso de Brasília (-03)
+const EXAM_DATE = new Date('2025-11-09T00:00:00-03:00');
 
 /* ================================================================
    2. REFERÊNCIAS FIXAS DA INTERFACE (cache de seletores)
@@ -163,6 +163,7 @@ let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 let examListOpen = false; // menu Provas e Simulados aberto
 let currentExam  = null; // nome do exame em exibicao
+let openTrailDays = new Set(); // dias abertos na Trilha Estratégica
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
@@ -473,6 +474,9 @@ function getTodayStr() {
   return new Date().toLocaleDateString('en-CA', {
     timeZone: 'America/Fortaleza'
   });
+}
+function getTodayDateBR() {
+  return new Date(`${getTodayStr()}T00:00:00-03:00`);
 }
  /* -------- contador de feitas hoje -------- */
 function getTodaySolvedCount() {
@@ -822,6 +826,7 @@ function renderTrailDay(day,expand){
   btn.onclick=()=>{
     const open=btn.classList.toggle('open');
     content.style.display=open?'flex':'none';
+    if(open) openTrailDays.add(dayStr); else openTrailDays.delete(dayStr);
   };
 
   app.appendChild(btn);
@@ -842,9 +847,12 @@ function showTrail(expandDay, preserveScroll=false){
   const prevY = preserveScroll ? window.scrollY : 0;
   clear();
   if(!preserveScroll) window.scrollTo(0,0);
-  const start=new Date();
+  if(expandDay) openTrailDays.add(expandDay);
+  const start=getTodayDateBR();
   for(let d=new Date(start);d<=EXAM_DATE;d.setDate(d.getDate()+1)){
-    renderTrailDay(new Date(d), expandDay===d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'}));
+    const dStr=d.toLocaleDateString('en-CA',{timeZone:'America/Fortaleza'});
+    const open=openTrailDays.has(dStr);
+    renderTrailDay(new Date(d), open);
   }
   renderExamSummary();
   if(preserveScroll) window.scrollTo(0,prevY);
@@ -2024,7 +2032,7 @@ window.addEventListener('focus', resumePomodoroIfNeeded);
     const weekEnd   = fmt(new Date(currentMonday.getTime()+6*DAY_MS));
     xpPeriod.textContent = `${weekStart}-${weekEnd} |`;
 
-    const today = new Date();
+    const today = getTodayDateBR();
     const diasProva = Math.ceil( (EXAM_DATE - today) / DAY_MS );
     xpEnem.textContent = `ENEM: ${diasProva} dias`;
 
