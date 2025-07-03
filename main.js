@@ -436,27 +436,75 @@ function shuffle(arr) {
   return arr;
 }
 
-// Seleciona 10 assuntos de Matemática com questões não feitas e
-// retorna a primeira questão pendente de cada um
-function generateMicroQuestions(){
-  const subs = Object.keys(questoesData['Matemática']);
-  const available = subs.filter(sub =>
-    questoesData['Matemática'][sub].some(q => {
-      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
-      return st === 0;
-    })
-  );
-  shuffle(available);
-  const chosen = available.slice(0,10);
-  const qs = [];
-  chosen.forEach(sub => {
-    const q = questoesData['Matemática'][sub].find(q => {
-      const st = +localStorage.getItem(qKey('Matemática', sub, q.label)) || 0;
-      return st === 0;
+// Conta quantas questões ainda não resolvidas existem em uma disciplina
+function countRemainingQuestions(disc){
+  let count=0;
+  for(const sub in questoesData[disc]){
+    questoesData[disc][sub].forEach(q=>{
+      const st=+localStorage.getItem(qKey(disc,sub,q.label))||0;
+      if(st===0) count++;
     });
-    if(q) qs.push({sub, label:q.label});
+  }
+  return count;
+}
+
+// Sorteia questões de Matemática conforme quantidade desejada
+function generateMicroQuestions(total=10){
+  const disc='Matemática';
+  const subs=Object.keys(questoesData[disc]);
+
+  // Mapeia questões não respondidas por assunto
+  const pool={};
+  subs.forEach(sub=>{
+    const list=questoesData[disc][sub].filter(q=>{
+      const st=+localStorage.getItem(qKey(disc,sub,q.label))||0;
+      return st===0;
+    });
+    if(list.length>0) pool[sub]=list;
   });
-  return qs;
+
+  const availableSubs=Object.keys(pool);
+  if(availableSubs.length===0) return [];
+
+  // limita pelo total possível
+  let totalAvailable=0;
+  availableSubs.forEach(s=>{ totalAvailable+=pool[s].length; });
+  total=Math.min(total,totalAvailable);
+
+  const result=[];
+  shuffle(availableSubs);
+
+  if(total<=availableSubs.length){
+    const chosenSubs=availableSubs.slice(0,total);
+    chosenSubs.forEach(sub=>{
+      const list=pool[sub];
+      const q=list[Math.floor(Math.random()*list.length)];
+      result.push({sub,label:q.label});
+    });
+    return result;
+  }
+
+  // Distribui 1 questão para cada assunto disponível inicialmente
+  availableSubs.forEach(sub=>{
+    if(result.length>=total) return;
+    const list=pool[sub];
+    const idx=Math.floor(Math.random()*list.length);
+    const q=list.splice(idx,1)[0];
+    result.push({sub,label:q.label});
+  });
+
+  let remaining=total-result.length;
+  while(remaining>0){
+    const candidates=availableSubs.filter(s=>pool[s].length>0);
+    if(candidates.length===0) break;
+    const sub=candidates[Math.floor(Math.random()*candidates.length)];
+    const list=pool[sub];
+    const idx=Math.floor(Math.random()*list.length);
+    const q=list.splice(idx,1)[0];
+    result.push({sub,label:q.label});
+    remaining--;
+  }
+  return result;
 }
 
 // Verifica overflow horizontal no campo de comentário
@@ -716,7 +764,15 @@ function openPicker(callback){
     pickerModal.style.display='none';
   };
   pickerMicro.onclick = () => {
-    const qs = generateMicroQuestions();
+    const max = countRemainingQuestions('Matemática');
+    if(max===0){
+      alert('Todas as questões de Matemática foram concluídas.');
+      return;
+    }
+    const inp = prompt(`Quantas questões deseja? (1-${max})`, '10');
+    const n = Math.max(1, Math.min(parseInt(inp,10)||0, max));
+    const qs = generateMicroQuestions(n);
+    if(qs.length===0) return;
     callback({disc:'Matemática', sub:'micro', qs});
     pickerModal.style.display='none';
   };
@@ -1402,8 +1458,18 @@ function showMicroSim(entry) {
   window.scrollTo(0,0);
 
   let micro = [];
-  if(entry && Array.isArray(entry.qs)) micro = entry.qs;
-  else micro = generateMicroQuestions();
+  if(entry && Array.isArray(entry.qs)) {
+    micro = entry.qs;
+  } else {
+    const max = countRemainingQuestions('Matemática');
+    if(max===0){
+      app.textContent = 'Todas as questões de Matemática foram concluídas.';
+      return;
+    }
+    const inp = prompt(`Quantas questões deseja? (1-${max})`, '10');
+    const n = Math.max(1, Math.min(parseInt(inp,10)||0, max));
+    micro = generateMicroQuestions(n);
+  }
   if(micro.length===0){
     app.textContent = 'Todas as questões de Matemática foram concluídas.';
     return;
