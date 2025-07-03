@@ -770,6 +770,7 @@ function openPicker(callback){
       return;
     }
     const inp = prompt(`Quantas questões deseja? (1-${max})`, '10');
+    if(inp === null) return; // cancelado
     const n = Math.max(1, Math.min(parseInt(inp,10)||0, max));
     const qs = generateMicroQuestions(n);
     if(qs.length===0) return;
@@ -848,7 +849,7 @@ function renderTrailDay(day,expand){
 
       const isMicro = s.sub==='micro';
       const label = isMicro
-        ? 'Micro Simulado de Matemática'
+        ? 'Simulado de Matemática'
         : `${s.disc}: ${getFriendlyName(s.disc,s.sub)}`;
       const qcount = isMicro
         ? countMicroProgress(s)
@@ -1445,14 +1446,14 @@ if (imgContainer) {
   });
 }
 
-// --- Micro Simulado de Matemática (10 questões de assuntos aleatórios) ---
+// --- Simulado de Matemática (10 questões de assuntos aleatórios) ---
 function showMicroSim(entry) {
   currentDisc = 'Matemática';
   currentSub  = null;
   // mantém trailReturn para voltar à trilha corretamente
   leaveHome();
   toggleSettingsVisibility(false);
-  updateHeader(true, 'Micro Simulado de Matemática');
+  updateHeader(true, 'Simulado de Matemática');
   document.getElementById('headerStats').style.visibility='visible';
   clear();
   window.scrollTo(0,0);
@@ -1467,6 +1468,10 @@ function showMicroSim(entry) {
       return;
     }
     const inp = prompt(`Quantas questões deseja? (1-${max})`, '10');
+    if(inp === null){
+      backBtn.onclick();
+      return;
+    }
     const n = Math.max(1, Math.min(parseInt(inp,10)||0, max));
     micro = generateMicroQuestions(n);
   }
