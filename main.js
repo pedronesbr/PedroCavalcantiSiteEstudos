@@ -163,11 +163,13 @@ let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 let examListOpen = false; // menu Provas e Simulados aberto
 let currentExam  = null; // nome do exame em exibicao
+let currentExamMode = 'nat'; // 'nat' ou 'mat'
 let openTrailDays = new Set(); // dias abertos na Trilha Estratégica
 
 /* Constrói a estrutura { Disciplina → Assunto → [Questões] }        */
 const questoesData = buildBancoQuestoes(window.listaQuestoes || []);
-const { map: examsData, order: examOrder } = buildExamMap(window.listaQuestoes || []);
+const { map: examsDataNat, order: examOrderNat } = buildExamMap(window.listaQuestoes || [], 'nat');
+const { map: examsDataMat, order: examOrderMat } = buildExamMap(window.listaQuestoes || [], 'mat');
 
 /* ================================================================
    4. FUNÇÕES UTILITÁRIAS (não tocam no DOM)
@@ -200,11 +202,12 @@ function buildBancoQuestoes(listaFlat) {
   return banco;
 }
 
-function buildExamMap(list){
+function buildExamMap(list, mode='nat'){
   const exams = {};
   const order = [];
   list.forEach(item => {
-    if (item.Disciplina === 'Matemática') return; // ignora Matemática
+    if(mode==='nat' && item.Disciplina==='Matemática') return;
+    if(mode==='mat' && item.Disciplina!=='Matemática') return;
     const m = item.label.match(/^(.*)-Q-(\d+)/);
     if (!m) return;
     const exam = m[1];
@@ -635,7 +638,7 @@ trilhaBtn.onclick = () => {
 
 examsBtn.onclick = () => {
   settingsMenu.style.display = "none";
-  showExamList();
+  showExamMenu();
 };
 
 
@@ -908,7 +911,7 @@ function renderExamSummary(){
 }
 /* ---------------- LISTA DE ASSUNTOS ---------------- */
 /* ---------------- PROVAS E SIMULADOS ---------------- */
-function showExamList(){
+function showExamMenu(){
   currentDisc=currentSub=null;
   currentExam=null;
   examListOpen=true;
@@ -919,7 +922,32 @@ function showExamList(){
   stats.style.visibility='hidden';
   clear();
   window.scrollTo(0,0);
-  examOrder.forEach(ex=>{
+  const btnNat=document.createElement('button');
+  btnNat.textContent='Natureza';
+  btnNat.className='btn exam-btn';
+  btnNat.onclick=()=>showExamList('nat');
+  const btnMat=document.createElement('button');
+  btnMat.textContent='Matemática';
+  btnMat.className='btn exam-btn';
+  btnMat.onclick=()=>showExamList('mat');
+  app.appendChild(btnNat);
+  app.appendChild(btnMat);
+}
+
+function showExamList(mode='nat'){
+  currentDisc=currentSub=null;
+  currentExam=null;
+  examListOpen=true;
+  currentExamMode=mode;
+  leaveHome();
+  toggleSettingsVisibility(false);
+  updateHeader(true,'Provas e Simulados');
+  const stats=document.getElementById('headerStats');
+  stats.style.visibility='hidden';
+  clear();
+  window.scrollTo(0,0);
+  const order = mode==='mat'? examOrderMat : examOrderNat;
+  order.forEach(ex=>{
     const btn=document.createElement('button');
     btn.textContent=ex;
     btn.className='btn exam-btn';
@@ -939,7 +967,8 @@ function showExam(exam){
   document.getElementById('headerStats').style.visibility='visible';
   clear();
   window.scrollTo(0,0);
-  const questions=examsData[exam]||[];
+  const data = currentExamMode==='mat'? examsDataMat : examsDataNat;
+  const questions=data[exam]||[];
   const statDiv=document.getElementById('headerStats');
   function refresh(){
     let c=0,a=0;
@@ -1648,7 +1677,7 @@ importFile.addEventListener("change", ({ target }) => {
 backBtn.onclick = () => {
   if(currentExam){
     currentExam=null;
-    showExamList();
+    showExamList(currentExamMode);
     return;
   }
   if(examListOpen){
