@@ -345,20 +345,30 @@ button:hover { filter: brightness(1.2); }
 
 /* Botão de resumo no cabeçalho */
 .summary-btn {
-  margin-left: 8px;
-  padding: 0 8px;
-  height: 24px;
-  font-size: 14px;
-  border-radius: 4px;
-  background: #3a3a3a;
+  all: unset;
+  margin-left: 4px;
+  font-size: 13px;
   color: var(--c-text-muted);
-  border: 1px solid #555;
+  cursor: pointer;
+}
+
+.summary-btn:hover {
+  text-decoration: underline;
+}
+
+#headerTitle {
+  position: relative;
+  display: inline-block;
 }
 
 .order-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 12px;
   color: var(--c-text-muted);
-  margin-left: 6px;
+  white-space: nowrap;
 }
 
 /* =====================================================================================

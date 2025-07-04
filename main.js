@@ -578,7 +578,7 @@ function showMenu () {
   /* 2 ▸ layout padrão */
   currentDisc = currentSub = null;
   summaryBtn.style.display = 'none';
-  orderHint.style.visibility = 'hidden';
+  orderHint.style.display = 'none';
   headerTitle.onmouseenter = null;
   headerTitle.onmouseleave = null;
   headerTitle.onclick = null;
@@ -1089,7 +1089,7 @@ function showSubjects(disc) {
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
   document.getElementById('headerStats').style.visibility='visible';
-  orderHint.style.visibility = 'hidden';
+  orderHint.style.display = 'none';
 
   // 2) Botão Resumão e ordenação
   summaryBtn.style.display = 'inline-block';
@@ -1106,9 +1106,9 @@ function showSubjects(disc) {
     orderHint.textContent = mode === 'normal'
       ? 'Ordenar Por Incidência'
       : 'Ordenar Padrão';
-    orderHint.style.visibility = 'visible';
+    orderHint.style.display = 'block';
   };
-  headerTitle.onmouseleave = () => { orderHint.style.visibility = 'hidden'; };
+  headerTitle.onmouseleave = () => { orderHint.style.display = 'none'; };
 
   // 3) Limpa e reseta scroll
   clear();
@@ -1196,7 +1196,7 @@ function showQuestions(disc, sub, fromStar = false) {
   toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
   document.getElementById('headerStats').style.visibility='visible';
-  orderHint.style.visibility = 'hidden';
+  orderHint.style.display = 'none';
   summaryBtn.style.display = 'inline-block';
   summaryBtn.textContent = 'Resumo';
   summaryBtn.onclick = openSummary;
