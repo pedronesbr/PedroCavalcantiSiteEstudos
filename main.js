@@ -903,6 +903,7 @@ function showTrail(expandDay, preserveScroll=false){
   leaveHome();
   toggleSettingsVisibility(false);
   updateHeader(true,'Trilha Estratégica');
+  summaryBtn.style.display='none';
   const stats=document.getElementById('headerStats');
   stats.style.display='block';
   stats.style.visibility='hidden';
