@@ -131,6 +131,7 @@ const importFile   = document.getElementById("importFile");
 const backBtn      = document.getElementById("backBtn");
 const header       = document.getElementById("header");
 const headerTitle  = document.getElementById("headerTitle");
+const summaryBtn   = document.getElementById("summaryBtn");
 const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
 const imgContainer = document.getElementById("imgPreviewContainer");
@@ -152,6 +153,7 @@ const pickerComment = document.getElementById("pickerComment");
 const pickerAdd     = document.getElementById("pickerAdd");
 const pickerMicro   = document.getElementById("pickerMicro");
 const pickerCancel  = document.getElementById("pickerCancel");
+const orderHint     = document.getElementById("orderHint");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -387,16 +389,10 @@ function updateHeader(show, title = "") {
   /* título */
   headerTitle.textContent = title;
 
-  if (currentSub && show) {        // estamos dentro de um assunto
-    headerTitle.style.cursor           = "pointer";
-    headerTitle.title                  = "Clique para abrir o resumo";
-    headerTitle.onclick                = openSummary;
-  } else {
-    headerTitle.style.cursor         = "default";
-    headerTitle.style.textDecoration = "none";
-    headerTitle.title                = "";
-    headerTitle.onclick              = null;
-  }
+  headerTitle.style.cursor         = "default";
+  headerTitle.style.textDecoration = "none";
+  headerTitle.title                = "";
+  headerTitle.onclick              = null;
 }
 
 /** Sincroniza a imagem/cor de uma estrela quando seu estado muda. */
@@ -581,6 +577,11 @@ function showMenu () {
 
   /* 2 ▸ layout padrão */
   currentDisc = currentSub = null;
+  summaryBtn.style.display = 'none';
+  orderHint.style.visibility = 'hidden';
+  headerTitle.onmouseenter = null;
+  headerTitle.onmouseleave = null;
+  headerTitle.onclick = null;
   enterHome();            // aplica o visual preto + ajustes
   updateHeader(true);
   document.getElementById('headerStats').style.visibility='visible';
@@ -1088,13 +1089,26 @@ function showSubjects(disc) {
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
   document.getElementById('headerStats').style.visibility='visible';
+  orderHint.style.visibility = 'hidden';
 
-  // 2) Menu de opções da disciplina
+  // 2) Botão Resumão e ordenação
+  summaryBtn.style.display = 'inline-block';
+  summaryBtn.textContent = 'Resumão';
+  summaryBtn.onclick = () => openDisciplineSummary(disc);
   headerTitle.style.cursor = 'pointer';
-  headerTitle.title       = 'Clique para opções';
-  headerTitle.onclick     = (e) => {
-    openDiscMenu(e, disc);
+  headerTitle.onclick = () => {
+    const mode = subjectsOrder[disc] || 'normal';
+    subjectsOrder[disc] = mode === 'normal' ? 'ranking' : 'normal';
+    showSubjects(disc);
   };
+  headerTitle.onmouseenter = () => {
+    const mode = subjectsOrder[disc] || 'normal';
+    orderHint.textContent = mode === 'normal'
+      ? 'Ordenar Por Incidência'
+      : 'Ordenar Padrão';
+    orderHint.style.visibility = 'visible';
+  };
+  headerTitle.onmouseleave = () => { orderHint.style.visibility = 'hidden'; };
 
   // 3) Limpa e reseta scroll
   clear();
@@ -1182,6 +1196,14 @@ function showQuestions(disc, sub, fromStar = false) {
   toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
   document.getElementById('headerStats').style.visibility='visible';
+  orderHint.style.visibility = 'hidden';
+  summaryBtn.style.display = 'inline-block';
+  summaryBtn.textContent = 'Resumo';
+  summaryBtn.onclick = openSummary;
+  headerTitle.onclick = null;
+  headerTitle.onmouseenter = null;
+  headerTitle.onmouseleave = null;
+  headerTitle.style.cursor = 'default';
   clear();
   window.scrollTo(0, 0);
 
