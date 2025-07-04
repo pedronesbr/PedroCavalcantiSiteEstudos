@@ -1729,6 +1729,7 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
 
   window.openDiscMenu = function(evt, disc){
     evt.preventDefault();
+    evt.stopPropagation();
     menu.innerHTML='';
     if(subjectsOrder==='normal'){
       menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder='ranking'; showSubjects(disc); }));
