@@ -1480,6 +1480,9 @@ function showMicroSim(entry) {
   leaveHome();
   toggleSettingsVisibility(false);
   updateHeader(true, 'Simulado de Matemática');
+  summaryBtn.style.display = 'inline-block';
+  summaryBtn.textContent = 'Resumo';
+  summaryBtn.onclick = () => openDisciplineSummary('Matemática');
   document.getElementById('headerStats').style.visibility='visible';
   clear();
   window.scrollTo(0,0);
