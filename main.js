@@ -1088,13 +1088,11 @@ function showSubjects(disc) {
   updateHeader(true, disc);
   document.getElementById('headerStats').style.visibility='visible';
 
-  // 2) Anexa ao título da disciplina o toggle de ordenação
+  // 2) Menu de opções da disciplina
   headerTitle.style.cursor = 'pointer';
-  headerTitle.title       = 'Clique para alternar ordenação';
-  headerTitle.onclick     = () => {
-    // alterna entre 'normal' e 'ranking' e re-renderiza
-    subjectsOrder = subjectsOrder === 'normal' ? 'ranking' : 'normal';
-    showSubjects(disc);
+  headerTitle.title       = 'Clique para opções';
+  headerTitle.onclick     = (e) => {
+    openDiscMenu(e, disc);
   };
 
   // 3) Limpa e reseta scroll
@@ -1601,6 +1599,11 @@ function openSummary(){                      // usa a disciplina/assunto atuais
   summaryFrame.src = `Editor_de_Texto.html?disc=${d}&sub=${s}`;   // carrega o resumo certo
   summaryContainer.style.display = "flex";
 }
+function openDisciplineSummary(disc){        // resumo geral da disciplina
+  const d = encodeURIComponent(disc);
+  summaryFrame.src = `Editor_de_Texto.html?disc=${d}&sub=00`;
+  summaryContainer.style.display = "flex";
+}
 function closeSummary(){ summaryContainer.style.display = "none"; }
 window.closeSummary = closeSummary;           // para o iframe conseguir fechar
 
@@ -1697,6 +1700,47 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
     menu.style.left    = `${evt.clientX}px`;
     menu.style.top     = `${evt.clientY}px`;
     menu.style.display = 'block';
+  };
+})();
+
+/* ===================================================================
+   MENU DA DISCIPLINA (Ordenação/Resumão)
+   ===================================================================*/
+(function(){
+  const menu = document.createElement('div');
+  menu.style.cssText = `
+    position:fixed; background:#2a2a2a; border:1px solid #555;
+    border-radius:4px; padding:4px; z-index:3000; display:none`;
+  document.body.appendChild(menu);
+
+  function hide(){ menu.style.display='none'; }
+  document.addEventListener('click', hide);
+  document.addEventListener('scroll', hide, true);
+
+  function buildItem(label, fn){
+    const b=document.createElement('button');
+    b.textContent=label;
+    b.style.cssText='all:unset; display:block; padding:6px 12px; color:#fff; cursor:pointer';
+    b.onmouseenter=()=>b.style.background='#3a3a3a';
+    b.onmouseleave=()=>b.style.background='none';
+    b.onclick=()=>{ fn(); hide(); };
+    return b;
+  }
+
+  window.openDiscMenu = function(evt, disc){
+    evt.preventDefault();
+    evt.stopPropagation();
+    menu.innerHTML='';
+    if(subjectsOrder==='normal'){
+      menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder='ranking'; showSubjects(disc); }));
+    }else{
+      menu.appendChild(buildItem('Ordenação Padrão', ()=>{ subjectsOrder='normal'; showSubjects(disc); }));
+    }
+    menu.appendChild(buildItem('Resumão', ()=>{ openDisciplineSummary(disc); }));
+
+    menu.style.left=`${evt.clientX}px`;
+    menu.style.top =`${evt.clientY}px`;
+    menu.style.display='block';
   };
 })();
 
