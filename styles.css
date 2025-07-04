@@ -347,13 +347,13 @@ button:hover { filter: brightness(1.2); }
 .summary-btn {
   all: unset;
   margin-left: 4px;
-  padding: 0 2px;
+  padding: 0 6px;
   height: 20px;
   font-size: 10px;
   border-radius: 4px;
   background: #3a3a3a;
   color: var(--c-text-muted);
-  border: 0px solid #555;
+  border: 1px solid #555;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -552,7 +552,7 @@ button:hover { filter: brightness(1.2); }
   padding: 4px;
   margin: 8px;
   text-align: center;
-  border: 1px solid var(--c-border-muted);
+   solid var(--c-border-muted);
   border-radius: 4px;
   background: var(--c-bg-app);
   color: var(--c-text-primary);
@@ -895,7 +895,7 @@ body.home #headerStats      { display: none !important; }      /* esconde estat√
   color: var(--c-text-primary);
   font-size: 16px;          /* evita zoom ao focar em dispositivos m√≥veis */
   line-height: 1.4;
-  border: 1px solid var(--c-border-muted);
+   solid var(--c-border-muted);
   border-radius: 4px;
   padding: 8px;
   margin: 8px 0 0 15px;
