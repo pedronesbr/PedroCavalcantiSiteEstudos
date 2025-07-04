@@ -347,13 +347,21 @@ button:hover { filter: brightness(1.2); }
 .summary-btn {
   all: unset;
   margin-left: 4px;
-  font-size: 13px;
+  padding: 0 6px;
+  height: 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  background: #3a3a3a;
   color: var(--c-text-muted);
+  border: 1px solid #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 .summary-btn:hover {
-  text-decoration: underline;
+  filter: brightness(1.2);
 }
 
 #headerTitle {

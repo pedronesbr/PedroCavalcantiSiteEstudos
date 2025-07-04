@@ -1727,47 +1727,6 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
   };
 })();
 
-/* ===================================================================
-   MENU DA DISCIPLINA (Ordenação/Resumão)
-   ===================================================================*/
-(function(){
-  const menu = document.createElement('div');
-  menu.style.cssText = `
-    position:fixed; background:#2a2a2a; border:1px solid #555;
-    border-radius:4px; padding:4px; z-index:3000; display:none`;
-  document.body.appendChild(menu);
-
-  function hide(){ menu.style.display='none'; }
-  document.addEventListener('click', hide);
-  document.addEventListener('scroll', hide, true);
-
-  function buildItem(label, fn){
-    const b=document.createElement('button');
-    b.textContent=label;
-    b.style.cssText='all:unset; display:block; padding:6px 12px; color:#fff; cursor:pointer';
-    b.onmouseenter=()=>b.style.background='#3a3a3a';
-    b.onmouseleave=()=>b.style.background='none';
-    b.onclick=()=>{ fn(); hide(); };
-    return b;
-  }
-
-  window.openDiscMenu = function(evt, disc){
-    evt.preventDefault();
-    evt.stopPropagation();
-    menu.innerHTML='';
-    if((subjectsOrder[disc]||'normal')==='normal'){
-      menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder[disc]='ranking'; showSubjects(disc); }));
-    }else{
-      menu.appendChild(buildItem('Ordenação Padrão', ()=>{ subjectsOrder[disc]='normal'; showSubjects(disc); }));
-    }
-    menu.appendChild(buildItem('Resumão', ()=>{ openDisciplineSummary(disc); }));
-
-    menu.style.left=`${evt.clientX}px`;
-    menu.style.top =`${evt.clientY}px`;
-    menu.style.display='block';
-  };
-})();
-
 /* ================================================================
    7. EVENTOS GLOBAIS
    ============================================================== */
