@@ -346,9 +346,10 @@ button:hover { filter: brightness(1.2); }
 /* Botão de resumo no cabeçalho */
 .summary-btn {
   all: unset;
-  margin-left: 4px;
+  margin-left: 6px;
+  padding: 0 6px;
   height: 20px;
-  font-size: 11px;
+  font-size: 10px;
   border-radius: 4px;
   background: #3a3a3a;
   color: var(--c-text-muted);
