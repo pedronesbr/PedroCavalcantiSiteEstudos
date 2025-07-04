@@ -158,7 +158,8 @@ const pickerCancel  = document.getElementById("pickerCancel");
    ============================================================== */
 let currentDisc = null;   // Nome da disciplina selecionada
 let currentSub  = null;   // Código do assunto selecionado
-let subjectsOrder = 'normal';  // 'normal' ou 'ranking'
+// Modo de ordenação por disciplina ('normal' ou 'ranking')
+let subjectsOrder = {};
 let trailReturn  = null;  // data da trilha para voltar após questões
 let starReturn   = false; // flag para voltar à Home ao sair de um assunto aberto pela estrela
 let examListOpen = false; // menu Provas e Simulados aberto
@@ -1125,7 +1126,8 @@ function showSubjects(disc) {
 
   // 5) Monta a lista de assuntos na ordem certa
   let subs = Object.keys(questoesData[disc]);
-  if (subjectsOrder === 'ranking') {
+  const orderMode = subjectsOrder[disc] || 'normal';
+  if (orderMode === 'ranking') {
     subs.sort((a, b) =>
       parseInt(INCIDENCE_RANKINGS[disc][a], 10)
     - parseInt(INCIDENCE_RANKINGS[disc][b], 10)
@@ -1731,10 +1733,10 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
     evt.preventDefault();
     evt.stopPropagation();
     menu.innerHTML='';
-    if(subjectsOrder==='normal'){
-      menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder='ranking'; showSubjects(disc); }));
+    if((subjectsOrder[disc]||'normal')==='normal'){
+      menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder[disc]='ranking'; showSubjects(disc); }));
     }else{
-      menu.appendChild(buildItem('Ordenação Padrão', ()=>{ subjectsOrder='normal'; showSubjects(disc); }));
+      menu.appendChild(buildItem('Ordenação Padrão', ()=>{ subjectsOrder[disc]='normal'; showSubjects(disc); }));
     }
     menu.appendChild(buildItem('Resumão', ()=>{ openDisciplineSummary(disc); }));
 
