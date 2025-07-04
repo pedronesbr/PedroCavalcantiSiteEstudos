@@ -131,6 +131,7 @@ const importFile   = document.getElementById("importFile");
 const backBtn      = document.getElementById("backBtn");
 const header       = document.getElementById("header");
 const headerTitle  = document.getElementById("headerTitle");
+const summaryBtn   = document.getElementById("summaryBtn");
 const pdfContainer = document.getElementById("pdfViewerContainer");
 const closeBtn     = document.getElementById("closePdfBtn");
 const imgContainer = document.getElementById("imgPreviewContainer");
@@ -152,6 +153,7 @@ const pickerComment = document.getElementById("pickerComment");
 const pickerAdd     = document.getElementById("pickerAdd");
 const pickerMicro   = document.getElementById("pickerMicro");
 const pickerCancel  = document.getElementById("pickerCancel");
+const orderHint     = document.getElementById("orderHint");
 
 /* ================================================================
    3. ESTADO MUTÁVEL
@@ -387,16 +389,10 @@ function updateHeader(show, title = "") {
   /* título */
   headerTitle.textContent = title;
 
-  if (currentSub && show) {        // estamos dentro de um assunto
-    headerTitle.style.cursor           = "pointer";
-    headerTitle.title                  = "Clique para abrir o resumo";
-    headerTitle.onclick                = openSummary;
-  } else {
-    headerTitle.style.cursor         = "default";
-    headerTitle.style.textDecoration = "none";
-    headerTitle.title                = "";
-    headerTitle.onclick              = null;
-  }
+  headerTitle.style.cursor         = "default";
+  headerTitle.style.textDecoration = "none";
+  headerTitle.title                = "";
+  headerTitle.onclick              = null;
 }
 
 /** Sincroniza a imagem/cor de uma estrela quando seu estado muda. */
@@ -581,6 +577,11 @@ function showMenu () {
 
   /* 2 ▸ layout padrão */
   currentDisc = currentSub = null;
+  summaryBtn.style.display = 'none';
+  orderHint.style.display = 'none';
+  headerTitle.onmouseenter = null;
+  headerTitle.onmouseleave = null;
+  headerTitle.onclick = null;
   enterHome();            // aplica o visual preto + ajustes
   updateHeader(true);
   document.getElementById('headerStats').style.visibility='visible';
@@ -1088,13 +1089,30 @@ function showSubjects(disc) {
   // 1) Atualiza o cabeçalho normalmente
   updateHeader(true, disc);
   document.getElementById('headerStats').style.visibility='visible';
+  orderHint.style.display = 'none';
 
-  // 2) Menu de opções da disciplina
+  // 2) Botão Resumo e ordenação
+  if (disc === 'Física' || disc === 'Matemática') {
+    summaryBtn.style.display = 'inline-block';
+    summaryBtn.textContent = 'Resumo';
+    summaryBtn.onclick = () => openDisciplineSummary(disc);
+  } else {
+    summaryBtn.style.display = 'none';
+  }
   headerTitle.style.cursor = 'pointer';
-  headerTitle.title       = 'Clique para opções';
-  headerTitle.onclick     = (e) => {
-    openDiscMenu(e, disc);
+  headerTitle.onclick = () => {
+    const mode = subjectsOrder[disc] || 'normal';
+    subjectsOrder[disc] = mode === 'normal' ? 'ranking' : 'normal';
+    showSubjects(disc);
   };
+  headerTitle.onmouseenter = () => {
+    const mode = subjectsOrder[disc] || 'normal';
+    orderHint.textContent = mode === 'normal'
+      ? 'Ordenar Por Incidência'
+      : 'Ordenar Padrão';
+    orderHint.style.display = 'block';
+  };
+  headerTitle.onmouseleave = () => { orderHint.style.display = 'none'; };
 
   // 3) Limpa e reseta scroll
   clear();
@@ -1182,6 +1200,14 @@ function showQuestions(disc, sub, fromStar = false) {
   toggleSettingsVisibility(false);  // esconde engrenagem
   updateHeader(true, `${disc}: ${getFriendlyName(disc, sub)}`);
   document.getElementById('headerStats').style.visibility='visible';
+  orderHint.style.display = 'none';
+  summaryBtn.style.display = 'inline-block';
+  summaryBtn.textContent = 'Resumo';
+  summaryBtn.onclick = openSummary;
+  headerTitle.onclick = null;
+  headerTitle.onmouseenter = null;
+  headerTitle.onmouseleave = null;
+  headerTitle.style.cursor = 'default';
   clear();
   window.scrollTo(0, 0);
 
@@ -1702,47 +1728,6 @@ window.closeSummary = closeSummary;           // para o iframe conseguir fechar
     menu.style.left    = `${evt.clientX}px`;
     menu.style.top     = `${evt.clientY}px`;
     menu.style.display = 'block';
-  };
-})();
-
-/* ===================================================================
-   MENU DA DISCIPLINA (Ordenação/Resumão)
-   ===================================================================*/
-(function(){
-  const menu = document.createElement('div');
-  menu.style.cssText = `
-    position:fixed; background:#2a2a2a; border:1px solid #555;
-    border-radius:4px; padding:4px; z-index:3000; display:none`;
-  document.body.appendChild(menu);
-
-  function hide(){ menu.style.display='none'; }
-  document.addEventListener('click', hide);
-  document.addEventListener('scroll', hide, true);
-
-  function buildItem(label, fn){
-    const b=document.createElement('button');
-    b.textContent=label;
-    b.style.cssText='all:unset; display:block; padding:6px 12px; color:#fff; cursor:pointer';
-    b.onmouseenter=()=>b.style.background='#3a3a3a';
-    b.onmouseleave=()=>b.style.background='none';
-    b.onclick=()=>{ fn(); hide(); };
-    return b;
-  }
-
-  window.openDiscMenu = function(evt, disc){
-    evt.preventDefault();
-    evt.stopPropagation();
-    menu.innerHTML='';
-    if((subjectsOrder[disc]||'normal')==='normal'){
-      menu.appendChild(buildItem('Ordenação por Incidência', ()=>{ subjectsOrder[disc]='ranking'; showSubjects(disc); }));
-    }else{
-      menu.appendChild(buildItem('Ordenação Padrão', ()=>{ subjectsOrder[disc]='normal'; showSubjects(disc); }));
-    }
-    menu.appendChild(buildItem('Resumão', ()=>{ openDisciplineSummary(disc); }));
-
-    menu.style.left=`${evt.clientX}px`;
-    menu.style.top =`${evt.clientY}px`;
-    menu.style.display='block';
   };
 })();
 
